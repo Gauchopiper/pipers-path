@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>Piper's Path</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #fff;
+      padding: 18px 16px 12px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+    h1 { margin: 0; font-size: 28px; }
+    #identity { margin-top: 6px; font-size: 16px; color: #555; }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px 110px;
+      width: 100%;
+    }
+
+    .view { display: none; width: 100%; max-width: 520px; }
+    .view.active { display: block; }
+
+    #recordView { text-align: center; }
+
+    #timer {
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin: 10px 0 28px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #recordButton {
+      width: 210px;
+      height: 210px;
+      border: 0;
+      border-radius: 50%;
+      font-size: 28px;
+      font-weight: 700;
+      background: #c62828;
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(0,0,0,.22);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    #recordButton.recording { background: #222; }
+
+    #status {
+      margin-top: 24px;
+      min-height: 26px;
+      font-size: 18px;
+    }
+
+    #playbackWrap {
+      display: none;
+      margin: 28px auto 0;
+      max-width: 420px;
+    }
+    audio { width: 100%; }
+
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    }
+
+    .empty {
+      text-align: center;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: #fff;
+      border-top: 1px solid #ccc;
+      padding-bottom: env(safe-area-inset-bottom);
+      z-index: 10;
+    }
+
+    .navButton {
+      border: 0;
+      background: #fff;
+      min-height: 82px;
+      padding: 8px 4px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .navButton .icon {
+      display: block;
+      font-size: 31px;
+      line-height: 1.1;
+      margin-bottom: 5px;
+    }
+    .navButton.active { background: #e9e9e9; }
+
+    .small {
+      font-size: 13px;
+      color: #777;
+      margin-top: 8px;
+      word-break: break-all;
+    }
+
+    .warning {
+      background: #fff3cd;
+      border: 1px solid #ffe69c;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 16px;
+      font-size: 14px;
+      text-align: left;
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>Piper's Path</h1>
+  <div id="identity">Loading pupil link…</div>
+</header>
+
+<main>
+  <section id="recordView" class="view active">
+    <div id="timer">00:00</div>
+    <button id="recordButton" type="button">RECORD</button>
+    <div id="status">Tap RECORD to begin</div>
+
+    <div id="playbackWrap">
+      <p><strong>Your recording</strong></p>
+      <audio id="playback" controls></audio>
+      <div class="warning">
+        Test version: this recording stays only on this device/page and is not yet uploaded to Google Drive.
+      </div>
+    </div>
+  </section>
+
+  <section id="pathView" class="view">
+    <div class="card">
+      <h2>📈 Piper's Path</h2>
+      <p class="empty">
+        Your practice history, streak and milestones will appear here once the Google backend is connected.
+      </p>
+    </div>
+  </section>
+
+  <section id="groupView" class="view">
+    <div class="card">
+      <h2>👥 Group</h2>
+      <p class="empty">
+        The Community Bagpipe will appear here once the shared daily data is connected.
+      </p>
+    </div>
+  </section>
+</main>
+
+<nav>
+  <button class="navButton active" data-view="recordView">
+    <span class="icon">🎙️</span>
+    RECORD
+  </button>
+  <button class="navButton" data-view="pathView">
+    <span class="icon">📈</span>
+    PATH
+  </button>
+  <button class="navButton" data-view="groupView">
+    <span class="icon">👥</span>
+    GROUP
+  </button>
+</nav>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const pupilId = params.get('p') || '';
+  const accessKey = params.get('key') || '';
+
+  const identity = document.getElementById('identity');
+  if (pupilId && accessKey) {
+    identity.textContent = pupilId;
+  } else {
+    identity.textContent = 'Test mode — no pupil link supplied';
+  }
+
+  const navButtons = document.querySelectorAll('.navButton');
+  const views = document.querySelectorAll('.view');
+
+  navButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      navButtons.forEach(b => b.classList.remove('active'));
+      views.forEach(v => v.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.view).classList.add('active');
+    });
+  });
+
+  let mediaRecorder = null;
+  let stream = null;
+  let chunks = [];
+  let recording = false;
+  let startedAt = null;
+  let timerHandle = null;
+  let lastObjectUrl = null;
+
+  const recordButton = document.getElementById('recordButton');
+  const statusEl = document.getElementById('status');
+  const timerEl = document.getElementById('timer');
+  const playbackWrap = document.getElementById('playbackWrap');
+  const playback = document.getElementById('playback');
+
+  function formatTime(totalSeconds) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+  }
+
+  function updateTimer() {
+    if (!startedAt) return;
+    const seconds = Math.floor((Date.now() - startedAt) / 1000);
+    timerEl.textContent = formatTime(seconds);
+  }
+
+  async function startRecording() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      statusEl.textContent = 'This browser does not support microphone recording.';
+      return;
+    }
+
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      chunks = [];
+
+      let options = {};
+      const preferred = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/mp4'
+      ];
+
+      for (const type of preferred) {
+        if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(type)) {
+          options = { mimeType: type };
+          break;
+        }
+      }
+
+      mediaRecorder = new MediaRecorder(stream, options);
+
+      mediaRecorder.addEventListener('dataavailable', e => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      });
+
+      mediaRecorder.addEventListener('stop', () => {
+        const type = mediaRecorder.mimeType || 'audio/webm';
+        const blob = new Blob(chunks, { type });
+
+        if (lastObjectUrl) URL.revokeObjectURL(lastObjectUrl);
+        lastObjectUrl = URL.createObjectURL(blob);
+
+        playback.src = lastObjectUrl;
+        playbackWrap.style.display = 'block';
+        statusEl.textContent = 'Recording complete — you can play it back.';
+
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+          stream = null;
+        }
+      });
+
+      mediaRecorder.start();
+      recording = true;
+      startedAt = Date.now();
+      playbackWrap.style.display = 'none';
+      timerEl.textContent = '00:00';
+      recordButton.textContent = 'STOP';
+      recordButton.classList.add('recording');
+      statusEl.textContent = 'Recording…';
+      updateTimer();
+      timerHandle = setInterval(updateTimer, 500);
+
+    } catch (err) {
+      console.error(err);
+      if (err && err.name === 'NotAllowedError') {
+        statusEl.textContent = 'Microphone permission was denied.';
+      } else if (err && err.name === 'NotFoundError') {
+        statusEl.textContent = 'No microphone was found.';
+      } else {
+        statusEl.textContent = 'Could not start the microphone.';
+      }
+    }
+  }
+
+  function stopRecording() {
+    if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
+
+    mediaRecorder.stop();
+    recording = false;
+    clearInterval(timerHandle);
+    timerHandle = null;
+    updateTimer();
+    recordButton.textContent = 'RECORD';
+    recordButton.classList.remove('recording');
+  }
+
+  recordButton.addEventListener('click', () => {
+    if (recording) stopRecording();
+    else startRecording();
+  });
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js').catch(console.error);
+    });
+  }
+</script>
+</body>
+</html>
