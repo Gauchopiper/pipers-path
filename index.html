@@ -318,17 +318,27 @@
     }
   }
 
-  function stopRecording() {
-    if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
+function stopRecording() {
 
-    mediaRecorder.stop();
-    recording = false;
+  recording = false;
+
+  if (timerHandle) {
     clearInterval(timerHandle);
     timerHandle = null;
-    updateTimer();
-    recordButton.textContent = 'RECORD';
-    recordButton.classList.remove('recording');
   }
+
+  recordButton.textContent = 'RECORD';
+  recordButton.classList.remove('recording');
+
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+    stream = null;
+  }
+}
 
   recordButton.addEventListener('click', () => {
     if (recording) stopRecording();
