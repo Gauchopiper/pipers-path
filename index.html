@@ -152,13 +152,11 @@
     <div id="timer">00:00</div>
     <button id="recordButton" type="button">RECORD</button>
     <div id="status">Tap RECORD to begin</div>
-
-    <div id="playbackWrap">
-      <p><strong>Your recording</strong></p>
-      <audio id="playback" controls></audio>
-      <div class="warning">
-        Test version: this recording stays only on this device/page and is not yet uploaded to Google Drive.
-      </div>
+<div id="playbackWrap">
+  <p><strong>Your recording</strong></p>
+  <audio id="playback" controls></audio>
+</div>
+</div>
     </div>
   </section>
 
@@ -320,12 +318,21 @@
 
 function stopRecording() {
 
+  if (!recording) return;
+
   recording = false;
+
+  const stoppedAt = Date.now();
 
   if (timerHandle) {
     clearInterval(timerHandle);
     timerHandle = null;
   }
+
+  const elapsedSeconds =
+    Math.floor((stoppedAt - startedAt) / 1000);
+
+  timerEl.textContent = formatTime(elapsedSeconds);
 
   recordButton.textContent = 'RECORD';
   recordButton.classList.remove('recording');
@@ -361,7 +368,7 @@ function stopRecording() {
 
     const endTime = new Date();
     const durationSeconds =
-      Math.round((endTime.getTime() - startedAt) / 1000);
+     Math.floor((endTime.getTime() - startedAt) / 1000);
 
     const payload = {
       pupilId: pupilId,
