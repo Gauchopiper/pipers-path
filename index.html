@@ -197,6 +197,7 @@
 </nav>
 
 <script>
+  const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwZRT0eDd5xV_onNptruSfu6x3rvYPWBEf1kBvfC2fjXi8FWuv5V4KI0JATPoN6GGZ--Q/exec';
   const params = new URLSearchParams(location.search);
   const pupilId = params.get('p') || '';
   const accessKey = params.get('key') || '';
@@ -285,7 +286,8 @@
 
         playback.src = lastObjectUrl;
         playbackWrap.style.display = 'block';
-        statusEl.textContent = 'Recording complete — you can play it back.';
+        statusEl.textContent = 'Saving recording…';
+        uploadRecording(blob, type);
 
         if (stream) {
           stream.getTracks().forEach(track => track.stop());
@@ -337,7 +339,74 @@
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./service-worker.js').catch(console.error);
     });
+  }async function uploadRecording(blob, mimeType) {
+  try {
+    if (!pupilId || !accessKey) {
+      statusEl.textContent =
+        'Recording complete, but no pupil link was supplied.';
+      return;
+    }
+
+    const base64 = await blobToBase64(blob);
+
+    const endTime = new Date();
+    const durationSeconds =
+      Math.round((endTime.getTime() - startedAt) / 1000);
+
+    const payload = {
+      pupilId: pupilId,
+      accessKey: accessKey,
+      audioBase64: base64,
+      mimeType: mimeType,
+      startIso: new Date(startedAt).toISOString(),
+      endIso: endTime.toISOString(),
+      durationSeconds: durationSeconds
+    };
+
+    const response = await fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (result.ok) {
+      statusEl.textContent =
+        result.qualifying === 'Yes'
+          ? 'Practice saved ✓'
+          : 'Recording saved ✓';
+    } else {
+      statusEl.textContent =
+        'Could not save: ' + result.error;
+    }
+
+  } catch (err) {
+    console.error(err);
+
+    statusEl.textContent =
+      'Recording made, but the upload could not be confirmed.';
   }
+}
+
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      const dataUrl = reader.result;
+      const base64 = dataUrl.split(',')[1];
+      resolve(base64);
+    };
+
+    reader.onerror = reject;
+
+    reader.readAsDataURL(blob);
+  });
+}
 </script>
 </body>
 </html>
