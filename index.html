@@ -1,547 +1,377 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#ffffff">
-  <title>Piper's Path</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="icon-192.png">
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f5f5f5;
-      color: #222;
-      min-height: 100vh;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-    }
-    header {
-      background: #fff;
-      padding: 18px 16px 12px;
-      text-align: center;
-      border-bottom: 1px solid #ddd;
-    }
-    h1 { margin: 0; font-size: 28px; }
-    #identity { margin-top: 6px; font-size: 16px; color: #555; }
-
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px 20px 110px;
-      width: 100%;
-    }
-
-    .view { display: none; width: 100%; max-width: 520px; }
-    .view.active { display: block; }
-
-    #recordView { text-align: center; }
-
-    #timer {
-      font-size: 56px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      margin: 10px 0 28px;
-      font-variant-numeric: tabular-nums;
-    }
-
-    #recordButton {
-      width: 210px;
-      height: 210px;
-      border: 0;
-      border-radius: 50%;
-      font-size: 28px;
-      font-weight: 700;
-      background: #c62828;
-      color: #fff;
-      box-shadow: 0 8px 24px rgba(0,0,0,.22);
-      cursor: pointer;
-      touch-action: manipulation;
-    }
-    #recordButton.recording { background: #222; }
-
-    #status {
-      margin-top: 24px;
-      min-height: 26px;
-      font-size: 18px;
-    }
-
-    #playbackWrap {
-      display: none;
-      margin: 28px auto 0;
-      max-width: 420px;
-    }
-    audio { width: 100%; }
-
-    .card {
-      background: #fff;
-      border-radius: 18px;
-      padding: 22px;
-      box-shadow: 0 4px 16px rgba(0,0,0,.08);
-    }
-
-    .empty {
-      text-align: center;
-      color: #666;
-      line-height: 1.5;
-    }
-
-    nav {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      background: #fff;
-      border-top: 1px solid #ccc;
-      padding-bottom: env(safe-area-inset-bottom);
-      z-index: 10;
-    }
-
-    .navButton {
-      border: 0;
-      background: #fff;
-      min-height: 82px;
-      padding: 8px 4px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .navButton .icon {
-      display: block;
-      font-size: 31px;
-      line-height: 1.1;
-      margin-bottom: 5px;
-    }
-    .navButton.active { background: #e9e9e9; }
-
-    .small {
-      font-size: 13px;
-      color: #777;
-      margin-top: 8px;
-      word-break: break-all;
-    }
-
-    .warning {
-      background: #fff3cd;
-      border: 1px solid #ffe69c;
-      padding: 12px;
-      border-radius: 10px;
-      margin-top: 16px;
-      font-size: 14px;
-      text-align: left;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Piper's Path</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#efefef;color:#222;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+header{background:#fff;text-align:center;padding:18px 12px 12px;border-bottom:1px solid #ddd}
+h1{margin:0;font-size:28px}
+#identity{margin-top:5px;font-size:17px}
+main{flex:1;width:100%;padding:20px 18px 105px;display:flex;justify-content:center;align-items:center}
+.view{display:none;width:100%;max-width:520px}.view.active{display:block}
+#recordView{text-align:center}
+#timer{font-size:58px;font-weight:700;font-variant-numeric:tabular-nums;margin:12px 0 28px}
+#recordButton{width:215px;height:215px;border-radius:50%;border:2px solid #222;background:#c92525;color:white;font-size:28px;font-weight:700;box-shadow:0 8px 20px rgba(0,0,0,.2);cursor:pointer;touch-action:manipulation}
+#recordButton.recording{background:#222}
+#recordButton.setup{font-size:21px;padding:20px}
+#status{min-height:52px;margin-top:22px;font-size:19px;line-height:1.35}
+#playbackWrap{display:none;margin:20px auto 0;max-width:420px}
+audio{width:100%}
+.card{background:white;border-radius:18px;padding:22px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.empty{color:#666;line-height:1.5;text-align:center}
+nav{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(3,1fr);background:white;border-top:1px solid #ccc;z-index:10;padding-bottom:env(safe-area-inset-bottom)}
+.navButton{min-height:82px;border:0;background:white;font-size:14px;font-weight:700;cursor:pointer}
+.navButton .icon{display:block;font-size:30px;margin-bottom:4px}
+.navButton.active{background:#e6e6e6}
+</style>
 </head>
-
 <body>
 <header>
   <h1>Piper's Path</h1>
-  <div id="identity">Loading pupil link…</div>
+  <div id="identity">Loading…</div>
 </header>
 
 <main>
   <section id="recordView" class="view active">
     <div id="timer">00:00</div>
-    <button id="recordButton" type="button">RECORD</button>
-   <div id="status">Preparing microphone…</div>
-<div id="playbackWrap">
-  <p><strong>Your recording</strong></p>
-  <audio id="playback" controls></audio>
-</div>
-</div>
+    <button id="recordButton" type="button" class="setup">ENABLE MICROPHONE</button>
+    <div id="status">Preparing microphone…</div>
+    <div id="playbackWrap">
+      <p><strong>Your recording</strong></p>
+      <audio id="playback" controls></audio>
     </div>
   </section>
 
   <section id="pathView" class="view">
     <div class="card">
       <h2>📈 Piper's Path</h2>
-      <p class="empty">
-        Your practice history, streak and milestones will appear here once the Google backend is connected.
-      </p>
+      <p class="empty">Practice history and progress will appear here next.</p>
     </div>
   </section>
 
   <section id="groupView" class="view">
     <div class="card">
       <h2>👥 Group</h2>
-      <p class="empty">
-        The Community Bagpipe will appear here once the shared daily data is connected.
-      </p>
+      <p class="empty">The Community Bagpipe will appear here next.</p>
     </div>
   </section>
 </main>
 
 <nav>
-  <button class="navButton active" data-view="recordView">
-    <span class="icon">🎙️</span>
-    RECORD
-  </button>
-  <button class="navButton" data-view="pathView">
-    <span class="icon">📈</span>
-    PATH
-  </button>
-  <button class="navButton" data-view="groupView">
-    <span class="icon">👥</span>
-    GROUP
-  </button>
+  <button class="navButton active" data-view="recordView"><span class="icon">🎙️</span>RECORD</button>
+  <button class="navButton" data-view="pathView"><span class="icon">📈</span>PATH</button>
+  <button class="navButton" data-view="groupView"><span class="icon">👥</span>GROUP</button>
 </nav>
 
 <script>
-  const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwZRT0eDd5xV_onNptruSfu6x3rvYPWBEf1kBvfC2fjXi8FWuv5V4KI0JATPoN6GGZ--Q/exec';
-  const params = new URLSearchParams(location.search);
-  const pupilId = params.get('p') || '';
-  const accessKey = params.get('key') || '';
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwZRTOeDd5xV_onNptruSfu6x3rvYPWBEf1kBvfC2fjXi8FWuv5V4KI0JATPoN6GGZ--Q/exec';
 
-  const identity = document.getElementById('identity');
-  if (pupilId && accessKey) {
-    identity.textContent = pupilId;
-  } else {
-    identity.textContent = 'Test mode — no pupil link supplied';
-  }
+const params = new URLSearchParams(location.search);
+const pupilId = (params.get('p') || '').trim();
+const accessKey = (params.get('key') || '').trim();
 
-  const navButtons = document.querySelectorAll('.navButton');
-  const views = document.querySelectorAll('.view');
+const identity = document.getElementById('identity');
+const recordButton = document.getElementById('recordButton');
+const statusEl = document.getElementById('status');
+const timerEl = document.getElementById('timer');
+const playbackWrap = document.getElementById('playbackWrap');
+const playback = document.getElementById('playback');
 
-  navButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      navButtons.forEach(b => b.classList.remove('active'));
-      views.forEach(v => v.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById(btn.dataset.view).classList.add('active');
-    });
-  });
+let mediaRecorder = null;
+let stream = null;
+let chunks = [];
+let recording = false;
+let microphoneReady = false;
+let startedAt = null;
+let stoppedAt = null;
+let timerHandle = null;
+let lastObjectUrl = null;
 
-  let mediaRecorder = null;
-  let stream = null;
-  let chunks = [];
-  let recording = false;
-  let microphoneReady = false;
-  let startedAt = null;
-  let timerHandle = null;
-  let lastObjectUrl = null;
+function formatTime(totalSeconds){
+  const minutes=Math.floor(totalSeconds/60);
+  const seconds=totalSeconds%60;
+  return String(minutes).padStart(2,'0')+':'+String(seconds).padStart(2,'0');
+}
 
-  const recordButton = document.getElementById('recordButton');
-  const statusEl = document.getElementById('status');
-  const timerEl = document.getElementById('timer');
-  const playbackWrap = document.getElementById('playbackWrap');
-  const playback = document.getElementById('playback');
+function updateTimer(){
+  if(!startedAt)return;
+  const end=stoppedAt||Date.now();
+  const elapsed=Math.floor((end-startedAt)/1000);
+  timerEl.textContent=formatTime(elapsed);
+}
 
-  function formatTime(totalSeconds) {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
-  }
-
-  function updateTimer() {
-    if (!startedAt) return;
-    const seconds = Math.floor((Date.now() - startedAt) / 1000);
-    timerEl.textContent = formatTime(seconds);
-  }
-async function initialiseMicrophone() {
-
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    statusEl.textContent =
-      'This device cannot record from the browser.';
-    recordButton.disabled = true;
+async function initialiseIdentity(){
+  if(!pupilId||!accessKey){
+    identity.textContent='Invalid pupil link';
+    recordButton.disabled=true;
+    statusEl.textContent='This pupil link is incomplete.';
     return;
   }
 
-  if (navigator.permissions && navigator.permissions.query) {
-    try {
-      const permission =
-        await navigator.permissions.query({ name: 'microphone' });
+  identity.textContent=pupilId;
 
-      if (permission.state === 'granted') {
-        microphoneReady = true;
+  try{
+    const response=await fetch(BACKEND_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'profile',pupilId,accessKey})
+    });
+
+    const result=await response.json();
+
+    if(result.ok&&result.displayName) identity.textContent=result.displayName;
+
+    if(result.ok===false&&result.error==='Pupil not recognised or inactive.'){
+      recordButton.disabled=true;
+      statusEl.textContent='This pupil link is inactive or not recognised.';
+    }
+  }catch(err){
+    console.warn('Profile lookup not available yet:',err);
+  }
+}
+
+async function initialiseMicrophone(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    statusEl.textContent='This browser cannot record from the microphone.';
+    recordButton.disabled=true;
+    return;
+  }
+
+  if(navigator.permissions&&navigator.permissions.query){
+    try{
+      const permission=await navigator.permissions.query({name:'microphone'});
+
+      if(permission.state==='granted'){
+        microphoneReady=true;
         showRecordingReady();
         return;
       }
 
-      if (permission.state === 'denied') {
+      if(permission.state==='denied'){
+        microphoneReady=false;
         showMicrophoneBlocked();
         return;
       }
-
-    } catch (err) {
-      // Some browsers do not support microphone permission queries.
-    }
+    }catch(err){}
   }
 
   showMicrophoneSetup();
 }
 
-
-function showMicrophoneSetup() {
-  microphoneReady = false;
-
-  recordButton.textContent = 'ENABLE MICROPHONE';
-
-  statusEl.textContent =
-    'Tap once to prepare recording.';
+function showMicrophoneSetup(){
+  microphoneReady=false;
+  recordButton.disabled=false;
+  recordButton.classList.add('setup');
+  recordButton.classList.remove('recording');
+  recordButton.textContent='ENABLE MICROPHONE';
+  statusEl.textContent='Tap once to prepare recording.';
 }
 
-
-function showRecordingReady() {
-  microphoneReady = true;
-
-  recordButton.textContent = 'RECORD';
-
-  statusEl.textContent =
-    'Tap RECORD to begin.';
+function showRecordingReady(){
+  microphoneReady=true;
+  recordButton.disabled=false;
+  recordButton.classList.remove('setup');
+  recordButton.classList.remove('recording');
+  recordButton.textContent='RECORD';
+  statusEl.textContent='Tap RECORD to begin.';
 }
 
-
-function showMicrophoneBlocked() {
-  microphoneReady = false;
-
-  recordButton.textContent = 'TRY AGAIN';
-
-  statusEl.textContent =
-    'Microphone access is blocked. Allow microphone access for this site, then tap TRY AGAIN.';
+function showMicrophoneBlocked(){
+  microphoneReady=false;
+  recordButton.disabled=false;
+  recordButton.classList.add('setup');
+  recordButton.classList.remove('recording');
+  recordButton.textContent='TRY AGAIN';
+  statusEl.textContent='Microphone access is blocked. Allow microphone access for this site, then tap TRY AGAIN.';
 }
 
-
-async function setupMicrophone() {
-
-  try {
-
-    statusEl.textContent =
-      'Waiting for microphone permission…';
-
-    const testStream =
-      await navigator.mediaDevices.getUserMedia({
-        audio: true
-      });
-
-    testStream
-      .getTracks()
-      .forEach(track => track.stop());
-
-    microphoneReady = true;
-
+async function setupMicrophone(){
+  try{
+    statusEl.textContent='Waiting for microphone permission…';
+    const testStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    testStream.getTracks().forEach(track=>track.stop());
+    microphoneReady=true;
     showRecordingReady();
-
-  } catch (err) {
-
-    console.error(err);
-
+  }catch(error){
+    console.error('Microphone setup error:',error);
     showMicrophoneBlocked();
-
   }
 }
-  
-  async function startRecording() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      statusEl.textContent = 'This browser does not support microphone recording.';
+
+async function startRecording(){
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    chunks=[];
+    stoppedAt=null;
+
+    let options={};
+    const preferred=['audio/webm;codecs=opus','audio/webm','audio/mp4'];
+
+    for(const type of preferred){
+      if(window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(type)){
+        options={mimeType:type};
+        break;
+      }
+    }
+
+    mediaRecorder=new MediaRecorder(stream,options);
+
+    mediaRecorder.addEventListener('dataavailable',event=>{
+      if(event.data&&event.data.size>0)chunks.push(event.data);
+    });
+
+    mediaRecorder.addEventListener('stop',async()=>{
+      const type=mediaRecorder.mimeType||'audio/webm';
+      const blob=new Blob(chunks,{type});
+
+      if(lastObjectUrl)URL.revokeObjectURL(lastObjectUrl);
+      lastObjectUrl=URL.createObjectURL(blob);
+
+      playback.src=lastObjectUrl;
+      playbackWrap.style.display='block';
+
+      if(stream){
+        stream.getTracks().forEach(track=>track.stop());
+        stream=null;
+      }
+
+      statusEl.textContent='Saving recording…';
+      await uploadRecording(blob,type);
+    });
+
+    mediaRecorder.start();
+    recording=true;
+    startedAt=Date.now();
+    stoppedAt=null;
+    timerEl.textContent='00:00';
+    playbackWrap.style.display='none';
+
+    recordButton.textContent='STOP';
+    recordButton.classList.remove('setup');
+    recordButton.classList.add('recording');
+    statusEl.textContent='Recording…';
+
+    updateTimer();
+    timerHandle=setInterval(updateTimer,500);
+
+  }catch(error){
+    console.error('Microphone error:',error);
+    recording=false;
+
+    if(error.name==='NotAllowedError'){
+      statusEl.textContent='Microphone permission is blocked.';
+      microphoneReady=false;
+      recordButton.textContent='TRY AGAIN';
+      recordButton.classList.add('setup');
+      recordButton.classList.remove('recording');
+    }else if(error.name==='NotFoundError'){
+      statusEl.textContent='No microphone was found.';
+    }else if(error.name==='NotReadableError'){
+      statusEl.textContent='The microphone is unavailable or is being used by another app.';
+    }else{
+      statusEl.textContent='Microphone error: '+(error.name||'Unknown error');
+    }
+  }
+}
+
+function stopRecording(){
+  if(!recording)return;
+
+  recording=false;
+  stoppedAt=Date.now();
+
+  if(timerHandle){
+    clearInterval(timerHandle);
+    timerHandle=null;
+  }
+
+  updateTimer();
+  recordButton.textContent='RECORD';
+  recordButton.classList.remove('recording');
+  recordButton.classList.remove('setup');
+
+  if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();
+}
+
+async function uploadRecording(blob,mimeType){
+  try{
+    if(!pupilId||!accessKey){
+      statusEl.textContent='Recording complete, but the pupil link is missing.';
       return;
     }
 
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      chunks = [];
+    const base64=await blobToBase64(blob);
+    const finalStop=stoppedAt||Date.now();
+    const durationSeconds=Math.floor((finalStop-startedAt)/1000);
 
-      let options = {};
-      const preferred = [
-        'audio/webm;codecs=opus',
-        'audio/webm',
-        'audio/mp4'
-      ];
+    const payload={
+      action:'recording',
+      pupilId,
+      accessKey,
+      audioBase64:base64,
+      mimeType,
+      startIso:new Date(startedAt).toISOString(),
+      endIso:new Date(finalStop).toISOString(),
+      durationSeconds
+    };
 
-      for (const type of preferred) {
-        if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(type)) {
-          options = { mimeType: type };
-          break;
-        }
-      }
+    const response=await fetch(BACKEND_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)
+    });
 
-      mediaRecorder = new MediaRecorder(stream, options);
+    const result=await response.json();
 
-      mediaRecorder.addEventListener('dataavailable', e => {
-        if (e.data && e.data.size > 0) chunks.push(e.data);
-      });
-
-      mediaRecorder.addEventListener('stop', () => {
-        const type = mediaRecorder.mimeType || 'audio/webm';
-        const blob = new Blob(chunks, { type });
-
-        if (lastObjectUrl) URL.revokeObjectURL(lastObjectUrl);
-        lastObjectUrl = URL.createObjectURL(blob);
-
-        playback.src = lastObjectUrl;
-        playbackWrap.style.display = 'block';
-        statusEl.textContent = 'Saving recording…';
-        uploadRecording(blob, type);
-
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-          stream = null;
-        }
-      });
-
-      mediaRecorder.start();
-      recording = true;
-      startedAt = Date.now();
-      playbackWrap.style.display = 'none';
-      timerEl.textContent = '00:00';
-      recordButton.textContent = 'STOP';
-      recordButton.classList.add('recording');
-      statusEl.textContent = 'Recording…';
-      updateTimer();
-      timerHandle = setInterval(updateTimer, 500);
-
-    } catch (error) {
-
-  console.error('Microphone error:', error);
-
-  if (error.name === 'NotAllowedError') {
-    statusEl.textContent =
-      'Microphone permission is blocked.';
-  }
-
-  else if (error.name === 'NotFoundError') {
-    statusEl.textContent =
-      'No microphone was found.';
-  }
-
-  else if (error.name === 'NotReadableError') {
-    statusEl.textContent =
-      'The microphone is unavailable or being used by another app.';
-  }
-
-  else {
-    statusEl.textContent =
-      'Microphone error: ' + error.name;
-  }
-
-}
-
-function stopRecording() {
-
-  if (!recording) return;
-
-  recording = false;
-
-  const stoppedAt = Date.now();
-
-  if (timerHandle) {
-    clearInterval(timerHandle);
-    timerHandle = null;
-  }
-
-  const elapsedSeconds =
-    Math.floor((stoppedAt - startedAt) / 1000);
-
-  timerEl.textContent = formatTime(elapsedSeconds);
-
-  recordButton.textContent = 'RECORD';
-  recordButton.classList.remove('recording');
-
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    mediaRecorder.stop();
-  }
-
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
-    stream = null;
+    if(result.ok){
+      statusEl.textContent=result.qualifying==='Yes'?'Practice saved ✓':'Recording saved ✓';
+    }else{
+      statusEl.textContent='Could not save: '+(result.error||'Unknown error');
+    }
+  }catch(error){
+    console.error('Upload error:',error);
+    statusEl.textContent='Recording made, but the upload could not be confirmed.';
   }
 }
 
-  recordButton.addEventListener('click', async () => {
+function blobToBase64(blob){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onloadend=()=>{
+      const dataUrl=reader.result;
+      resolve(dataUrl.split(',')[1]);
+    };
+    reader.onerror=reject;
+    reader.readAsDataURL(blob);
+  });
+}
 
-  if (!microphoneReady) {
+recordButton.addEventListener('click',async()=>{
+  if(!microphoneReady){
     await setupMicrophone();
     return;
   }
 
-  if (recording) {
-    stopRecording();
-  } else {
-    startRecording();
-  }
-
+  if(recording) stopRecording();
+  else await startRecording();
 });
-  if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(registrations => {
-    registrations.forEach(registration => registration.unregister());
+
+document.querySelectorAll('.navButton').forEach(button=>{
+  button.addEventListener('click',()=>{
+    document.querySelectorAll('.navButton').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    button.classList.add('active');
+    document.getElementById(button.dataset.view).classList.add('active');
   });
-}
-  }async function uploadRecording(blob, mimeType) {
-  try {
-    if (!pupilId || !accessKey) {
-      statusEl.textContent =
-        'Recording complete, but no pupil link was supplied.';
-      return;
-    }
+});
 
-    const base64 = await blobToBase64(blob);
-
-    const endTime = new Date();
-    const durationSeconds =
-     Math.floor((endTime.getTime() - startedAt) / 1000);
-
-    const payload = {
-      pupilId: pupilId,
-      accessKey: accessKey,
-      audioBase64: base64,
-      mimeType: mimeType,
-      startIso: new Date(startedAt).toISOString(),
-      endIso: endTime.toISOString(),
-      durationSeconds: durationSeconds
-    };
-
-    const response = await fetch(BACKEND_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json();
-
-    if (result.ok) {
-      statusEl.textContent =
-        result.qualifying === 'Yes'
-          ? 'Practice saved ✓'
-          : 'Recording saved ✓';
-    } else {
-      statusEl.textContent =
-        'Could not save: ' + result.error;
-    }
-
-  } catch (err) {
-    console.error(err);
-
-    statusEl.textContent =
-      'Recording made, but the upload could not be confirmed.';
-  }
-}
-
-
-function blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onloadend = () => {
-      const dataUrl = reader.result;
-      const base64 = dataUrl.split(',')[1];
-      resolve(base64);
-    };
-
-    reader.onerror = reject;
-
-    reader.readAsDataURL(blob);
-  });
-}initialiseMicrophone();
-  
+// Deliberately no service worker during development.
+initialiseIdentity();
+initialiseMicrophone();
 </script>
 </body>
 </html>
