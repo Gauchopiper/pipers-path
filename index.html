@@ -3,410 +3,55 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#ffffff">
 <title>Piper's Path</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#efefef;color:#222;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
-header{background:#fff;text-align:center;padding:18px 12px 12px;border-bottom:1px solid #ddd}
-h1{margin:0;font-size:28px}
-#identity{margin-top:5px;font-size:17px}
-main{flex:1;width:100%;padding:20px 18px 105px;display:flex;justify-content:center;align-items:center}
-.view{display:none;width:100%;max-width:520px}.view.active{display:block}
-#recordView{text-align:center}
-#timer{font-size:58px;font-weight:700;font-variant-numeric:tabular-nums;margin:12px 0 28px}
-#recordButton{width:215px;height:215px;border-radius:50%;border:2px solid #222;background:#c92525;color:white;font-size:28px;font-weight:700;box-shadow:0 8px 20px rgba(0,0,0,.2);cursor:pointer;touch-action:manipulation}
-#recordButton.recording{background:#222}
-#recordButton.setup{font-size:21px;padding:20px}
-#status{min-height:52px;margin-top:22px;font-size:19px;line-height:1.35}
-#playbackWrap{display:none;margin:20px auto 0;max-width:420px}
-audio{width:100%}
-.card{background:white;border-radius:18px;padding:22px;box-shadow:0 4px 16px rgba(0,0,0,.08)}
-.empty{color:#666;line-height:1.5;text-align:center}
-nav{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(3,1fr);background:white;border-top:1px solid #ccc;z-index:10;padding-bottom:env(safe-area-inset-bottom)}
-.navButton{min-height:82px;border:0;background:white;font-size:14px;font-weight:700;cursor:pointer}
-.navButton .icon{display:block;font-size:30px;margin-bottom:4px}
-.navButton.active{background:#e6e6e6}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#efefef;color:#222;min-height:100vh;display:flex;flex-direction:column}header{background:#fff;text-align:center;padding:18px 12px 12px;border-bottom:1px solid #ddd}h1{margin:0;font-size:28px}#identity{margin-top:5px;font-size:17px}main{flex:1;width:100%;padding:20px 18px 105px;display:flex;align-items:center;justify-content:center}.view{display:none;width:100%;max-width:520px}.view.active{display:block}#recordView{text-align:center}#timer{font-size:58px;font-weight:700;font-variant-numeric:tabular-nums;margin:12px 0 28px}#recordButton{width:215px;height:215px;border-radius:50%;border:2px solid #222;background:#c92525;color:#fff;font-size:28px;font-weight:700;box-shadow:0 8px 20px rgba(0,0,0,.2);cursor:pointer}#recordButton.recording{background:#222}#recordButton.setup{font-size:21px;padding:18px}#recordButton:disabled{opacity:.55}#status{min-height:52px;margin-top:22px;font-size:19px;line-height:1.35}#playbackWrap{display:none;margin:20px auto 0;max-width:420px}audio{width:100%}.card{background:#fff;border-radius:18px;padding:22px;box-shadow:0 4px 16px rgba(0,0,0,.08)}.empty{color:#666;line-height:1.5;text-align:center}nav{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(3,1fr);background:#fff;border-top:1px solid #ccc;z-index:10}.navButton{min-height:82px;border:0;background:#fff;font-size:14px;font-weight:700}.navButton .icon{display:block;font-size:30px;margin-bottom:4px}.navButton.active{background:#e6e6e6}
 </style>
 </head>
 <body>
-<header>
-  <h1>Piper's Path</h1>
-  <div id="identity">Loading…</div>
-</header>
-
+<header><h1>Piper's Path</h1><div id="identity">Loading pupil…</div></header>
 <main>
-  <section id="recordView" class="view active">
-    <div id="timer">00:00</div>
-    <button id="recordButton" type="button" class="setup">ENABLE MICROPHONE</button>
-    <div id="status">Preparing microphone…</div>
-    <div id="playbackWrap">
-      <p><strong>Your recording</strong></p>
-      <audio id="playback" controls></audio>
-    </div>
-  </section>
-
-  <section id="pathView" class="view">
-    <div class="card">
-      <h2>📈 Piper's Path</h2>
-      <p class="empty">Practice history and progress will appear here next.</p>
-    </div>
-  </section>
-
-  <section id="groupView" class="view">
-    <div class="card">
-      <h2>👥 Group</h2>
-      <p class="empty">The Community Bagpipe will appear here next.</p>
-    </div>
-  </section>
+<section id="recordView" class="view active">
+<div id="timer">00:00</div>
+<button id="recordButton" type="button" class="setup" disabled>ENABLE MICROPHONE</button>
+<div id="status">Checking pupil link…</div>
+<div id="playbackWrap"><p><strong>Your recording</strong></p><audio id="playback" controls></audio></div>
+</section>
+<section id="pathView" class="view"><div class="card"><h2>📈 Piper's Path</h2><p class="empty">Practice history and progress will appear here next.</p></div></section>
+<section id="groupView" class="view"><div class="card"><h2>👥 Group</h2><p class="empty">The Community Bagpipe will appear here next.</p></div></section>
 </main>
-
 <nav>
-  <button class="navButton active" data-view="recordView"><span class="icon">🎙️</span>RECORD</button>
-  <button class="navButton" data-view="pathView"><span class="icon">📈</span>PATH</button>
-  <button class="navButton" data-view="groupView"><span class="icon">👥</span>GROUP</button>
+<button class="navButton active" data-view="recordView"><span class="icon">🎙️</span>RECORD</button>
+<button class="navButton" data-view="pathView"><span class="icon">📈</span>PATH</button>
+<button class="navButton" data-view="groupView"><span class="icon">👥</span>GROUP</button>
 </nav>
-
+<iframe id="profileFrame" name="profileFrame" style="display:none"></iframe>
+<iframe id="uploadFrame" name="uploadFrame" style="display:none"></iframe>
+<form id="uploadForm" method="post" target="uploadFrame" action="https://script.google.com/macros/s/AKfycbwZRTOeDd5xV_onNptruSfu6x3rvYPWBEf1kBvfC2fjXi8FWuv5V4KI0JATPoN6GGZ--Q/exec" style="display:none">
+<input type="hidden" name="transport" value="form"><input type="hidden" name="action" value="recording">
+<input type="hidden" id="formPupilId" name="pupilId"><input type="hidden" id="formAccessKey" name="accessKey"><input type="hidden" id="formMimeType" name="mimeType"><input type="hidden" id="formStartIso" name="startIso"><input type="hidden" id="formEndIso" name="endIso"><input type="hidden" id="formDurationSeconds" name="durationSeconds"><textarea id="formAudioBase64" name="audioBase64"></textarea>
+</form>
 <script>
-const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwZRTOeDd5xV_onNptruSfu6x3rvYPWBEf1kBvfC2fjXi8FWuv5V4KI0JATPoN6GGZ--Q/exec';
-
-const params = new URLSearchParams(location.search);
-const pupilId = (params.get('p') || '').trim();
-const accessKey = (params.get('key') || '').trim();
-
-const identity = document.getElementById('identity');
-const recordButton = document.getElementById('recordButton');
-const statusEl = document.getElementById('status');
-const timerEl = document.getElementById('timer');
-const playbackWrap = document.getElementById('playbackWrap');
-const playback = document.getElementById('playback');
-
-let mediaRecorder = null;
-let stream = null;
-let chunks = [];
-let recording = false;
-let microphoneReady = false;
-let startedAt = null;
-let stoppedAt = null;
-let timerHandle = null;
-let lastObjectUrl = null;
-
-function formatTime(totalSeconds){
-  const minutes=Math.floor(totalSeconds/60);
-  const seconds=totalSeconds%60;
-  return String(minutes).padStart(2,'0')+':'+String(seconds).padStart(2,'0');
-}
-
-function updateTimer(){
-  if(!startedAt)return;
-  const end=stoppedAt||Date.now();
-  const elapsed=Math.floor((end-startedAt)/1000);
-  timerEl.textContent=formatTime(elapsed);
-}
-
-async function initialiseIdentity(){
-  if(!pupilId||!accessKey){
-    identity.textContent='Invalid pupil link';
-    recordButton.disabled=true;
-    statusEl.textContent='This pupil link is incomplete.';
-    return;
-  }
-
-  identity.textContent=pupilId;
-
-  try{
-    const response=await fetch(BACKEND_URL,{
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({action:'profile',pupilId,accessKey})
-    });
-
-    const result=await response.json();
-
-    if(result.ok&&result.displayName) identity.textContent=result.displayName;
-
-    if(result.ok===false&&result.error==='Pupil not recognised or inactive.'){
-      recordButton.disabled=true;
-      statusEl.textContent='This pupil link is inactive or not recognised.';
-    }
-  }catch(err){
-    console.warn('Profile lookup not available yet:',err);
-  }
-}
-
-async function initialiseMicrophone(){
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    statusEl.textContent='This browser cannot record from the microphone.';
-    recordButton.disabled=true;
-    return;
-  }
-
-  if(navigator.permissions&&navigator.permissions.query){
-    try{
-      const permission=await navigator.permissions.query({name:'microphone'});
-
-      if (permission.state === 'granted') {
-  try {
-    const testStream =
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-
-    testStream
-      .getTracks()
-      .forEach(track => track.stop());
-
-    microphoneReady = true;
-    showRecordingReady();
-
-  } catch (error) {
-    console.error('Microphone verification failed:', error);
-    microphoneReady = false;
-
-    if (error.name === 'NotReadableError') {
-      statusEl.textContent =
-        'The microphone is unavailable or is being used by another app.';
-    } else if (error.name === 'NotFoundError') {
-      statusEl.textContent =
-        'No microphone was found.';
-    } else {
-      statusEl.textContent =
-        'Microphone could not be opened.';
-    }
-
-    recordButton.textContent = 'TRY AGAIN';
-    recordButton.classList.add('setup');
-  }
-
-  return;
-}
-
-      if(permission.state==='denied'){
-        microphoneReady=false;
-        showMicrophoneBlocked();
-        return;
-      }
-    }catch(err){}
-  }
-
-  showMicrophoneSetup();
-}
-
-function showMicrophoneSetup(){
-  microphoneReady=false;
-  recordButton.disabled=false;
-  recordButton.classList.add('setup');
-  recordButton.classList.remove('recording');
-  recordButton.textContent='ENABLE MICROPHONE';
-  statusEl.textContent='Tap once to prepare recording.';
-}
-
-function showRecordingReady(){
-  microphoneReady=true;
-  recordButton.disabled=false;
-  recordButton.classList.remove('setup');
-  recordButton.classList.remove('recording');
-  recordButton.textContent='RECORD';
-  statusEl.textContent='Tap RECORD to begin.';
-}
-
-function showMicrophoneBlocked(){
-  microphoneReady=false;
-  recordButton.disabled=false;
-  recordButton.classList.add('setup');
-  recordButton.classList.remove('recording');
-  recordButton.textContent='TRY AGAIN';
-  statusEl.textContent='Microphone access is blocked. Allow microphone access for this site, then tap TRY AGAIN.';
-}
-
-async function setupMicrophone(){
-  try{
-    statusEl.textContent='Waiting for microphone permission…';
-    const testStream=await navigator.mediaDevices.getUserMedia({audio:true});
-    testStream.getTracks().forEach(track=>track.stop());
-    microphoneReady=true;
-    showRecordingReady();
-  }catch(error){
-    console.error('Microphone setup error:',error);
-    showMicrophoneBlocked();
-  }
-}
-
-async function startRecording(){
-  try{
-
-    statusEl.textContent = 'Opening microphone…';
-
-    stream = await navigator.mediaDevices.getUserMedia({
-      audio: true
-    });
-    chunks=[];
-    stoppedAt=null;
-
-    let options={};
-    const preferred=['audio/webm;codecs=opus','audio/webm','audio/mp4'];
-
-    for(const type of preferred){
-      if(window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(type)){
-        options={mimeType:type};
-        break;
-      }
-    }
-
-    mediaRecorder=new MediaRecorder(stream,options);
-
-    mediaRecorder.addEventListener('dataavailable',event=>{
-      if(event.data&&event.data.size>0)chunks.push(event.data);
-    });
-
-    mediaRecorder.addEventListener('stop',async()=>{
-      const type=mediaRecorder.mimeType||'audio/webm';
-      const blob=new Blob(chunks,{type});
-
-      if(lastObjectUrl)URL.revokeObjectURL(lastObjectUrl);
-      lastObjectUrl=URL.createObjectURL(blob);
-
-      playback.src=lastObjectUrl;
-      playbackWrap.style.display='block';
-
-      if(stream){
-        stream.getTracks().forEach(track=>track.stop());
-        stream=null;
-      }
-
-      statusEl.textContent='Saving recording…';
-      await uploadRecording(blob,type);
-    });
-
-    mediaRecorder.start();
-    recording=true;
-    startedAt=Date.now();
-    stoppedAt=null;
-    timerEl.textContent='00:00';
-    playbackWrap.style.display='none';
-
-    recordButton.textContent='STOP';
-    recordButton.classList.remove('setup');
-    recordButton.classList.add('recording');
-    statusEl.textContent='Recording…';
-
-    updateTimer();
-    timerHandle=setInterval(updateTimer,500);
-
-  }catch(error){
-    console.error('Microphone error:',error);
-    recording=false;
-
-    if(error.name==='NotAllowedError'){
-      statusEl.textContent='Microphone permission is blocked.';
-      microphoneReady=false;
-      recordButton.textContent='TRY AGAIN';
-      recordButton.classList.add('setup');
-      recordButton.classList.remove('recording');
-    }else if(error.name==='NotFoundError'){
-      statusEl.textContent='No microphone was found.';
-    }else if(error.name==='NotReadableError'){
-      statusEl.textContent='The microphone is unavailable or is being used by another app.';
-    }else{
-      statusEl.textContent='Microphone error: '+(error.name||'Unknown error');
-    }
-  }
-}
-
-function stopRecording(){
-  if(!recording)return;
-
-  recording=false;
-  stoppedAt=Date.now();
-
-  if(timerHandle){
-    clearInterval(timerHandle);
-    timerHandle=null;
-  }
-
-  updateTimer();
-  recordButton.textContent='RECORD';
-  recordButton.classList.remove('recording');
-  recordButton.classList.remove('setup');
-
-  if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();
-}
-
-async function uploadRecording(blob,mimeType){
-  try{
-    if(!pupilId||!accessKey){
-      statusEl.textContent='Recording complete, but the pupil link is missing.';
-      return;
-    }
-
-    const base64=await blobToBase64(blob);
-    const finalStop=stoppedAt||Date.now();
-    const durationSeconds=Math.floor((finalStop-startedAt)/1000);
-
-    const payload={
-      action:'recording',
-      pupilId,
-      accessKey,
-      audioBase64:base64,
-      mimeType,
-      startIso:new Date(startedAt).toISOString(),
-      endIso:new Date(finalStop).toISOString(),
-      durationSeconds
-    };
-
-  await fetch(BACKEND_URL,{
-  method:'POST',
-  mode:'no-cors',
-  headers:{
-    'Content-Type':'text/plain;charset=utf-8'
-  },
-  body:JSON.stringify(payload)
-});
-
-statusEl.textContent='Recording sent ✓';
-  } catch(error){
-  console.error('Upload error:', error);
-
-  statusEl.textContent =
-    'Upload error: ' +
-    (error.name || 'Error') +
-    ' — ' +
-    (error.message || String(error));
-}
-}
-
-function blobToBase64(blob){
-  return new Promise((resolve,reject)=>{
-    const reader=new FileReader();
-    reader.onloadend=()=>{
-      const dataUrl=reader.result;
-      resolve(dataUrl.split(',')[1]);
-    };
-    reader.onerror=reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
-recordButton.addEventListener('click',async()=>{
-  if(!microphoneReady){
-    await setupMicrophone();
-    return;
-  }
-
-  if(recording) stopRecording();
-  else await startRecording();
-});
-
-document.querySelectorAll('.navButton').forEach(button=>{
-  button.addEventListener('click',()=>{
-    document.querySelectorAll('.navButton').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-    button.classList.add('active');
-    document.getElementById(button.dataset.view).classList.add('active');
-  });
-});
-
-// Deliberately no service worker during development.
-initialiseIdentity();
-initialiseMicrophone();
+const BACKEND_URL='https://script.google.com/macros/s/AKfycbwZRTOeDd5xV_onNptruSfu6x3rvYPWBEf1kBvfC2fjXi8FWuv5V4KI0JATPoN6GGZ--Q/exec';
+const params=new URLSearchParams(location.search);const pupilId=(params.get('p')||'').trim();const accessKey=(params.get('key')||'').trim();
+const identity=document.getElementById('identity'),recordButton=document.getElementById('recordButton'),statusEl=document.getElementById('status'),timerEl=document.getElementById('timer'),playbackWrap=document.getElementById('playbackWrap'),playback=document.getElementById('playback'),profileFrame=document.getElementById('profileFrame'),uploadForm=document.getElementById('uploadForm');
+let mediaRecorder=null,stream=null,chunks=[],recording=false,microphoneReady=false,pupilValidated=false,startedAt=null,stoppedAt=null,timerHandle=null,lastObjectUrl=null,uploadPending=false;
+function formatTime(s){const m=Math.floor(s/60),r=s%60;return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
+function updateTimer(){if(!startedAt)return;const end=stoppedAt||Date.now();timerEl.textContent=formatTime(Math.floor((end-startedAt)/1000))}
+function requestProfile(){if(!pupilId||!accessKey){identity.textContent='Invalid pupil link';statusEl.textContent='This pupil link is incomplete.';recordButton.disabled=true;return}const url=new URL(BACKEND_URL);url.searchParams.set('action','profile');url.searchParams.set('p',pupilId);url.searchParams.set('key',accessKey);url.searchParams.set('transport','iframe');url.searchParams.set('_',Date.now().toString());profileFrame.src=url.toString()}
+window.addEventListener('message',event=>{const data=event.data;if(!data||data.source!=='pipers-path-backend')return;if(data.type==='profile-result'){if(!data.ok){pupilValidated=false;identity.textContent=pupilId||'Unknown pupil';statusEl.textContent=data.error||'This pupil link is not recognised.';recordButton.disabled=true;return}pupilValidated=true;identity.textContent=data.displayName||pupilId;initialiseMicrophone();return}if(data.type==='upload-result'){uploadPending=false;statusEl.textContent=data.ok?(data.qualifying==='Yes'?'Practice saved ✓':'Recording saved ✓'):'Could not save: '+(data.error||'Unknown error')}});
+async function initialiseMicrophone(){if(!pupilValidated)return;if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){statusEl.textContent='This browser cannot record from the microphone.';recordButton.disabled=true;return}if(navigator.permissions&&navigator.permissions.query){try{const permission=await navigator.permissions.query({name:'microphone'});if(permission.state==='granted'){microphoneReady=true;showRecordingReady();return}if(permission.state==='denied'){showMicrophoneBlocked();return}}catch(e){}}showMicrophoneSetup()}
+function showMicrophoneSetup(){microphoneReady=false;recordButton.disabled=false;recordButton.textContent='ENABLE MICROPHONE';recordButton.classList.add('setup');recordButton.classList.remove('recording');statusEl.textContent='Tap once to prepare recording.'}
+function showRecordingReady(){microphoneReady=true;recordButton.disabled=false;recordButton.textContent='RECORD';recordButton.classList.remove('setup');recordButton.classList.remove('recording');statusEl.textContent='Tap RECORD to begin.'}
+function showMicrophoneBlocked(){microphoneReady=false;recordButton.disabled=false;recordButton.textContent='TRY AGAIN';recordButton.classList.add('setup');recordButton.classList.remove('recording');statusEl.textContent='Microphone access is blocked. Allow microphone access for this site, then tap TRY AGAIN.'}
+async function setupMicrophone(){try{statusEl.textContent='Waiting for microphone permission…';const testStream=await navigator.mediaDevices.getUserMedia({audio:true});testStream.getTracks().forEach(t=>t.stop());microphoneReady=true;showRecordingReady()}catch(error){console.error(error);showMicrophoneBlocked()}}
+async function startRecording(){try{statusEl.textContent='Opening microphone…';stream=await navigator.mediaDevices.getUserMedia({audio:true});chunks=[];stoppedAt=null;let options={};for(const type of ['audio/webm;codecs=opus','audio/webm','audio/mp4']){if(window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(type)){options={mimeType:type};break}}mediaRecorder=new MediaRecorder(stream,options);mediaRecorder.addEventListener('dataavailable',e=>{if(e.data&&e.data.size>0)chunks.push(e.data)});mediaRecorder.addEventListener('stop',async()=>{const type=mediaRecorder.mimeType||'audio/webm';const blob=new Blob(chunks,{type});if(lastObjectUrl)URL.revokeObjectURL(lastObjectUrl);lastObjectUrl=URL.createObjectURL(blob);playback.src=lastObjectUrl;playbackWrap.style.display='block';if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}await sendRecordingByForm(blob,type)});mediaRecorder.start();recording=true;startedAt=Date.now();stoppedAt=null;timerEl.textContent='00:00';playbackWrap.style.display='none';recordButton.textContent='STOP';recordButton.classList.remove('setup');recordButton.classList.add('recording');statusEl.textContent='Recording…';updateTimer();timerHandle=setInterval(updateTimer,500)}catch(error){console.error(error);recording=false;if(error.name==='NotAllowedError'){microphoneReady=false;showMicrophoneBlocked()}else if(error.name==='NotFoundError'){statusEl.textContent='No microphone was found.'}else if(error.name==='NotReadableError'){statusEl.textContent='The microphone is unavailable or is being used by another app.'}else{statusEl.textContent='Microphone error: '+(error.name||'Unknown error')}}}
+function stopRecording(){if(!recording)return;recording=false;stoppedAt=Date.now();if(timerHandle){clearInterval(timerHandle);timerHandle=null}updateTimer();recordButton.textContent='RECORD';recordButton.classList.remove('recording');if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop()}
+async function sendRecordingByForm(blob,mimeType){try{statusEl.textContent='Saving recording…';uploadPending=true;const base64=await blobToBase64(blob);const finalStop=stoppedAt||Date.now();const durationSeconds=Math.floor((finalStop-startedAt)/1000);document.getElementById('formPupilId').value=pupilId;document.getElementById('formAccessKey').value=accessKey;document.getElementById('formMimeType').value=mimeType;document.getElementById('formStartIso').value=new Date(startedAt).toISOString();document.getElementById('formEndIso').value=new Date(finalStop).toISOString();document.getElementById('formDurationSeconds').value=String(durationSeconds);document.getElementById('formAudioBase64').value=base64;uploadForm.submit();setTimeout(()=>{if(uploadPending)statusEl.textContent='Still saving…'},10000)}catch(error){uploadPending=false;console.error(error);statusEl.textContent='Could not prepare the recording for upload.'}}
+function blobToBase64(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onloadend=()=>resolve(reader.result.split(',')[1]);reader.onerror=reject;reader.readAsDataURL(blob)})}
+recordButton.addEventListener('click',async()=>{if(!pupilValidated)return;if(!microphoneReady){await setupMicrophone();return}if(recording)stopRecording();else await startRecording()});
+document.querySelectorAll('.navButton').forEach(button=>button.addEventListener('click',()=>{document.querySelectorAll('.navButton').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));button.classList.add('active');document.getElementById(button.dataset.view).classList.add('active')}));
+requestProfile();
 </script>
 </body>
 </html>
