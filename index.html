@@ -145,11 +145,39 @@ async function initialiseMicrophone(){
     try{
       const permission=await navigator.permissions.query({name:'microphone'});
 
-      if(permission.state==='granted'){
-        microphoneReady=true;
-        showRecordingReady();
-        return;
-      }
+      if (permission.state === 'granted') {
+  try {
+    const testStream =
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    testStream
+      .getTracks()
+      .forEach(track => track.stop());
+
+    microphoneReady = true;
+    showRecordingReady();
+
+  } catch (error) {
+    console.error('Microphone verification failed:', error);
+    microphoneReady = false;
+
+    if (error.name === 'NotReadableError') {
+      statusEl.textContent =
+        'The microphone is unavailable or is being used by another app.';
+    } else if (error.name === 'NotFoundError') {
+      statusEl.textContent =
+        'No microphone was found.';
+    } else {
+      statusEl.textContent =
+        'Microphone could not be opened.';
+    }
+
+    recordButton.textContent = 'TRY AGAIN';
+    recordButton.classList.add('setup');
+  }
+
+  return;
+}
 
       if(permission.state==='denied'){
         microphoneReady=false;
