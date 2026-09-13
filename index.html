@@ -469,9 +469,10 @@ function stopRecording() {
 
 });
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js').catch(console.error);
-    });
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(registration => registration.unregister());
+  });
+}
   }async function uploadRecording(blob, mimeType) {
   try {
     if (!pupilId || !accessKey) {
