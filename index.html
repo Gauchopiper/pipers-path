@@ -365,10 +365,15 @@ async function uploadRecording(blob,mimeType){
     }else{
       statusEl.textContent='Could not save: '+(result.error||'Unknown error');
     }
-  }catch(error){
-    console.error('Upload error:',error);
-    statusEl.textContent='Recording made, but the upload could not be confirmed.';
-  }
+  } catch(error){
+  console.error('Upload error:', error);
+
+  statusEl.textContent =
+    'Upload error: ' +
+    (error.name || 'Error') +
+    ' — ' +
+    (error.message || String(error));
+}
 }
 
 function blobToBase64(blob){
