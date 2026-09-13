@@ -34,11 +34,22 @@
 <script>
 const BACKEND_URL='https://script.google.com/macros/s/AKfycbwZRTOeDd5xV_onNptruSfu6x3rvYPWBEf1kBvfC2fjXi8FWuv5V4KI0JATPoN6GGZ--Q/exec';
 const params=new URLSearchParams(location.search);const pupilId=(params.get('p')||'').trim();const accessKey=(params.get('key')||'').trim();
+const displayName = (params.get('n') || pupilId).trim();
+const preferredLanguage = (params.get('lang') || 'ES').trim().toUpperCase();  
 const identity=document.getElementById('identity'),recordButton=document.getElementById('recordButton'),statusEl=document.getElementById('status'),timerEl=document.getElementById('timer'),playbackWrap=document.getElementById('playbackWrap'),playback=document.getElementById('playback'),profileFrame=document.getElementById('profileFrame'),uploadForm=document.getElementById('uploadForm');
 let mediaRecorder=null,stream=null,chunks=[],recording=false,microphoneReady=false,pupilValidated=false,startedAt=null,stoppedAt=null,timerHandle=null,lastObjectUrl=null,uploadPending=false;
-function formatTime(s){const m=Math.floor(s/60),r=s%60;return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
+if (!pupilId || !accessKey) {
+  identity.textContent = 'Invalid pupil link';
+  statusEl.textContent = 'This pupil link is incomplete.';
+  recordButton.disabled = true;
+} else {
+  identity.textContent = displayName;
+  pupilValidated = true;
+  initialiseMicrophone();
+}
+  function formatTime(s){const m=Math.floor(s/60),r=s%60;return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0')}
 function updateTimer(){if(!startedAt)return;const end=stoppedAt||Date.now();timerEl.textContent=formatTime(Math.floor((end-startedAt)/1000))}
-function requestProfile(){if(!pupilId||!accessKey){identity.textContent='Invalid pupil link';statusEl.textContent='This pupil link is incomplete.';recordButton.disabled=true;return}const url=new URL(BACKEND_URL);url.searchParams.set('action','profile');url.searchParams.set('p',pupilId);url.searchParams.set('key',accessKey);url.searchParams.set('transport','iframe');url.searchParams.set('_',Date.now().toString());profileFrame.src=url.toString()}
+function {if(!pupilId||!accessKey){identity.textContent='Invalid pupil link';statusEl.textContent='This pupil link is incomplete.';recordButton.disabled=true;return}const url=new URL(BACKEND_URL);url.searchParams.set('action','profile');url.searchParams.set('p',pupilId);url.searchParams.set('key',accessKey);url.searchParams.set('transport','iframe');url.searchParams.set('_',Date.now().toString());profileFrame.src=url.toString()}
 window.addEventListener('message',event=>{const data=event.data;if(!data||data.source!=='pipers-path-backend')return;if(data.type==='profile-result'){if(!data.ok){pupilValidated=false;identity.textContent=pupilId||'Unknown pupil';statusEl.textContent=data.error||'This pupil link is not recognised.';recordButton.disabled=true;return}pupilValidated=true;identity.textContent=data.displayName||pupilId;initialiseMicrophone();return}if(data.type==='upload-result'){uploadPending=false;statusEl.textContent=data.ok?(data.qualifying==='Yes'?'Practice saved ✓':'Recording saved ✓'):'Could not save: '+(data.error||'Unknown error')}});
 async function initialiseMicrophone(){if(!pupilValidated)return;if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){statusEl.textContent='This browser cannot record from the microphone.';recordButton.disabled=true;return}if(navigator.permissions&&navigator.permissions.query){try{const permission=await navigator.permissions.query({name:'microphone'});if(permission.state==='granted'){microphoneReady=true;showRecordingReady();return}if(permission.state==='denied'){showMicrophoneBlocked();return}}catch(e){}}showMicrophoneSetup()}
 function showMicrophoneSetup(){microphoneReady=false;recordButton.disabled=false;recordButton.textContent='ENABLE MICROPHONE';recordButton.classList.add('setup');recordButton.classList.remove('recording');statusEl.textContent='Tap once to prepare recording.'}
