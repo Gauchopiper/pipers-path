@@ -232,7 +232,12 @@ async function setupMicrophone(){
 
 async function startRecording(){
   try{
-    stream=await navigator.mediaDevices.getUserMedia({audio:true});
+
+    statusEl.textContent = 'Opening microphone…';
+
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: true
+    });
     chunks=[];
     stoppedAt=null;
 
