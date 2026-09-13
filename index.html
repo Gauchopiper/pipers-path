@@ -352,19 +352,16 @@ async function uploadRecording(blob,mimeType){
       durationSeconds
     };
 
-    const response=await fetch(BACKEND_URL,{
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify(payload)
-    });
+  await fetch(BACKEND_URL,{
+  method:'POST',
+  mode:'no-cors',
+  headers:{
+    'Content-Type':'text/plain;charset=utf-8'
+  },
+  body:JSON.stringify(payload)
+});
 
-    const result=await response.json();
-
-    if(result.ok){
-      statusEl.textContent=result.qualifying==='Yes'?'Practice saved ✓':'Recording saved ✓';
-    }else{
-      statusEl.textContent='Could not save: '+(result.error||'Unknown error');
-    }
+statusEl.textContent='Recording sent ✓';
   } catch(error){
   console.error('Upload error:', error);
 
