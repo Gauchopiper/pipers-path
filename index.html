@@ -151,7 +151,7 @@
   <section id="recordView" class="view active">
     <div id="timer">00:00</div>
     <button id="recordButton" type="button">RECORD</button>
-    <div id="status">Tap RECORD to begin</div>
+   <div id="status">Preparing microphone…</div>
 <div id="playbackWrap">
   <p><strong>Your recording</strong></p>
   <audio id="playback" controls></audio>
@@ -223,6 +223,7 @@
   let stream = null;
   let chunks = [];
   let recording = false;
+  let microphoneReady = false;
   let startedAt = null;
   let timerHandle = null;
   let lastObjectUrl = null;
@@ -244,7 +245,99 @@
     const seconds = Math.floor((Date.now() - startedAt) / 1000);
     timerEl.textContent = formatTime(seconds);
   }
+async function initialiseMicrophone() {
 
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    statusEl.textContent =
+      'This device cannot record from the browser.';
+    recordButton.disabled = true;
+    return;
+  }
+
+  if (navigator.permissions && navigator.permissions.query) {
+    try {
+      const permission =
+        await navigator.permissions.query({ name: 'microphone' });
+
+      if (permission.state === 'granted') {
+        microphoneReady = true;
+        showRecordingReady();
+        return;
+      }
+
+      if (permission.state === 'denied') {
+        showMicrophoneBlocked();
+        return;
+      }
+
+    } catch (err) {
+      // Some browsers do not support microphone permission queries.
+    }
+  }
+
+  showMicrophoneSetup();
+}
+
+
+function showMicrophoneSetup() {
+  microphoneReady = false;
+
+  recordButton.textContent = 'ENABLE MICROPHONE';
+
+  statusEl.textContent =
+    'Tap once to prepare recording.';
+}
+
+
+function showRecordingReady() {
+  microphoneReady = true;
+
+  recordButton.textContent = 'RECORD';
+
+  statusEl.textContent =
+    'Tap RECORD to begin.';
+}
+
+
+function showMicrophoneBlocked() {
+  microphoneReady = false;
+
+  recordButton.textContent = 'TRY AGAIN';
+
+  statusEl.textContent =
+    'Microphone access is blocked. Allow microphone access for this site, then tap TRY AGAIN.';
+}
+
+
+async function setupMicrophone() {
+
+  try {
+
+    statusEl.textContent =
+      'Waiting for microphone permission…';
+
+    const testStream =
+      await navigator.mediaDevices.getUserMedia({
+        audio: true
+      });
+
+    testStream
+      .getTracks()
+      .forEach(track => track.stop());
+
+    microphoneReady = true;
+
+    showRecordingReady();
+
+  } catch (err) {
+
+    console.error(err);
+
+    showMicrophoneBlocked();
+
+  }
+}
+  
   async function startRecording() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       statusEl.textContent = 'This browser does not support microphone recording.';
@@ -347,11 +440,20 @@ function stopRecording() {
   }
 }
 
-  recordButton.addEventListener('click', () => {
-    if (recording) stopRecording();
-    else startRecording();
-  });
+  recordButton.addEventListener('click', async () => {
 
+  if (!microphoneReady) {
+    await setupMicrophone();
+    return;
+  }
+
+  if (recording) {
+    stopRecording();
+  } else {
+    startRecording();
+  }
+
+});
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./service-worker.js').catch(console.error);
@@ -423,7 +525,8 @@ function blobToBase64(blob) {
 
     reader.readAsDataURL(blob);
   });
-}
+}initialiseMicrophone();
+  
 </script>
 </body>
 </html>
