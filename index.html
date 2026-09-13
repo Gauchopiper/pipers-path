@@ -199,10 +199,11 @@
   const params = new URLSearchParams(location.search);
   const pupilId = params.get('p') || '';
   const accessKey = params.get('key') || '';
+  const displayName = (params.get('n') || pupilId).trim();
 
   const identity = document.getElementById('identity');
   if (pupilId && accessKey) {
-    identity.textContent = pupilId;
+    identity.textContent = displayName;
   } else {
     identity.textContent = 'Test mode — no pupil link supplied';
   }
