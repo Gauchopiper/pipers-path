@@ -397,17 +397,31 @@ async function setupMicrophone() {
       updateTimer();
       timerHandle = setInterval(updateTimer, 500);
 
-    } catch (err) {
-      console.error(err);
-      if (err && err.name === 'NotAllowedError') {
-        statusEl.textContent = 'Microphone permission was denied.';
-      } else if (err && err.name === 'NotFoundError') {
-        statusEl.textContent = 'No microphone was found.';
-      } else {
-        statusEl.textContent = 'Could not start the microphone.';
-      }
-    }
+    } catch (error) {
+
+  console.error('Microphone error:', error);
+
+  if (error.name === 'NotAllowedError') {
+    statusEl.textContent =
+      'Microphone permission is blocked.';
   }
+
+  else if (error.name === 'NotFoundError') {
+    statusEl.textContent =
+      'No microphone was found.';
+  }
+
+  else if (error.name === 'NotReadableError') {
+    statusEl.textContent =
+      'The microphone is unavailable or being used by another app.';
+  }
+
+  else {
+    statusEl.textContent =
+      'Microphone error: ' + error.name;
+  }
+
+}
 
 function stopRecording() {
 
