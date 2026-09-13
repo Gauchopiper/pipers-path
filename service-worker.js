@@ -1,4 +1,4 @@
-const CACHE = 'pipers-path-v1';
+const CACHE = 'pipers-path-v2';
 const ASSETS = [
   './',
   './index.html',
