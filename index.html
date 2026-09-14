@@ -173,6 +173,7 @@
       <p><strong>Total practice:</strong> <span id="pathTotalMinutes">0</span> min</p>
     </div>
 
+    <div id="pathTargets" style="margin-top:24px;"></div>
     <div id="pathSessions" style="margin-top:24px;"></div>
   </div>
 </section>
@@ -476,7 +477,23 @@ function blobToBase64(blob) {
 
     pathSummary.style.display = 'block';
     pathStatus.textContent = '';
+const pathTargets = document.getElementById('pathTargets');
 
+if (data.targets && data.targets.length > 0) {
+  pathTargets.innerHTML = data.targets.map(target => `
+    <div style="
+      padding:16px;
+      border:1px solid #ddd;
+      border-radius:12px;
+      margin-bottom:16px;
+    ">
+      <strong>🎯 ${target.title}</strong><br>
+      <span>${target.status}</span>
+    </div>
+  `).join('');
+} else {
+  pathTargets.innerHTML = '';
+}
     if (!data.sessions || data.sessions.length === 0) {
       pathSessions.innerHTML = '<p>No practice sessions yet.</p>';
       return;
