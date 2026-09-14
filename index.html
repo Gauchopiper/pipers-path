@@ -488,8 +488,22 @@ if (data.targets && data.targets.length > 0) {
       border-radius:12px;
       margin-bottom:16px;
     ">
-      <strong>🎯 ${target.title}</strong><br>
-      <span>${target.status}</span>
+     ${badge.imageLink ? `
+  <img
+    src="${badge.imageLink}"
+    alt="${badge.badgeName}"
+    style="
+      width:60px;
+      height:60px;
+      object-fit:contain;
+      display:block;
+      margin-bottom:10px;
+    "
+  >
+` : ''}
+
+<strong>${badge.badgeName}</strong><br>
+<span>${badge.description}</span>
     </div>
   `).join('');
 } else {
