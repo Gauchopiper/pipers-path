@@ -173,8 +173,9 @@
       <p><strong>Total practice:</strong> <span id="pathTotalMinutes">0</span> min</p>
     </div>
 
-    <div id="pathTargets" style="margin-top:24px;"></div>
-    <div id="pathSessions" style="margin-top:24px;"></div>
+   <div id="pathTargets" style="margin-top:24px;"></div>
+<div id="pathBadges" style="margin-top:24px;"></div>
+<div id="pathSessions" style="margin-top:24px;"></div>
   </div>
 </section>
 
@@ -493,6 +494,25 @@ if (data.targets && data.targets.length > 0) {
   `).join('');
 } else {
   pathTargets.innerHTML = '';
+}
+    const pathBadges = document.getElementById('pathBadges');
+
+if (data.badges && data.badges.length > 0) {
+  pathBadges.innerHTML =
+    '<h3>Badges</h3>' +
+    data.badges.map(badge => `
+      <div style="
+        padding:16px;
+        border:1px solid #ddd;
+        border-radius:12px;
+        margin-bottom:16px;
+      ">
+        <strong>🏅 ${badge.badgeName}</strong><br>
+        <span>${badge.description}</span>
+      </div>
+    `).join('');
+} else {
+  pathBadges.innerHTML = '';
 }
     if (!data.sessions || data.sessions.length === 0) {
       pathSessions.innerHTML = '<p>No practice sessions yet.</p>';
