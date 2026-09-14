@@ -225,10 +225,12 @@
       views.forEach(v => v.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById(btn.dataset.view).classList.add('active');
-       if (btn.dataset.view === 'pathView') {
-    loadPath();
-    });
-  });
+      
+ if (btn.dataset.view === 'pathView') {
+  loadPath();
+}
+});
+});
 
   let mediaRecorder = null;
   let stream = null;
