@@ -161,14 +161,21 @@
     </div>
   </section>
 
-  <section id="pathView" class="view">
-    <div class="card">
-      <h2>📈 Piper's Path</h2>
-      <p class="empty">
-        Your practice history, streak and milestones will appear here once the Google backend is connected.
-      </p>
+ <section id="pathView" class="view">
+  <div class="card">
+    <h2>📈 Piper's Path</h2>
+
+    <div id="pathStatus">Loading your practice history…</div>
+
+    <div id="pathSummary" style="display:none; margin-top:20px;">
+      <p><strong>Total sessions:</strong> <span id="pathTotalSessions">0</span></p>
+      <p><strong>Qualifying sessions:</strong> <span id="pathQualifyingSessions">0</span></p>
+      <p><strong>Total practice:</strong> <span id="pathTotalMinutes">0</span> min</p>
     </div>
-  </section>
+
+    <div id="pathSessions" style="margin-top:24px;"></div>
+  </div>
+</section>
 
   <section id="groupView" class="view">
     <div class="card">
@@ -218,6 +225,8 @@
       views.forEach(v => v.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById(btn.dataset.view).classList.add('active');
+       if (btn.dataset.view === 'pathView') {
+    loadPath();
     });
   });
 
@@ -425,6 +434,83 @@ function blobToBase64(blob) {
 
     reader.readAsDataURL(blob);
   });
+}
+  async function loadPath() {
+  const pathStatus = document.getElementById('pathStatus');
+  const pathSummary = document.getElementById('pathSummary');
+  const pathSessions = document.getElementById('pathSessions');
+
+  pathStatus.textContent = 'Loading your practice history…';
+  pathSummary.style.display = 'none';
+  pathSessions.innerHTML = '';
+
+  try {
+    const response = await fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify({
+        action: 'getPath',
+        pupilId: pupilId,
+        accessKey: accessKey
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.ok) {
+      throw new Error(data.error || 'Could not load PATH.');
+    }
+
+    document.getElementById('pathTotalSessions').textContent =
+      data.summary.totalSessions;
+
+    document.getElementById('pathQualifyingSessions').textContent =
+      data.summary.qualifyingSessions;
+
+    document.getElementById('pathTotalMinutes').textContent =
+      Number(data.summary.totalMinutes).toFixed(2);
+
+    pathSummary.style.display = 'block';
+    pathStatus.textContent = '';
+
+    if (!data.sessions || data.sessions.length === 0) {
+      pathSessions.innerHTML = '<p>No practice sessions yet.</p>';
+      return;
+    }
+
+    const recent = data.sessions.slice(0, 10);
+
+    pathSessions.innerHTML =
+      '<h3>Recent practice</h3>' +
+      recent.map(session => {
+        const date = session.endTime || session.date;
+        const when = date
+          ? new Date(date).toLocaleString()
+          : '';
+
+        const duration =
+          Number(session.durationMinutes || 0).toFixed(2);
+
+        const qualifying =
+          session.qualifying ? ' ✓' : '';
+
+        return `
+          <div style="
+            padding:12px 0;
+            border-bottom:1px solid #ddd;
+          ">
+            <strong>${when}</strong><br>
+            ${duration} min${qualifying}
+          </div>
+        `;
+      }).join('');
+
+  } catch (error) {
+    pathStatus.textContent =
+      'Could not load your practice history.';
+  }
 }
 </script>
 </body>
