@@ -526,10 +526,10 @@ if (data.targets && data.targets.length > 0) {
         `;
       }).join('');
 
-  } catch (error) {
-    pathStatus.textContent =
-      'Could not load your practice history.';
-  }
+  } catch(error) {
+  console.error('PATH load error:', error);
+  pathStatus.textContent='Could not load your practice history.';
+}
 }
 </script>
 </body>
