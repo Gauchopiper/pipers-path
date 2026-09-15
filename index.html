@@ -293,6 +293,74 @@ async function loadPracticeTargets() {
 if (pupilId && accessKey) {
   loadPracticeTargets();
 }
+  const targetStatus = document.getElementById('targetStatus');
+
+async function tagSavedRecording(fileUrl, targetId) {
+  targetStatus.textContent = '';
+
+  // Blank target means General practice.
+  if (!targetId) {
+    return true;
+  }
+
+  try {
+    // Write the target link.
+    // We do not trust/read this response because Apps Script redirects
+    // have been unreliable specifically for setSessionTarget.
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify({
+        action: 'setSessionTarget',
+        pupilId: pupilId,
+        accessKey: accessKey,
+        driveFileLink: fileUrl,
+        targetId: targetId
+      })
+    });
+
+    // Confirm the actual saved state using the proven getPath read.
+    const confirmResponse = await fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify({
+        action: 'getPath',
+        pupilId: pupilId,
+        accessKey: accessKey
+      })
+    });
+
+    const data = await confirmResponse.json();
+
+    if (!data.ok) {
+      throw new Error(data.error || 'Could not confirm target.');
+    }
+
+    const savedSession = (data.sessions || []).find(
+      session => session.driveFileLink === fileUrl
+    );
+
+    if (savedSession && savedSession.targetId === targetId) {
+      targetStatus.textContent = 'Target saved ✓';
+      return true;
+    }
+
+    targetStatus.textContent =
+      'Recording saved — target could not be confirmed';
+    return false;
+
+  } catch (error) {
+    console.error('Target tagging error:', error);
+    targetStatus.textContent =
+      'Recording saved — target could not be confirmed';
+    return false;
+  }
+}
   const navButtons = document.querySelectorAll('.navButton');
   const views = document.querySelectorAll('.view');
 
