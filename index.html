@@ -238,6 +238,8 @@
     identity.textContent = 'Test mode — no pupil link supplied';
   }
 const practiceTarget = document.getElementById('practiceTarget');
+  const practiceTargetStorageKey =
+  pupilId ? 'pipersPath.practiceTarget.' + pupilId : '';
 
   async function getPathWithRetry(maxAttempts = 3, delayMs = 750, timeoutMs = 15000) {
   let lastError = null;
@@ -328,6 +330,25 @@ async function loadPracticeTargets() {
       practiceTarget.appendChild(option);
     });
 
+    if (practiceTargetStorageKey) {
+  try {
+    const savedTargetId =
+      localStorage.getItem(practiceTargetStorageKey) || '';
+
+    if (
+      savedTargetId &&
+      Array.from(practiceTarget.options).some(
+        option => option.value === savedTargetId
+      )
+    ) {
+      practiceTarget.value = savedTargetId;
+    } else if (savedTargetId) {
+      localStorage.removeItem(practiceTargetStorageKey);
+    }
+  } catch (error) {
+    console.warn('Could not restore practice target:', error);
+  }
+}
     practiceTarget.disabled = false;
     const status = document.getElementById('targetStatus');
 if (status) {
