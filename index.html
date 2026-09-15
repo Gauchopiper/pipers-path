@@ -294,6 +294,10 @@ if (pupilId && accessKey) {
   loadPracticeTargets();
 }
   const targetStatus = document.getElementById('targetStatus');
+  
+  practiceTarget.addEventListener('change', () => {
+  targetStatus.textContent = '';
+});
 
 async function tagSavedRecording(fileUrl, targetId) {
   targetStatus.textContent = '';
