@@ -377,6 +377,30 @@ if (status) {
 if (pupilId && accessKey) {
   loadPracticeTargets();
 }
+  
+const targetStatus = document.getElementById('targetStatus');
+
+practiceTarget.addEventListener('change', () => {
+  targetStatus.textContent = '';
+
+  if (!practiceTargetStorageKey) return;
+
+  try {
+    const selectedTargetId = practiceTarget.value;
+
+    if (selectedTargetId) {
+      localStorage.setItem(
+        practiceTargetStorageKey,
+        selectedTargetId
+      );
+    } else {
+      localStorage.removeItem(practiceTargetStorageKey);
+    }
+  } catch (error) {
+    console.warn('Could not save practice target:', error);
+  }
+});
+  
 async function tagSavedRecording(fileUrl, targetId) {
   targetStatus.textContent = '';
 
