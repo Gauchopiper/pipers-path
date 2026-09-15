@@ -329,6 +329,10 @@ async function loadPracticeTargets() {
     });
 
     practiceTarget.disabled = false;
+    const status = document.getElementById('targetStatus');
+if (status) {
+  status.textContent = '';
+}
 
   } catch (error) {
     console.warn('Practice target load failed:', error);
