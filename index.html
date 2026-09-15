@@ -585,7 +585,8 @@ startRecording();
       mimeType: mimeType,
       startIso: new Date(startedAt).toISOString(),
       endIso: endTime.toISOString(),
-      durationSeconds: durationSeconds
+      durationSeconds: durationSeconds,
+      sessionId: recordingSessionId
     };
 
     const response = await fetch(BACKEND_URL, {
