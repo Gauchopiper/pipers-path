@@ -593,9 +593,72 @@ if (selectedTargetId) {
         'Could not save: ' + result.error;
     }
 
-  } catch (err) {
-    console.error(err);
+} catch (err) {
+  console.error(err);
 
+  // Do NOT upload again here.
+  // The recording may already have been saved even though
+  // Google's response could not be read.
+
+  let recoveredSession = null;
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      if (attempt > 1) {
+        await new Promise(resolve => setTimeout(resolve, 750));
+      }
+
+      const checkResponse = await fetch(BACKEND_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify({
+          action: 'getPath',
+          pupilId: pupilId,
+          accessKey: accessKey
+        })
+      });
+
+      const data = await checkResponse.json();
+
+      if (!data.ok) {
+        throw new Error(data.error || 'Could not check saved recording.');
+      }
+
+      const startedMs = startedAt ? startedAt.getTime() : 0;
+
+      recoveredSession = (data.sessions || []).find(session => {
+        if (!session.startTime || !session.driveFileLink) return false;
+
+        const sessionStartMs = new Date(session.startTime).getTime();
+
+        return Math.abs(sessionStartMs - startedMs) <= 15000;
+      });
+
+      if (recoveredSession) break;
+
+    } catch (checkError) {
+      console.warn(
+        'Recording confirmation attempt ' + attempt + ' failed:',
+        checkError
+      );
+    }
+  }
+
+  if (recoveredSession) {
+    statusEl.textContent = 'Recording saved ✓';
+
+    if (recordingTargetId) {
+      tagSavedRecording(
+        recoveredSession.driveFileLink,
+        recordingTargetId
+      );
+    } else {
+      targetStatus.textContent = '';
+    }
+
+  } else {
     statusEl.textContent =
       'Recording made, but the upload could not be confirmed.';
   }
