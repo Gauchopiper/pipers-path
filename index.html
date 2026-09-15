@@ -239,7 +239,7 @@
   }
 const practiceTarget = document.getElementById('practiceTarget');
 
-  async function getPathWithRetry(maxAttempts = 3, delayMs = 750, timeoutMs = 8000) {
+  async function getPathWithRetry(maxAttempts = 3, delayMs = 750, timeoutMs = 15000) {
   let lastError = null;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
