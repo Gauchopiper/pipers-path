@@ -282,49 +282,76 @@ const practiceTarget = document.getElementById('practiceTarget');
   throw lastError || new Error('Could not load PATH data.');
 }
 async function loadPracticeTargets() {
-  // Always keep General practice as the first/default choice.
   practiceTarget.innerHTML = '';
+  practiceTarget.disabled = true;
 
-  const generalOption = document.createElement('option');
-  generalOption.value = '';
-  generalOption.textContent = 'General practice';
-  practiceTarget.appendChild(generalOption);
+  const loadingOption = document.createElement('option');
+  loadingOption.value = '';
+  loadingOption.textContent = 'Loading practice targets…';
+  practiceTarget.appendChild(loadingOption);
 
-  if (!pupilId || !accessKey) return;
+  if (!pupilId || !accessKey) {
+    practiceTarget.innerHTML = '';
 
-try {
-  const data = await getPathWithRetry();
+    const generalOption = document.createElement('option');
+    generalOption.value = '';
+    generalOption.textContent = 'General practice';
+    practiceTarget.appendChild(generalOption);
 
-  const eligibleTargets = (data.targets || []).filter(target => {
-    const status = String(target.status || '').trim().toUpperCase();
+    practiceTarget.disabled = false;
+    return;
+  }
 
-    return (
-      status === 'IN PROGRESS' ||
-      status === 'READY FOR REVIEW'
-    );
-  });
+  try {
+    const data = await getPathWithRetry();
 
-  eligibleTargets.forEach(target => {
-    const option = document.createElement('option');
-    option.value = target.targetId;
-    option.textContent = target.title;
-    practiceTarget.appendChild(option);
-  });
+    practiceTarget.innerHTML = '';
 
-} catch (error) {
-  console.warn('Practice target load failed:', error);
+    const generalOption = document.createElement('option');
+    generalOption.value = '';
+    generalOption.textContent = 'General practice';
+    practiceTarget.appendChild(generalOption);
+
+    const eligibleTargets = (data.targets || []).filter(target => {
+      const status = String(target.status || '').trim().toUpperCase();
+
+      return (
+        status === 'IN PROGRESS' ||
+        status === 'READY FOR REVIEW'
+      );
+    });
+
+    eligibleTargets.forEach(target => {
+      const option = document.createElement('option');
+      option.value = target.targetId;
+      option.textContent = target.title;
+      practiceTarget.appendChild(option);
+    });
+
+    practiceTarget.disabled = false;
+
+  } catch (error) {
+    console.warn('Practice target load failed:', error);
+
+    practiceTarget.innerHTML = '';
+
+    const generalOption = document.createElement('option');
+    generalOption.value = '';
+    generalOption.textContent = 'General practice';
+    practiceTarget.appendChild(generalOption);
+
+    practiceTarget.disabled = false;
+
+    const status = document.getElementById('targetStatus');
+    if (status) {
+      status.textContent =
+        'Targets unavailable — general practice is still available.';
+    }
+  }
 }
-}
-
 if (pupilId && accessKey) {
   loadPracticeTargets();
 }
-  const targetStatus = document.getElementById('targetStatus');
-  
-  practiceTarget.addEventListener('change', () => {
-  targetStatus.textContent = '';
-});
-
 async function tagSavedRecording(fileUrl, targetId) {
   targetStatus.textContent = '';
 
