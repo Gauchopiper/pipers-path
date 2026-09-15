@@ -234,7 +234,62 @@
   } else {
     identity.textContent = 'Test mode — no pupil link supplied';
   }
+const practiceTarget = document.getElementById('practiceTarget');
 
+async function loadPracticeTargets() {
+  // Always keep General practice as the first/default choice.
+  practiceTarget.innerHTML = '';
+
+  const generalOption = document.createElement('option');
+  generalOption.value = '';
+  generalOption.textContent = 'General practice';
+  practiceTarget.appendChild(generalOption);
+
+  if (!pupilId || !accessKey) return;
+
+  try {
+    const response = await fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify({
+        action: 'getPath',
+        pupilId: pupilId,
+        accessKey: accessKey
+      })
+    });
+
+    const data = await response.json();
+
+    if (!data.ok) {
+      throw new Error(data.error || 'Could not load targets.');
+    }
+
+    const eligibleTargets = (data.targets || []).filter(target => {
+      const status = String(target.status || '').trim().toUpperCase();
+
+      return (
+        status === 'IN PROGRESS' ||
+        status === 'READY FOR REVIEW'
+      );
+    });
+
+    eligibleTargets.forEach(target => {
+      const option = document.createElement('option');
+      option.value = target.targetId;
+      option.textContent = target.title;
+      practiceTarget.appendChild(option);
+    });
+
+  } catch (error) {
+    console.error('Practice target load error:', error);
+  }
+}
+
+if (pupilId && accessKey) {
+  loadPracticeTargets();
+}
   const navButtons = document.querySelectorAll('.navButton');
   const views = document.querySelectorAll('.view');
 
