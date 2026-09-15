@@ -695,23 +695,7 @@ function blobToBase64(blob) {
   pathSessions.innerHTML = '';
 
   try {
-    const response = await fetch(BACKEND_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
-      body: JSON.stringify({
-        action: 'getPath',
-        pupilId: pupilId,
-        accessKey: accessKey
-      })
-    });
-
-    const data = await response.json();
-
-    if (!data.ok) {
-      throw new Error(data.error || 'Could not load PATH.');
-    }
+ const data = await getPathWithRetry();
 
     document.getElementById('pathTotalSessions').textContent =
       data.summary.totalSessions;
