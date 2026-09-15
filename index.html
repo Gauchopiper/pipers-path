@@ -239,6 +239,48 @@
   }
 const practiceTarget = document.getElementById('practiceTarget');
 
+  async function getPathWithRetry(maxAttempts = 3, delayMs = 750, timeoutMs = 8000) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(BACKEND_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify({
+          action: 'getPath',
+          pupilId: pupilId,
+          accessKey: accessKey
+        }),
+        signal: controller.signal
+      });
+
+      const data = await response.json();
+
+      if (!data.ok) {
+        throw new Error(data.error || 'Could not load PATH data.');
+      }
+
+      return data;
+
+    } catch (error) {
+      lastError = error;
+
+      if (attempt < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  throw lastError || new Error('Could not load PATH data.');
+}
 async function loadPracticeTargets() {
   // Always keep General practice as the first/default choice.
   practiceTarget.innerHTML = '';
