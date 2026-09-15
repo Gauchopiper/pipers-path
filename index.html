@@ -384,6 +384,7 @@ async function tagSavedRecording(fileUrl, targetId) {
   let startedAt = null;
   let timerHandle = null;
   let lastObjectUrl = null;
+  let recordingTargetId = '';
 
   const recordButton = document.getElementById('recordButton');
   const statusEl = document.getElementById('status');
@@ -505,10 +506,15 @@ function stopRecording() {
   }
 }
 
-  recordButton.addEventListener('click', () => {
-    if (recording) stopRecording();
-    else startRecording();
-  });
+recordButton.addEventListener('click', () => {
+  if (recording) {
+    stopRecording();
+  } else {
+    recordingTargetId = practiceTarget.value;
+    targetStatus.textContent = '';
+    startRecording();
+  }
+});
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -553,7 +559,7 @@ function stopRecording() {
         result.qualifying === 'Yes'
           ? 'Practice saved ✓'
           : 'Recording saved ✓';
-      const selectedTargetId = practiceTarget.value;
+      const selectedTargetId = recordingTargetId;
 
 if (selectedTargetId) {
   tagSavedRecording(result.fileUrl, selectedTargetId);
