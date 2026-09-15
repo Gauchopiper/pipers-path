@@ -651,16 +651,10 @@ if (selectedTargetId) {
         throw new Error(data.error || 'Could not check saved recording.');
       }
 
-     const startedMs = Number(startedAt || 0);
-
-      recoveredSession = (data.sessions || []).find(session => {
-        if (!session.startTime || !session.driveFileLink) return false;
-
-        const sessionStartMs = new Date(session.startTime).getTime();
-
-        return Math.abs(sessionStartMs - startedMs) <= 15000;
-      });
-
+recoveredSession = (data.sessions || []).find(session =>
+  String(session.sessionId || '').trim() === recordingSessionId &&
+  session.driveFileLink
+);
       if (recoveredSession) break;
 
     } catch (checkError) {
