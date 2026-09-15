@@ -553,6 +553,14 @@ function stopRecording() {
         result.qualifying === 'Yes'
           ? 'Practice saved ✓'
           : 'Recording saved ✓';
+      const selectedTargetId = practiceTarget.value;
+
+if (selectedTargetId) {
+  tagSavedRecording(result.fileUrl, selectedTargetId);
+} else {
+  targetStatus.textContent = '';
+}
+      
     } else {
       statusEl.textContent =
         'Could not save: ' + result.error;
