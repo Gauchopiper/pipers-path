@@ -316,10 +316,13 @@
       <h3>Community Bagpipe</h3>
 
       <p>
-        <strong><span id="groupPipersToday">0</span></strong>
+       <strong><span id="groupPipersToday">0</span></strong>
         pipers practised today
       </p>
-
+<p>
+  <strong>Community bonus today:</strong>
+  +<span id="groupBonusPercent">0</span>%
+</p>
     <div id="communityBagpipe" class="community-bagpipe" aria-label="Community Bagpipe progress">
   <div class="bagpipe-part" data-part="1">1</div>
   <div class="bagpipe-part" data-part="2">2</div>
@@ -1057,7 +1060,7 @@ if (data.targets && data.targets.length > 0) {
       border-radius:12px;
       margin-bottom:16px;
     ">
-      <strong>🎯 ${target.title}</strong><br>
+      <>🎯 ${target.title}</><br>
       <span>${target.status}</span>
     </div>
   `).join('');
@@ -1090,7 +1093,7 @@ if (data.badges && data.badges.length > 0) {
     >
   ` : ''}
 
-  <strong>${badge.badgeName}</strong><br>
+  <>${badge.badgeName}</><br>
   <span>${badge.description}</span>
       </div>
     `).join('');
@@ -1123,7 +1126,7 @@ if (data.badges && data.badges.length > 0) {
             padding:12px 0;
             border-bottom:1px solid #ddd;
           ">
-            <strong>${when}</strong><br>
+            <>${when}</><br>
             ${duration} min${qualifying}
           </div>
         `;
