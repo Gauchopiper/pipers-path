@@ -94,10 +94,15 @@
     }
 /* Community Bagpipe — 10 progressive parts */
 .community-bagpipe {
-  position: relative;
-  width: 280px;
-  height: 260px;
+  width: 100%;
+  max-width: 420px;
   margin: 28px auto;
+}
+
+.community-bagpipe img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .bagpipe-part {
@@ -510,17 +515,16 @@ const communityBonusPercent = Math.max(
     pipersEl.textContent = pipersToday;
     bonusEl.textContent = communityBonusPercent;
 
-  const parts = bagpipeEl.querySelectorAll('.bagpipe-part');
+const bagpipeImage =
+  document.getElementById('communityBagpipeImage');
 
-parts.forEach(part => {
-  const partNumber = Number(part.dataset.part || 0);
+bagpipeImage.src =
+  'community-bagpipe-' + bagpipeParts + '.png';
 
-  if (partNumber <= bagpipeParts) {
-    part.classList.add('complete');
-  } else {
-    part.classList.remove('complete');
-  }
-});
+bagpipeImage.alt =
+  'Community Great Highland Bagpipe — stage ' +
+  bagpipeParts +
+  ' of 10';
 
     if (bagpipeParts === 0) {
       messageEl.textContent =
