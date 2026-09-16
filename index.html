@@ -338,6 +338,7 @@
     alt="Community Great Highland Bagpipe"
   >
 </div>
+      <p id="groupPartName" style="font-weight:600; margin-top:8px;"></p>
       <p id="groupMessage" class="empty"></p>
     </div>
   </div>
@@ -520,6 +521,23 @@ const communityBonusPercent = Math.max(
 const bagpipeImage =
   document.getElementById('communityBagpipeImage');
 
+const partNameEl =
+  document.getElementById('groupPartName');
+
+const bagpipePartNames = [
+  '',
+  'Blow Pipe',
+  'Bag',
+  'Bass Drone Bottom',
+  'Middle Tenor Bottom',
+  'Outer Tenor Bottom',
+  'Bass Drone Middle',
+  'Middle Tenor Top',
+  'Outer Tenor Top',
+  'Bass Drone Top',
+  'Chanter = Great Highland Bagpipe'
+];    
+
 bagpipeImage.src =
   'community-bagpipe-' + bagpipeParts + '.png';
 
@@ -527,6 +545,13 @@ bagpipeImage.alt =
   'Community Great Highland Bagpipe — stage ' +
   bagpipeParts +
   ' of 10';
+
+if (bagpipeParts === 0) {
+  partNameEl.textContent = 'Waiting for the first piper';
+} else {
+  partNameEl.textContent =
+    'Part revealed: ' + bagpipePartNames[bagpipeParts];
+}    
 
     if (bagpipeParts === 0) {
       messageEl.textContent =
