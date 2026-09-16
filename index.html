@@ -492,6 +492,7 @@ async function loadGroup() {
   const status = document.getElementById('groupStatus');
   const content = document.getElementById('groupContent');
   const pipersEl = document.getElementById('groupPipersToday');
+  const bonusEl = document.getElementById('groupBonusPercent');
   const bagpipeEl = document.getElementById('communityBagpipe');
   const messageEl = document.getElementById('groupMessage');
 
@@ -506,8 +507,12 @@ async function loadGroup() {
       0,
       Math.min(10, Number(data.bagpipeParts || 0))
     );
-
+const communityBonusPercent = Math.max(
+  0,
+  Math.min(20, Number(data.communityBonusPercent || 0))
+);
     pipersEl.textContent = pipersToday;
+    bonusEl.textContent = communityBonusPercent;
 
   const parts = bagpipeEl.querySelectorAll('.bagpipe-part');
 
