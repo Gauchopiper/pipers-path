@@ -1114,10 +1114,47 @@ if (data.badges && data.badges.length > 0) {
       return;
     }
 
-    const recent = data.sessions.slice(0, 10);
+const creditedDays = Array.isArray(data.creditedPracticeByDate)
+  ? [...data.creditedPracticeByDate].sort(
+      (a, b) => String(b.date).localeCompare(String(a.date))
+    )
+  : [];
 
-    pathSessions.innerHTML =
-      '<h3>Recent practice</h3>' +
+const creditedHtml = creditedDays.length
+  ? '<h3>Daily credited practice</h3>' +
+    creditedDays.map(day => {
+      const when = day.date
+        ? new Date(day.date + 'T12:00:00').toLocaleDateString()
+        : '';
+
+      const actual =
+        Number(day.actualMinutes || 0).toFixed(2);
+
+      const bonus =
+        Number(day.communityBonusPercent || 0);
+
+      const credited =
+        Number(day.creditedMinutes || 0).toFixed(0);
+
+      return `
+        <div style="
+          padding:12px 0;
+          border-bottom:1px solid #ddd;
+        ">
+          <strong>${when}</strong><br>
+          ${actual} min actual ·
+          +${bonus}% community ·
+          ${credited} min credited
+        </div>
+      `;
+    }).join('')
+  : '';
+
+const recent = data.sessions.slice(0, 10);
+
+pathSessions.innerHTML =
+  creditedHtml +
+  `<h3 style="margin-top:24px;">Recent practice</h3>` +
       recent.map(session => {
         const date = session.endTime || session.date;
         const when = date
