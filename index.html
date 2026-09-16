@@ -225,6 +225,20 @@
 </nav>
 
 <script>
+  // Development cleanup: remove any previously registered Piper's Path service worker.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations()
+    .then(registrations => {
+      registrations
+        .filter(registration =>
+          registration.scope.includes('/pipers-path/')
+        )
+        .forEach(registration => registration.unregister());
+    })
+    .catch(error => {
+      console.warn('Service worker cleanup failed:', error);
+    });
+}
   const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwZRT0eDd5xV_onNptruSfu6x3rvYPWBEf1kBvfC2fjXi8FWuv5V4KI0JATPoN6GGZ--Q/exec';
   const params = new URLSearchParams(location.search);
   const pupilId = params.get('p') || '';
