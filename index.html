@@ -310,6 +310,117 @@ const practiceTarget = document.getElementById('practiceTarget');
 
   throw lastError || new Error('Could not load PATH data.');
 }
+async function getGroupWithRetry(
+  maxAttempts = 3,
+  delayMs = 750,
+  timeoutMs = 15000
+) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      timeoutMs
+    );
+
+    try {
+      const response = await fetch(BACKEND_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify({
+          action: 'getGroup',
+          pupilId: pupilId,
+          accessKey: accessKey
+        }),
+        signal: controller.signal
+      });
+
+      const data = await response.json();
+
+      if (!data.ok) {
+        throw new Error(
+          data.error || 'Could not load GROUP data.'
+        );
+      }
+
+      return data;
+
+    } catch (error) {
+      lastError = error;
+      console.warn(
+        'GROUP read attempt ' + attempt + ' failed:',
+        error
+      );
+
+      if (attempt < maxAttempts) {
+        await new Promise(
+          resolve => setTimeout(resolve, delayMs)
+        );
+      }
+
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  throw lastError || new Error(
+    'Could not load GROUP data.'
+  );
+}
+async function loadGroup() {
+  const status = document.getElementById('groupStatus');
+  const content = document.getElementById('groupContent');
+  const pipersEl = document.getElementById('groupPipersToday');
+  const bagpipeEl = document.getElementById('communityBagpipe');
+  const messageEl = document.getElementById('groupMessage');
+
+  status.textContent = "Loading today's group practice…";
+  content.style.display = 'none';
+
+  try {
+    const data = await getGroupWithRetry();
+
+    const pipersToday = Number(data.pipersToday || 0);
+    const bagpipeParts = Math.max(
+      0,
+      Math.min(10, Number(data.bagpipeParts || 0))
+    );
+
+    pipersEl.textContent = pipersToday;
+
+    let parts = '';
+
+    for (let i = 1; i <= 10; i++) {
+      parts += i <= bagpipeParts ? '● ' : '○ ';
+    }
+
+    bagpipeEl.textContent = parts.trim();
+
+    if (bagpipeParts === 0) {
+      messageEl.textContent =
+        'No qualifying group practice yet today.';
+    } else if (bagpipeParts >= 10) {
+      messageEl.textContent =
+        'The Community Bagpipe is complete for today!';
+    } else {
+      messageEl.textContent =
+        bagpipeParts + ' of 10 parts completed today.';
+    }
+
+    status.textContent = '';
+    content.style.display = 'block';
+
+  } catch (error) {
+    console.warn('GROUP load failed:', error);
+
+    status.textContent =
+      'Group practice is temporarily unavailable.';
+    content.style.display = 'none';
+  }
+}
 async function loadPracticeTargets() {
   practiceTarget.innerHTML = '';
   practiceTarget.disabled = true;
@@ -539,6 +650,9 @@ return false;
       
  if (btn.dataset.view === 'pathView') {
   loadPath();
+}
+  if (btn.dataset.view === 'groupView') {
+  loadGroup();
 }
 });
 });
