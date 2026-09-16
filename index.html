@@ -445,11 +445,14 @@ async function tagSavedRecording(fileUrl, targetId) {
 // Confirm the saved state using getPath.
 // Retry the READ only; never repeat the target write.
 let confirmed = false;
+let savedSession = null;
+let confirmationReadSucceeded = false;
 
 try {
   const data = await getPathWithRetry();
+  confirmationReadSucceeded = true;
 
-  const savedSession = (data.sessions || []).find(
+  savedSession = (data.sessions || []).find(
     session => session.driveFileLink === fileUrl
   );
 
@@ -460,12 +463,47 @@ try {
 } catch (error) {
   console.warn('Target confirmation failed:', error);
 }
-
 if (confirmed) {
   targetStatus.textContent = 'Target saved ✓';
   return true;
 }
+// One safe retry only when read-back proves the recording exists
+// but the requested target was not saved.
+if (
+  confirmationReadSucceeded &&
+  savedSession &&
+  savedSession.targetId !== targetId
+) {
+  try {
+    await fetch(BACKEND_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify({
+        action: 'setSessionTarget',
+        pupilId: pupilId,
+        accessKey: accessKey,
+        driveFileLink: fileUrl,
+        targetId: targetId
+      })
+    });
 
+    const retryData = await getPathWithRetry();
+
+    const retrySession = (retryData.sessions || []).find(
+      session => session.driveFileLink === fileUrl
+    );
+
+    if (retrySession && retrySession.targetId === targetId) {
+      targetStatus.textContent = 'Target saved ✓';
+      return true;
+    }
+  } catch (error) {
+    console.warn('Target retry failed:', error);
+  }
+}
 targetStatus.textContent =
   'Recording saved — target could not be confirmed';
 return false;
