@@ -1123,9 +1123,11 @@ const creditedDays = Array.isArray(data.creditedPracticeByDate)
 const creditedHtml = creditedDays.length
   ? '<h3>Daily credited practice</h3>' +
     creditedDays.map(day => {
-      const when = day.date
-        ? new Date(day.date + 'T12:00:00').toLocaleDateString()
-        : '';
+const when = day.isToday
+  ? 'Today'
+  : day.date
+    ? new Date(day.date + 'T12:00:00').toLocaleDateString()
+    : '';
 
       const actual =
         Number(day.actualMinutes || 0).toFixed(2);
@@ -1144,7 +1146,7 @@ const creditedHtml = creditedDays.length
           <strong>${when}</strong><br>
           ${actual} min actual ·
           +${bonus}% community ·
-          ${credited} min credited
+          ${credited} min credited${day.isToday ? ' so far' : ''}
         </div>
       `;
     }).join('')
