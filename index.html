@@ -619,11 +619,7 @@ startRecording();
   }
 });
 
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js').catch(console.error);
-    });
-  }async function uploadRecording(blob, mimeType) {
+  async function uploadRecording(blob, mimeType) {
   try {
     if (!pupilId || !accessKey) {
       statusEl.textContent =
