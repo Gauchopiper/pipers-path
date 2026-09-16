@@ -296,6 +296,7 @@
       <p><strong>Total sessions:</strong> <span id="pathTotalSessions">0</span></p>
       <p><strong>Qualifying sessions:</strong> <span id="pathQualifyingSessions">0</span></p>
       <p><strong>Total practice:</strong> <span id="pathTotalMinutes">0</span> min</p>
+      <p><strong>Credited practice:</strong> <span id="pathCreditedMinutes">0</span> min</p>
     </div>
 
    <div id="pathTargets" style="margin-top:24px;"></div>
@@ -1052,6 +1053,9 @@ function blobToBase64(blob) {
 
     document.getElementById('pathTotalMinutes').textContent =
       Number(data.summary.totalMinutes).toFixed(2);
+
+    document.getElementById('pathCreditedMinutes').textContent =
+  Number(data.summary.creditedQualifyingMinutes || 0).toFixed(0);
 
     pathSummary.style.display = 'block';
     pathStatus.textContent = '';
