@@ -199,15 +199,28 @@
   </div>
 </section>
 
-  <section id="groupView" class="view">
-    <div class="card">
-      <h2>👥 Group</h2>
-      <p class="empty">
-        The Community Bagpipe will appear here once the shared daily data is connected.
-      </p>
+<section id="groupView" class="view">
+  <div class="card">
+    <h2>👥 Group</h2>
+
+    <div id="groupStatus">
+      Loading today's group practice…
     </div>
-  </section>
-</main>
+
+    <div id="groupContent" style="display:none; margin-top:20px;">
+      <h3>Community Bagpipe</h3>
+
+      <p>
+        <strong><span id="groupPipersToday">0</span></strong>
+        pipers practised today
+      </p>
+
+      <div id="communityBagpipe"></div>
+
+      <p id="groupMessage" class="empty"></p>
+    </div>
+  </div>
+</section></main>
 
 <nav>
   <button class="navButton active" data-view="recordView">
