@@ -197,16 +197,19 @@
 
  <section id="pathView" class="view">
   <div class="card">
-    <h2>📈 Piper's Path</h2>
+    <h2>📈 <span id="pathViewTitle">Piper's Path</span></h2>
 
-    <div id="pathStatus">Loading your practice history…</div>
+<div id="pathStatus">Loading your practice history…</div>
 
-    <div id="pathSummary" style="display:none; margin-top:20px;">
-      <p><strong>Total sessions:</strong> <span id="pathTotalSessions">0</span></p>
-      <p><strong>Qualifying sessions:</strong> <span id="pathQualifyingSessions">0</span></p>
-      <p><strong>Total practice:</strong> <span id="pathTotalMinutes">0</span> min</p>
-      <p><strong>Credited practice:</strong> <span id="pathCreditedMinutes">0</span> min</p>
-    </div>
+<div id="pathSummary" style="display:none; margin-top:20px;">
+  <p><strong id="pathTotalSessionsLabel">Total sessions:</strong> <span id="pathTotalSessions">0</span></p>
+
+  <p><strong id="pathQualifyingSessionsLabel">Qualifying sessions:</strong> <span id="pathQualifyingSessions">0</span></p>
+
+  <p><strong id="pathTotalPracticeLabel">Total practice:</strong> <span id="pathTotalMinutes">0</span> min</p>
+
+  <p><strong id="pathCreditedPracticeLabel">Credited practice:</strong> <span id="pathCreditedMinutes">0</span> min</p>
+</div>
 
    <div id="pathTargets" style="margin-top:24px;"></div>
 <div id="pathBadges" style="margin-top:24px;"></div>
@@ -308,7 +311,26 @@ document.documentElement.lang =
     communityComplete: 'The Community Bagpipe is complete for today!',
     partsCompletedToday: 'of 10 parts completed today.',
     loadingGroup: "Loading today's group practice…",
-    groupUnavailable: 'Group practice is temporarily unavailable.'
+    groupUnavailable: 'Group practice is temporarily unavailable.',
+    pathTitle: "Piper's Path",
+    loadingPath: 'Loading your practice history…',
+    totalSessions: 'Total sessions:',
+    qualifyingSessions: 'Qualifying sessions:',
+    totalPractice: 'Total practice:',
+    creditedPractice: 'Credited practice:',
+    dailyCreditedPractice: 'Daily credited practice',
+    today: 'Today',
+    actualMinutes: 'min actual',
+    community: 'community',
+    creditedMinutes: 'min credited',
+    soFar: 'so far',
+    recentPractice: 'Recent practice',
+    noPracticeSessions: 'No practice sessions yet.',
+    pathLoadError: 'Could not load your practice history.',
+    badges: 'Badges',
+statusInProgress: 'IN PROGRESS',
+statusReadyForReview: 'READY FOR REVIEW',
+statusAchieved: 'ACHIEVED'
   },
 
   ES: {
@@ -325,11 +347,55 @@ document.documentElement.lang =
    communityComplete: '¡La Gaita Comunitaria está completa por hoy!',
    partsCompletedToday: 'de 10 partes completadas hoy.',
    loadingGroup: 'Cargando la práctica del grupo de hoy…',
-   groupUnavailable: 'La práctica del grupo no está disponible temporalmente.'
+   groupUnavailable: 'La práctica del grupo no está disponible temporalmente.',
+   pathTitle: "Piper's Path",
+   loadingPath: 'Cargando tu historial de práctica…',
+   totalSessions: 'Sesiones totales:',
+   qualifyingSessions: 'Sesiones válidas:',
+   totalPractice: 'Práctica total:',
+   creditedPractice: 'Práctica acreditada:',
+   dailyCreditedPractice: 'Práctica acreditada diaria',
+   today: 'Hoy',
+   actualMinutes: 'min reales',
+   community: 'comunidad',
+   creditedMinutes: 'min acreditados',
+   soFar: 'hasta ahora',
+   recentPractice: 'Práctica reciente',
+   noPracticeSessions: 'Todavía no hay sesiones de práctica.',
+   pathLoadError: 'No se pudo cargar tu historial de práctica.',
+    badges: 'Insignias',
+statusInProgress: 'EN PROGRESO',
+statusReadyForReview: 'LISTO PARA REVISIÓN',
+statusAchieved: 'CONSEGUIDO'
   }
 };
 
 const t = TEXT[uiLanguage];
+
+  function translatedTargetStatus(status) {
+  const value = String(status || '').trim().toUpperCase();
+
+  if (value === 'IN PROGRESS') return t.statusInProgress;
+  if (value === 'READY FOR REVIEW') return t.statusReadyForReview;
+  if (value === 'ACHIEVED') return t.statusAchieved;
+
+  return status || '';
+}
+
+  document.getElementById('pathViewTitle').textContent =
+  t.pathTitle;
+
+document.getElementById('pathTotalSessionsLabel').textContent =
+  t.totalSessions;
+
+document.getElementById('pathQualifyingSessionsLabel').textContent =
+  t.qualifyingSessions;
+
+document.getElementById('pathTotalPracticeLabel').textContent =
+  t.totalPractice;
+
+document.getElementById('pathCreditedPracticeLabel').textContent =
+  t.creditedPractice;
 
   document.getElementById('groupViewTitle').textContent =
   t.group;
@@ -1042,7 +1108,7 @@ function blobToBase64(blob) {
   const pathSummary = document.getElementById('pathSummary');
   const pathSessions = document.getElementById('pathSessions');
 
-  pathStatus.textContent = 'Loading your practice history…';
+  pathStatus.textContent = t.loadingPath;
   pathSummary.style.display = 'none';
   pathSessions.innerHTML = '';
 
@@ -1074,7 +1140,7 @@ if (data.targets && data.targets.length > 0) {
       margin-bottom:16px;
     ">
       <>🎯 ${target.title}</><br>
-      <span>${target.status}</span>
+      <span>${translatedTargetStatus(target.status)}</span>
     </div>
   `).join('');
 } else {
@@ -1084,7 +1150,7 @@ if (data.targets && data.targets.length > 0) {
 
 if (data.badges && data.badges.length > 0) {
   pathBadges.innerHTML =
-    '<h3>Badges</h3>' +
+    '<h3>' + t.badges + '</h3>' +
     data.badges.map(badge => `
       <div style="
         padding:16px;
@@ -1114,7 +1180,8 @@ if (data.badges && data.badges.length > 0) {
   pathBadges.innerHTML = '';
 }
     if (!data.sessions || data.sessions.length === 0) {
-      pathSessions.innerHTML = '<p>No practice sessions yet.</p>';
+      pathSessions.innerHTML =
+  '<p>' + t.noPracticeSessions + '</p>';
       return;
     }
 
@@ -1125,10 +1192,10 @@ const creditedDays = Array.isArray(data.creditedPracticeByDate)
   : [];
 
 const creditedHtml = creditedDays.length
-  ? '<h3>Daily credited practice</h3>' +
+ ? '<h3>' + t.dailyCreditedPractice + '</h3>' +
     creditedDays.map(day => {
 const when = day.isToday
-  ? 'Today'
+  ? t.today
   : day.date
     ? new Date(day.date + 'T12:00:00').toLocaleDateString()
     : '';
@@ -1148,9 +1215,9 @@ const when = day.isToday
           border-bottom:1px solid #ddd;
         ">
           <strong>${when}</strong><br>
-          ${actual} min actual ·
-          +${bonus}% community ·
-          ${credited} min credited${day.isToday ? ' so far' : ''}
+${actual} ${t.actualMinutes} ·
++${bonus}% ${t.community} ·
+${credited} ${t.creditedMinutes}${day.isToday ? ' ' + t.soFar : ''}
         </div>
       `;
     }).join('')
@@ -1160,7 +1227,7 @@ const recent = data.sessions.slice(0, 10);
 
 pathSessions.innerHTML =
   creditedHtml +
-  `<h3 style="margin-top:24px;">Recent practice</h3>` +
+  `<h3 style="margin-top:24px;">${t.recentPractice}</h3>` +
       recent.map(session => {
         const date = session.endTime || session.date;
         const when = date
@@ -1186,7 +1253,7 @@ pathSessions.innerHTML =
 
   } catch(error) {
   console.error('PATH load error:', error);
-  pathStatus.textContent='Could not load your practice history.';
+  pathStatus.textContent = t.pathLoadError;
 }
 }
 </script>
