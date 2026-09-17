@@ -216,24 +216,25 @@
 
 <section id="groupView" class="view">
   <div class="card">
-    <h2>👥 Group</h2>
+    <h2>👥 <span id="groupViewTitle">Group</span></h2>
 
     <div id="groupStatus">
       Loading today's group practice…
     </div>
 
     <div id="groupContent" style="display:none; margin-top:20px;">
-      <h3>Community Bagpipe</h3>
+      
+     <h3 id="groupBagpipeTitle">Community Bagpipe</h3>
 
-      <p>
-       <strong><span id="groupPipersToday">0</span></strong>
-        pipers practised today
-      </p>
 <p>
-  <strong>Community bonus today:</strong>
-  +<span id="groupBonusPercent">0</span>%
+  <strong><span id="groupPipersToday">0</span></strong>
+  <span id="groupPipersText">pipers practised today</span>
 </p>
-<div id="communityBagpipe" class="community-bagpipe">
+
+<p>
+  <strong id="groupBonusLabel">Community bonus today:</strong>
+  +<span id="groupBonusPercent">0</span>%
+</p><div id="communityBagpipe" class="community-bagpipe">
   <img
     id="communityBagpipeImage"
     src="community-bagpipe-0.png"
@@ -303,7 +304,11 @@ document.documentElement.lang =
     pipersPractisedToday: 'pipers practised today',
     waitingFirstPiper: 'Waiting for the first piper',
     partRevealed: 'Part revealed:',
-    noQualifyingPractice: 'No qualifying group practice yet today.'
+    noQualifyingPractice: 'No qualifying group practice yet today.',
+    communityComplete: 'The Community Bagpipe is complete for today!',
+    partsCompletedToday: 'of 10 parts completed today.',
+    loadingGroup: "Loading today's group practice…",
+    groupUnavailable: 'Group practice is temporarily unavailable.'
   },
 
   ES: {
@@ -316,11 +321,18 @@ document.documentElement.lang =
     pipersPractisedToday: 'gaiteros han practicado hoy',
     waitingFirstPiper: 'Esperando al primer gaitero',
     partRevealed: 'Parte revelada:',
-   noQualifyingPractice: 'Todavía no hay práctica grupal válida hoy.'
+   noQualifyingPractice: 'Todavía no hay práctica grupal válida hoy.',
+   communityComplete: '¡La Gaita Comunitaria está completa por hoy!',
+   partsCompletedToday: 'de 10 partes completadas hoy.',
+   loadingGroup: 'Cargando la práctica del grupo de hoy…',
+   groupUnavailable: 'La práctica del grupo no está disponible temporalmente.'
   }
 };
 
 const t = TEXT[uiLanguage];
+
+  document.getElementById('groupViewTitle').textContent =
+  t.group;
 
   document.querySelector('[data-view="recordView"]')
   .lastChild.textContent = '\n  ' + t.record + '\n';
@@ -447,10 +459,18 @@ async function loadGroup() {
   const content = document.getElementById('groupContent');
   const pipersEl = document.getElementById('groupPipersToday');
   const bonusEl = document.getElementById('groupBonusPercent');
+  const titleEl =
+  document.getElementById('groupBagpipeTitle');
+
+const pipersTextEl =
+  document.getElementById('groupPipersText');
+
+const bonusLabelEl =
+  document.getElementById('groupBonusLabel');
   const bagpipeEl = document.getElementById('communityBagpipe');
   const messageEl = document.getElementById('groupMessage');
 
-  status.textContent = "Loading today's group practice…";
+  status.textContent = t.loadingGroup;
   content.style.display = 'none';
 
   try {
@@ -467,6 +487,15 @@ const communityBonusPercent = Math.max(
 );
     pipersEl.textContent = pipersToday;
     bonusEl.textContent = communityBonusPercent;
+    titleEl.textContent = t.communityBagpipe;
+
+bonusLabelEl.textContent =
+  t.communityBonusToday;
+
+pipersTextEl.textContent =
+  pipersToday === 1
+    ? t.piperPractisedToday
+    : t.pipersPractisedToday;
 
 const bagpipeImage =
   document.getElementById('communityBagpipeImage');
@@ -497,22 +526,22 @@ bagpipeImage.alt =
   ' of 10';
 
 if (bagpipeParts === 0) {
-  partNameEl.textContent = 'Waiting for the first piper';
+  partNameEl.textContent = t.waitingFirstPiper;
 } else {
   partNameEl.textContent =
-    'Part revealed: ' + bagpipePartNames[bagpipeParts];
-}    
+    t.partRevealed + ' ' + bagpipePartNames[bagpipeParts];
+}
 
-    if (bagpipeParts === 0) {
-      messageEl.textContent =
-        'No qualifying group practice yet today.';
-    } else if (bagpipeParts >= 10) {
-      messageEl.textContent =
-        'The Community Bagpipe is complete for today!';
-    } else {
-      messageEl.textContent =
-        bagpipeParts + ' of 10 parts completed today.';
-    }
+   if (bagpipeParts === 0) {
+  messageEl.textContent =
+    t.noQualifyingPractice;
+} else if (bagpipeParts >= 10) {
+  messageEl.textContent =
+    t.communityComplete;
+} else {
+  messageEl.textContent =
+    bagpipeParts + ' ' + t.partsCompletedToday;
+}
 
     status.textContent = '';
     content.style.display = 'block';
@@ -520,8 +549,7 @@ if (bagpipeParts === 0) {
   } catch (error) {
     console.warn('GROUP load failed:', error);
 
-    status.textContent =
-      'Group practice is temporarily unavailable.';
+    status.textContent = t.groupUnavailable;
     content.style.display = 'none';
   }
 }
