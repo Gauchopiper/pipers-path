@@ -281,8 +281,56 @@ if ('serviceWorker' in navigator) {
   const pupilId = params.get('p') || '';
   const accessKey = params.get('key') || '';
   const displayName = (params.get('n') || pupilId).trim();
+  const preferredLanguage =
+  (params.get('lang') || 'EN').trim().toUpperCase();
+
+const uiLanguage =
+  preferredLanguage === 'ES' ? 'ES' : 'EN';
+
+document.documentElement.lang =
+  uiLanguage === 'ES' ? 'es' : 'en';
 
   const identity = document.getElementById('identity');
+
+  const TEXT = {
+  EN: {
+    record: 'RECORD',
+    path: 'PATH',
+    group: 'GROUP',
+    communityBagpipe: 'Community Bagpipe',
+    communityBonusToday: 'Community bonus today:',
+    piperPractisedToday: 'piper practised today',
+    pipersPractisedToday: 'pipers practised today',
+    waitingFirstPiper: 'Waiting for the first piper',
+    partRevealed: 'Part revealed:',
+    noQualifyingPractice: 'No qualifying group practice yet today.'
+  },
+
+  ES: {
+    record: 'GRABAR',
+    path: 'CAMINO',
+    group: 'GRUPO',
+    communityBagpipe: 'Gaita Comunitaria',
+    communityBonusToday: 'Bonificación comunitaria de hoy:',
+    piperPractisedToday: 'gaitero ha practicado hoy',
+    pipersPractisedToday: 'gaiteros han practicado hoy',
+    waitingFirstPiper: 'Esperando al primer gaitero',
+    partRevealed: 'Parte revelada:',
+   noQualifyingPractice: 'Todavía no hay práctica grupal válida hoy.'
+  }
+};
+
+const t = TEXT[uiLanguage];
+
+  document.querySelector('[data-view="recordView"]')
+  .lastChild.textContent = '\n  ' + t.record + '\n';
+
+document.querySelector('[data-view="pathView"]')
+  .lastChild.textContent = '\n  ' + t.path + '\n';
+
+document.querySelector('[data-view="groupView"]')
+  .lastChild.textContent = '\n  ' + t.group + '\n';
+  
   if (pupilId && accessKey) {
     identity.textContent = displayName;
   } else {
