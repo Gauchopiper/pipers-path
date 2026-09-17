@@ -159,16 +159,18 @@
 <body>
 <header>
   <h1>Piper's Path</h1>
-  <div id="identity">Loading pupil link…</div>
+  <div id="identity"></div>
 </header>
 
 <main>
   <section id="recordView" class="view active">
 
     <div id="practiceTargetWrap" style="margin:0 auto 18px; max-width:320px; text-align:left;">
-  <label for="practiceTarget" style="display:block; font-weight:700; margin-bottom:6px;">
-    Practice for:
-  </label>
+    <label id="practiceForLabel"
+       for="practiceTarget"
+       style="display:block; font-weight:700; margin-bottom:6px;">
+  Practice for:
+</label>
 
   <select id="practiceTarget" style="
     width:100%;
@@ -178,7 +180,7 @@
     border-radius:10px;
     background:#fff;
   ">
-    <option value="">General practice</option>
+    <option id="generalPracticeOption" value="">General practice</option>
   </select>
       
       <div id="targetStatus" style="margin-top:6px; font-size:14px;"></div>
@@ -188,7 +190,7 @@
     <button id="recordButton" type="button">RECORD</button>
     <div id="status">Tap RECORD to begin</div>
 <div id="playbackWrap">
-  <p><strong>Your recording</strong></p>
+  <p><strong id="yourRecordingLabel">Your recording</strong></p>
   <audio id="playback" controls></audio>
 </div>
 </div>
@@ -330,7 +332,28 @@ document.documentElement.lang =
     badges: 'Badges',
 statusInProgress: 'IN PROGRESS',
 statusReadyForReview: 'READY FOR REVIEW',
-statusAchieved: 'ACHIEVED'
+statusAchieved: 'ACHIEVED',
+    practiceFor: 'Practice for:',
+generalPractice: 'General practice',
+yourRecording: 'Your recording',
+    recordButton: 'RECORD',
+stopButton: 'STOP',
+tapRecordToBegin: 'Tap RECORD to begin',
+recordingNow: 'Recording...',
+microphoneDenied: 'Microphone permission was denied.',
+microphoneNotFound: 'No microphone was found.',
+microphoneStartFailed: 'Could not start the microphone.',
+    practiceSaved: 'Practice saved ✓',
+recordingSaved: 'Recording saved ✓',
+couldNotSave: 'Could not save: ',
+uploadUnconfirmed: 'Recording made, but the upload could not be confirmed.',
+    targetSaved: 'Target saved ✓',
+targetUnconfirmed: 'Recording saved — target could not be confirmed',
+recordingNoPupilLink: 'Recording complete, but no pupil link was supplied.',
+    loadingPracticeTargets: 'Loading practice targets...',
+targetsUnavailableGeneralPractice:
+  'Targets unavailable — general practice is still available.',
+    testModeNoPupilLink: 'Test mode — no pupil link supplied'
   },
 
   ES: {
@@ -366,11 +389,47 @@ statusAchieved: 'ACHIEVED'
     badges: 'Insignias',
 statusInProgress: 'EN PROGRESO',
 statusReadyForReview: 'LISTO PARA REVISIÓN',
-statusAchieved: 'CONSEGUIDO'
+statusAchieved: 'CONSEGUIDO',
+    practiceFor: 'Practicar:',
+generalPractice: 'Práctica general',
+yourRecording: 'Tu grabación',
+    recordButton: 'GRABAR',
+stopButton: 'PARAR',
+tapRecordToBegin: 'Pulsa GRABAR para comenzar',
+recordingNow: 'Grabando...',
+microphoneDenied: 'Se denegó el permiso para usar el micrófono.',
+microphoneNotFound: 'No se encontró ningún micrófono.',
+microphoneStartFailed: 'No se pudo iniciar el micrófono.',
+    practiceSaved: 'Práctica guardada ✓',
+recordingSaved: 'Grabación guardada ✓',
+couldNotSave: 'No se pudo guardar: ',
+uploadUnconfirmed: 'La grabación se realizó, pero no se pudo confirmar que se guardara.',
+    targetSaved: 'Objetivo guardado ✓',
+targetUnconfirmed: 'Grabación guardada — no se pudo confirmar el objetivo',
+recordingNoPupilLink: 'Grabación completada, pero no se encontró el enlace personal del alumno.',
+    loadingPracticeTargets: 'Cargando objetivos de práctica...',
+targetsUnavailableGeneralPractice:
+  'Los objetivos no están disponibles — la práctica general sigue disponible.',
+    testModeNoPupilLink: 'Modo de prueba — no se proporcionó un enlace de alumno'
   }
 };
 
 const t = TEXT[uiLanguage];
+
+  document.getElementById('practiceForLabel').textContent =
+  t.practiceFor;
+
+document.getElementById('generalPracticeOption').textContent =
+  t.generalPractice;
+
+document.getElementById('yourRecordingLabel').textContent =
+  t.yourRecording;
+
+  document.getElementById('recordButton').textContent =
+  t.recordButton;
+
+document.getElementById('status').textContent =
+  t.tapRecordToBegin;
 
   function translatedTargetStatus(status) {
   const value = String(status || '').trim().toUpperCase();
@@ -412,7 +471,7 @@ document.querySelector('[data-view="groupView"]')
   if (pupilId && accessKey) {
     identity.textContent = displayName;
   } else {
-    identity.textContent = 'Test mode — no pupil link supplied';
+    identity.textContent = t.testModeNoPupilLink;
   }
 const practiceTarget = document.getElementById('practiceTarget');
   const practiceTargetStorageKey =
@@ -625,7 +684,7 @@ async function loadPracticeTargets() {
 
   const loadingOption = document.createElement('option');
   loadingOption.value = '';
-  loadingOption.textContent = 'Loading practice targets…';
+  loadingOption.textContent = t.loadingPracticeTargets;
   practiceTarget.appendChild(loadingOption);
 
   if (!pupilId || !accessKey) {
@@ -633,7 +692,7 @@ async function loadPracticeTargets() {
 
     const generalOption = document.createElement('option');
     generalOption.value = '';
-    generalOption.textContent = 'General practice';
+    generalOption.textContent = t.generalPractice;
     practiceTarget.appendChild(generalOption);
 
     practiceTarget.disabled = false;
@@ -647,7 +706,7 @@ async function loadPracticeTargets() {
 
     const generalOption = document.createElement('option');
     generalOption.value = '';
-    generalOption.textContent = 'General practice';
+    generalOption.textContent = t.generalPractice;
     practiceTarget.appendChild(generalOption);
 
     const eligibleTargets = (data.targets || []).filter(target => {
@@ -698,7 +757,7 @@ if (status) {
 
     const generalOption = document.createElement('option');
     generalOption.value = '';
-    generalOption.textContent = 'General practice';
+    generalOption.textContent = t.generalPractice;
     practiceTarget.appendChild(generalOption);
 
     practiceTarget.disabled = false;
@@ -706,7 +765,7 @@ if (status) {
     const status = document.getElementById('targetStatus');
     if (status) {
       status.textContent =
-        'Targets unavailable — general practice is still available.';
+  t.targetsUnavailableGeneralPractice;
     }
   }
 }
@@ -786,7 +845,7 @@ try {
   console.warn('Target confirmation failed:', error);
 }
 if (confirmed) {
-  targetStatus.textContent = 'Target saved ✓';
+  targetStatus.textContent = t.targetSaved;
   return true;
 }
 // One safe retry only when read-back proves the recording exists
@@ -819,7 +878,7 @@ if (
     );
 
     if (retrySession && retrySession.targetId === targetId) {
-      targetStatus.textContent = 'Target saved ✓';
+      targetStatus.textContent = t.targetSaved;
       return true;
     }
   } catch (error) {
@@ -827,12 +886,12 @@ if (
   }
 }
 targetStatus.textContent =
-  'Recording saved — target could not be confirmed';
+  t.targetUnconfirmed;
 return false;
   } catch (error) {
     console.error('Target tagging error:', error);
     targetStatus.textContent =
-      'Recording saved — target could not be confirmed';
+  t.targetUnconfirmed;
     return false;
   }
 }
@@ -936,20 +995,20 @@ return false;
       startedAt = Date.now();
       playbackWrap.style.display = 'none';
       timerEl.textContent = '00:00';
-      recordButton.textContent = 'STOP';
+      recordButton.textContent = t.stopButton;
       recordButton.classList.add('recording');
-      statusEl.textContent = 'Recording…';
+      statusEl.textContent = t.recordingNow;
       updateTimer();
       timerHandle = setInterval(updateTimer, 500);
 
     } catch (err) {
       console.error(err);
       if (err && err.name === 'NotAllowedError') {
-        statusEl.textContent = 'Microphone permission was denied.';
+        statusEl.textContent = t.microphoneDenied;
       } else if (err && err.name === 'NotFoundError') {
-        statusEl.textContent = 'No microphone was found.';
+        statusEl.textContent = t.microphoneNotFound;
       } else {
-        statusEl.textContent = 'Could not start the microphone.';
+        statusEl.textContent = t.microphoneStartFailed;
       }
     }
   }
@@ -972,7 +1031,7 @@ function stopRecording() {
 
   timerEl.textContent = formatTime(elapsedSeconds);
 
-  recordButton.textContent = 'RECORD';
+  recordButton.textContent = t.recordButton;
   recordButton.classList.remove('recording');
 
   if (mediaRecorder && mediaRecorder.state !== 'inactive') {
@@ -1000,7 +1059,7 @@ startRecording();
   try {
     if (!pupilId || !accessKey) {
       statusEl.textContent =
-        'Recording complete, but no pupil link was supplied.';
+  t.recordingNoPupilLink;
       return;
     }
 
@@ -1033,9 +1092,9 @@ startRecording();
 
     if (result.ok) {
       statusEl.textContent =
-        result.qualifying === 'Yes'
-          ? 'Practice saved ✓'
-          : 'Recording saved ✓';
+  result.qualifying === 'Yes'
+    ? t.practiceSaved
+    : t.recordingSaved;
       const selectedTargetId = recordingTargetId;
 
 if (selectedTargetId) {
@@ -1046,7 +1105,7 @@ if (selectedTargetId) {
       
     } else {
       statusEl.textContent =
-        'Could not save: ' + result.error;
+  t.couldNotSave + result.error;
     }
 
 } catch (err) {
@@ -1070,7 +1129,7 @@ try {
   console.warn('Recording confirmation failed:', checkError);
 }
   if (recoveredSession) {
-    statusEl.textContent = 'Recording saved ✓';
+    statusEl.textContent = t.recordingSaved;
 
     if (recordingTargetId) {
       tagSavedRecording(
@@ -1082,8 +1141,8 @@ try {
     }
 
   } else {
-    statusEl.textContent =
-      'Recording made, but the upload could not be confirmed.';
+   statusEl.textContent =
+  t.uploadUnconfirmed;
   }
 }
 }
