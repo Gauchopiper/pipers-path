@@ -1,0 +1,5 @@
+# Google authentication belongs only on the authorised computer or in secrets.
+.clasprc.json
+.clasprc.*.json
+**/.clasp.json
+node_modules/
