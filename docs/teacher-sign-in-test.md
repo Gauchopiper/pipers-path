@@ -7,11 +7,14 @@ the approved CONNECTION TEST Script ID. Upload does not deploy or run the code.
 ## Owner sequence
 
 1. Run **Apps Script test connection** from the reviewed branch with `TEST`.
-2. In the CONNECTION TEST editor, refresh, select `setupTestEnvironment_` and
-   click Run. Review Google's new Sheet/Drive permissions. This private editor
+2. In the CONNECTION TEST editor, refresh, select `setupTestEnvironment` and
+   click Run. Review Google's new Sheet/Drive permissions. This owner-checked
    function creates a test folder, a recording subfolder and a test Sheet, with
    two synthetic pupils and two synthetic practice rows. No audio or personal
-   links are copied. Its trailing underscore blocks HTML client RPC access.
+   links are copied. The public entry point verifies the script file's actual
+   Drive owner before any setup writes, including on a browser RPC invocation.
+   The private helper retains its trailing underscore; the editor hides such
+   functions from the Run dropdown. A missing owner or inaccessible script fails closed.
 3. Keep the Sheet/folder links from the execution log. Setup stores resource IDs
    privately in Script Properties; normal reruns reuse resources and preserve
    rows. A failure in the tiny interval between resource creation and saving its
@@ -35,7 +38,7 @@ to FALSE; on refresh it must be denied. Duplicate matching teacher rows also fai
 closed. Test a signed-out/private window, phone and desktop.
 
 Never copy real pupils, keys, recordings or identity mappings into this experiment.
-Display labels are escaped before rendering. There are no web write handlers.
+Display labels are escaped before rendering. Setup is owner-only; there are no teacher write controls.
 Only identity, configuration and allowlist checks precede the pupil read.
 
 ## What this experiment can and cannot prove
