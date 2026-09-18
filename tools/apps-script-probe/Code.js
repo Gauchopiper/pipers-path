@@ -12,12 +12,21 @@ function assertTestProject_() {
   }
 }
 
-// Run from the Apps Script editor, once, as the test project owner.
+// Public editor entry point. Authorisation is enforced by the private helper.
+function setupTestEnvironment() {
+  return setupTestEnvironment_();
+}
+
+// Run from the Apps Script editor as the actual test project owner.
 // The trailing underscore prevents browser google.script.run calls.
 function setupTestEnvironment_() {
   assertTestProject_();
   const email = String(Session.getEffectiveUser().getEmail() || '').trim().toLowerCase();
   if (!email) throw new Error('Sign in as the test project owner.');
+  const owner = DriveApp.getFileById(TEST_PROJECT_ID).getOwner();
+  if (!owner || String(owner.getEmail()).trim().toLowerCase() !== email) {
+    throw new Error('Only the script file owner can run test setup.');
+  }
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
