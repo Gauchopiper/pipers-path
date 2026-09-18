@@ -1,0 +1,43 @@
+name: Apps Script test connection
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type TEST to upload the harmless connection probe
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apps-script-test
+  cancel-in-progress: false
+
+jobs:
+  upload-test-probe:
+    if: inputs.confirmation == 'TEST'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: apps-script-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check source syntax
+        run: node --check tools/apps-script-probe/Code.js
+      - name: Install pinned clasp
+        run: npm install --global @google/clasp@3.4.1
+      - name: Validate target and prepare credentials
+        env:
+          TEST_SCRIPT_ID: ${{ vars.APPS_SCRIPT_TEST_ID }}
+          CLASP_AUTH_JSON: ${{ secrets.CLASP_AUTH_JSON }}
+        run: node tools/prepare-clasp-test.cjs
+      - name: Upload probe to test project only
+        working-directory: tools/apps-script-probe
+        run: clasp push
+      - name: Remove temporary credentials
+        if: always()
+        run: node -e "const fs=require('node:fs'); const os=require('node:os'); const path=require('node:path'); fs.rmSync(path.join(os.homedir(), '.clasprc.json'), {force:true}); fs.rmSync('tools/apps-script-probe/.clasp.json', {force:true});"
