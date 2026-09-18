@@ -37,7 +37,7 @@ jobs:
         run: node tools/prepare-clasp-test.cjs
       - name: Upload probe to test project only
         working-directory: tools/apps-script-probe
-        run: clasp push
+        run: clasp push --force
       - name: Remove temporary credentials
         if: always()
         run: node -e "const fs=require('node:fs'); const os=require('node:os'); const path=require('node:path'); fs.rmSync(path.join(os.homedir(), '.clasprc.json'), {force:true}); fs.rmSync('tools/apps-script-probe/.clasp.json', {force:true});"
