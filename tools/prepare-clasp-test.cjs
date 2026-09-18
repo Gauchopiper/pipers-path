@@ -11,6 +11,9 @@ if (!/^[A-Za-z0-9_-]{20,}$/.test(testScriptId)) {
 if (testScriptId === liveScriptId) {
   throw new Error('Refusing to upload to the live Piper’s Path script.');
 }
+if (testScriptId !== '1LJNfJzCwrVsIiaXB2Amxrkd8els6Nd_t3gK7AwyRfus8dzOgmsHTvuDJ') {
+  throw new Error('Target must be the explicitly approved CONNECTION TEST project.');
+}
 let auth;
 try {
   auth = JSON.parse(process.env.CLASP_AUTH_JSON || '');
