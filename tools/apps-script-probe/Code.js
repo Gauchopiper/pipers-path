@@ -136,7 +136,14 @@ function teacherDiagnostic_() {
   return {ok: true, email, pupils, folderReadable};
 }
 
-function doGet() {
+function doGet(e) {
+  // Isolate Google execution/HTML delivery from identity and file access.
+  // This route returns fixed text only and never reads organisation data.
+  if (e && e.parameter && e.parameter.diagnostic === 'ping') {
+    return HtmlService.createHtmlOutput('<h1>Piper’s Path — connection diagnostic</h1>' +
+      '<p>DIAGNOSTIC 2: Web app code reached.</p>' +
+      '<p>No identity, spreadsheet or Drive data was read.</p>');
+  }
   let result;
   try { result = teacherDiagnostic_(); }
   catch (_) { result = {ok: false, message: 'The test could not complete. Ask the owner to check setup and permissions.'}; }
