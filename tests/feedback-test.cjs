@@ -60,3 +60,9 @@ props.FEEDBACK_CENTRAL_URL='https://script.google.com/macros/s/central/exec';pro
 c.UrlFetchApp={fetch:(url,options)=>{const ack=receiver.doPost({postData:{contents:options.payload}});return {getResponseCode:()=>200,getContentText:()=>JSON.stringify(ack)}}};
 const remote=c.submitFeedback(input());assert.equal(remote.central,'SENT');
 console.log('PASS expired/cross-organisation tickets, anonymous setup denial and signed remote delivery.');
+
+// Apps Script requires unique base names across script and HTML files.
+const sourceNames=fs.readdirSync(base).filter(n=>/\.(js|gs|html)$/.test(n)).map(n=>n.replace(/\.[^.]+$/, '').toLowerCase());
+assert.equal(new Set(sourceNames).size, sourceNames.length, 'Apps Script file base names must be unique');
+assert(fs.existsSync(base+'FeedbackForm.html'));
+console.log('PASS Apps Script file-name compatibility.');
