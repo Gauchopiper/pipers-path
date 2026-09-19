@@ -8,6 +8,8 @@ function scenario(options = {}) {
   let pupilReads = 0;
   const values = {
     TEACHERS: [['ID', 'Email', 'Role', 'Active'], ['T1', 'teacher@example.test', 'TEACHER', true]],
+    'ORG CONFIG': [['Key', 'Value'], ['Organisation Name', '<School>']],
+    'PRACTICE LOG': [['Pupil ID', 'Date', 'Duration (min)'], ['TEST001', '2026-09-18', 6]],
     PUPILS: [['ID', 'Name', 'Active', 'Lang'], ['TEST001', '<img src=x>', true, 'EN']]
   };
   if (options.inactive) values.TEACHERS[1][3] = false;
@@ -22,7 +24,7 @@ function scenario(options = {}) {
       ({TEST_READY: options.notReady ? '' : '1', TEST_SHEET_ID: 'dummy-sheet', TEST_RECORDINGS_ID: 'dummy-folder'})[key]})},
     SpreadsheetApp: {openById: () => {
       if (options.noSheetAccess) throw Error('forbidden');
-      return {getSheetByName: name => {
+      return {getSpreadsheetTimeZone: () => 'Europe/Madrid', getSheetByName: name => {
         if (name === 'PUPILS') pupilReads++;
         return {getDataRange: () => ({getValues: () => values[name]})};
       }};
@@ -69,3 +71,19 @@ const blank = {getLastRow: () => 0, getRange: () => ({setValues: () => {written+
 good.c.seedTestTab_({getSheetByName: () => blank}, 'PUPILS', [['ID'], ['TEST001']]);
 assert.equal(written, 1);
 console.log('PASS: identity, allowlist, file access, project guard, HTML escaping and non-overwriting seed checks.');
+
+const summary = good.c.summarisePractice_([{id:'A', label:'A'}, {id:'B', label:'B'}],
+  [['Pupil ID','Date','Duration (min)'], ['A','2026-09-18',6], ['A','2026-09-19','3.5'],
+   ['A','2026-02-30',4], ['A','2026-09-19',-1], ['A','2026-09-19',''],
+   ['OTHER','2026-09-19',100]], 'Europe/Madrid');
+assert.equal(summary.sessions, 2);
+assert.equal(summary.minutes, 9.5);
+assert.equal(summary.skipped, 3);
+assert.equal(summary.entries[0].latest, '2026-09-19');
+assert.equal(summary.entries[1].sessions, 0);
+assert.throws(() => good.c.summarisePractice_([], [['Unexpected']], 'Europe/Madrid'), /headers/);
+assert(html.includes('&lt;School&gt;'));
+assert(html.includes('Practice overview'));
+assert(!scenario({inactive:true}).c.doGet().includes('Practice overview'));
+assert(good.c.doGet({parameter:{diagnostic:'ping'}}).includes('DIAGNOSTIC 2'));
+console.log('PASS: dashboard totals, invalid rows, inactive pupils, empty history and escaped organisation name.');
