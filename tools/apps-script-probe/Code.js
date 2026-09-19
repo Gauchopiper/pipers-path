@@ -201,7 +201,7 @@ function renderDashboard_(result) {
 function doGet(e) {
   if (e && e.parameter && e.parameter.feedback === '1') {
     assertTestProject_();
-    return HtmlService.createHtmlOutputFromFile('Feedback').addMetaTag('viewport', 'width=device-width, initial-scale=1');
+    return HtmlService.createHtmlOutputFromFile('FeedbackForm').addMetaTag('viewport', 'width=device-width, initial-scale=1');
   }
   // Isolate Google execution/HTML delivery from identity and file access.
   // This route returns fixed text only and never reads organisation data.
