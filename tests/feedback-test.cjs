@@ -23,6 +23,13 @@ const centralJSON=JSON.stringify(centralTabs);for(const forbidden of ['Secret fu
 c.submitFeedback(a);assert.equal(tabs['TEST FEEDBACK'].rows.length,2);assert.equal(centralTabs['TEST FEEDBACK'].rows.length,2);
 const suggestion=input('suggestion');suggestion.description='=IMPORTXML("example")';c.submitFeedback(suggestion);assert(tabs['TEST FEEDBACK'].rows[2][6].startsWith("'="));
 outage=true;const pending=c.submitFeedback(input('confusing'));assert.equal(pending.central,'PENDING');assert.equal(tabs['TEST FEEDBACK'].rows.length,4);
+const retryLogs=[];c.console={log:message=>retryLogs.push(message)};
+c.retryFeedbackDelivery();
+assert(retryLogs.some(s=>s.includes('opening central workbook: Service operation failed')));
+assert(retryLogs.some(s=>s.includes('still pending 1')));
+for(const secret of ['Secret full name','personal detail','private-key','teacher@example.test'])assert(!retryLogs.join(' ').includes(secret));
+assert.equal(tabs['TEST FEEDBACK'].rows[3][12],'PENDING');
+c.console=console;
 outage=false;c.retryFeedbackDelivery();assert.equal(tabs['TEST FEEDBACK'].rows[3][12],'SENT');assert.equal(centralTabs['TEST FEEDBACK'].rows.length,4);
 // Simulate central success but local acknowledgement lost.
 tabs['TEST FEEDBACK'].rows[3][12]='PENDING';c.retryFeedbackDelivery();assert.equal(centralTabs['TEST FEEDBACK'].rows.length,4);
