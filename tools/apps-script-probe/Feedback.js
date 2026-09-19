@@ -90,21 +90,38 @@ function feedbackInput_(input) {
 function feedbackCell_(value) {return /^[=+\-@\t\r\n]/.test(String(value)) ? "'"+value : value;}
 function feedbackCentralRow_(row) {return [row[0],row[1],row[2],row[4],row[5],row[8],row[9],row[10],false];}
 function deliverFeedback_(row,c) {
+  let stage='configuration';
+  try {
   const props=PropertiesService.getScriptProperties(), endpoint=props.getProperty('FEEDBACK_CENTRAL_URL');
   if(endpoint) {
     if(!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(endpoint)) throw Error('Invalid central endpoint');
     const secret=props.getProperty('FEEDBACK_CENTRAL_SECRET');
     if(!secret) throw Error('Central secret missing');
     const body=JSON.stringify({org:c.org,sentAt:Date.now(),row:feedbackCentralRow_(row)});
+    stage='central HTTP request';
     const response=UrlFetchApp.fetch(endpoint,{method:'post',contentType:'application/json',payload:JSON.stringify({body,signature:feedbackMac_(body,secret)}),muteHttpExceptions:true});
+    stage='central HTTP acknowledgement';
     const ack=JSON.parse(response.getContentText());
     if(response.getResponseCode()!==200 || !ack.ok || ack.reference!==row[0]) throw Error('Central delivery failed');
     return;
   }
   if(!c.central || c.central===c.sheet) throw Error('Separate central destination required');
-  const central=feedbackTab_(SpreadsheetApp.openById(c.central),'TEST FEEDBACK',CENTRAL_HEADERS);
+  stage='opening central workbook';
+  const centralBook=SpreadsheetApp.openById(c.central);
+  stage='checking central TEST FEEDBACK headers';
+  const central=feedbackTab_(centralBook,'TEST FEEDBACK',CENTRAL_HEADERS);
+  stage='reading central records';
   const matches=central.getDataRange().getValues().slice(1).filter(r=>r[0]===row[0] && r[1]===row[1]);
-  if(!matches.length) {central.appendRow(feedbackCentralRow_(row)); SpreadsheetApp.flush();}
+  if(!matches.length) {stage='writing central record'; central.appendRow(feedbackCentralRow_(row)); SpreadsheetApp.flush();}
+  } catch(error) {
+    // Never log raw service errors: they can contain URLs, IDs or response bodies.
+    const message=String(error && error.message || '');
+    const known=['Invalid central endpoint','Central secret missing','Central delivery failed','Separate central destination required','Unexpected feedback headers.'];
+    const reason=known.includes(message)?message:/permission|access denied|not have access|authorization|authorisation/i.test(message)?'Access or authorisation failure':/quota|too many|limit exceeded/i.test(message)?'Service limit reached':'Service operation failed';
+    const safe=Error(stage+': '+reason);
+    safe.feedbackDiagnostic=true;
+    throw safe;
+  }
 }
 function submitFeedback(input) {
   const c=feedbackConfig_();
@@ -139,13 +156,18 @@ function retryFeedbackDelivery() {
   const lock=LockService.getScriptLock(); lock.waitLock(10000);
   try {
     const tab=feedbackTab_(SpreadsheetApp.openById(c.sheet),'TEST FEEDBACK',FEEDBACK_HEADERS);
-    let attempted=0;
+    const mode=PropertiesService.getScriptProperties().getProperty('FEEDBACK_CENTRAL_URL')?'HTTP receiver':'direct workbook';
+    console.log('Feedback retry destination mode: '+mode);
+    let attempted=0, sent=0;
     tab.getDataRange().getValues().slice(1).forEach((row,i)=>{
       if(row[12]==='SENT' || attempted>=50) return;
       attempted++;
-      let status='PENDING'; try{deliverFeedback_(row,c);status='SENT';}catch(_){}
+      let status='PENDING';
+      try {deliverFeedback_(row,c);status='SENT';sent++;}
+      catch(error) {console.log('Feedback retry failed: '+(error.feedbackDiagnostic?error.message:'Unclassified delivery failure'));}
       tab.getRange(i+2,13,1,2).setValues([[status,Number(row[13]||0)+1]]);
     });
+    console.log('Feedback retry: attempted '+attempted+', sent '+sent+', still pending '+(attempted-sent)+'.');
     return {attempted};
   } finally {lock.releaseLock();}
 }
