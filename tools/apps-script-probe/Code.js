@@ -199,6 +199,7 @@ function renderDashboard_(result) {
 }
 
 function doGet(e) {
+  if (e && e.parameter && e.parameter.download === '1') return pupilTestDownload_();
   if (e && e.parameter && e.parameter.pupil === '1') {
     assertTestProject_();
     return HtmlService.createHtmlOutputFromFile('PupilPreview').addMetaTag('viewport', 'width=device-width, initial-scale=1');
