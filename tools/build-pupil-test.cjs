@@ -29,3 +29,25 @@ html=html.replace('<body>','<body><p style="padding:12px;background:#fff1cb">TES
 if(html.includes('AKfycbwZRT0') || /fetch\(BACKEND_URL/.test(html))throw Error('Production transport remains');
 fs.writeFileSync('tools/apps-script-probe/PupilPreview.html',html);
 console.log('Built isolated pupil preview with RPC transport; production index unchanged.');
+
+// Standalone desktop fallback: Chrome file pages can request a microphone without
+// the enclosing Apps Script iframe. The downloaded file contains no pupil key.
+const standaloneBridge=`
+const url='__TEST_ENDPOINT__';
+const supplied=prompt('Paste your dummy pupil test link. It is used only in this window.');
+if(supplied){
+ const parsed=new URL(supplied);
+ if(parsed.origin!=='https://script.google.com'||parsed.pathname!==new URL(url).pathname)throw Error('Use this test deployment link.');
+ const testLocation={hash:parsed.hash.slice(1)};
+ window.PIPERS_FEEDBACK={url};
+ function testFetch(route,options){
+  if(route!=='isolated-test-rpc')return Promise.reject(Error('Test route required'));
+  return fetch(url,{...options,credentials:'omit',redirect:'follow'});
+ }
+ ${script}
+ ${feedback}
+}
+`;
+const standalone=html.replace('<script>'+bridge+'</script>','<script>'+standaloneBridge+'</script>');
+if(standalone.includes('google.script.run')||standalone.includes('AKfycbwZRT0'))throw Error('Standalone transport invalid');
+fs.writeFileSync('tools/apps-script-probe/PupilStandalone.html',standalone);
