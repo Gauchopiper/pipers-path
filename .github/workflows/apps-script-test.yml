@@ -26,10 +26,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Build isolated pupil preview
+        run: node tools/build-pupil-test.cjs
+      - name: Check pupil test recording
+        run: node tests/pupil-recording-test.cjs
       - name: Check source syntax
         run: node --check tools/apps-script-probe/Code.js
       - name: Check authentication boundaries with dummy services
         run: node tests/teacher-sign-in-test.cjs
+      - name: Check dual feedback
+        run: node tests/feedback-test.cjs
       - name: Install pinned clasp
         run: npm install --global @google/clasp@3.4.1
       - name: Validate target and prepare credentials

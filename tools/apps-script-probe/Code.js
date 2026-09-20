@@ -22,7 +22,7 @@ function setupTestEnvironment() {
 function setupTestEnvironment_() {
   assertTestProject_();
   const email = String(Session.getEffectiveUser().getEmail() || '').trim().toLowerCase();
-  if (!email) throw new Error('Sign in as the test project owner.');
+  if (!email || String(Session.getActiveUser().getEmail() || '').trim().toLowerCase() !== email) throw new Error('Sign in as the test project owner.');
   const owner = DriveApp.getFileById(TEST_PROJECT_ID).getOwner();
   if (!owner || String(owner.getEmail()).trim().toLowerCase() !== email) {
     throw new Error('Only the script file owner can run test setup.');
@@ -195,10 +195,19 @@ function renderDashboard_(result) {
     '</div>' + (summary.skipped ? '<p class="notice">' + summary.skipped + ' practice rows have invalid dates or durations and were excluded.</p>' : '') +
     '</section><footer><p>Signed in: ' + h(result.email) + '</p><p>Teacher access: passed · Test recording folder: ' +
     (result.folderReadable ? 'readable' : 'permission required') +
-    '</p><p>Read-only preview. Refresh this page to update the figures. Audio playback and editing are not available yet.</p></footer>';
+    '</p>' + teacherFeedbackControl_() + '<p>Read-only preview. Refresh this page to update the figures. Audio playback and editing are not available yet.</p></footer>';
 }
 
 function doGet(e) {
+  if (e && e.parameter && e.parameter.download === '1') return pupilTestDownload_();
+  if (e && e.parameter && e.parameter.pupil === '1') {
+    assertTestProject_();
+    return HtmlService.createHtmlOutputFromFile('PupilPreview').addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  }
+  if (e && e.parameter && e.parameter.feedback === '1') {
+    assertTestProject_();
+    return HtmlService.createHtmlOutputFromFile('FeedbackForm').addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  }
   // Isolate Google execution/HTML delivery from identity and file access.
   // This route returns fixed text only and never reads organisation data.
   if (e && e.parameter && e.parameter.diagnostic === 'ping') {
@@ -215,4 +224,9 @@ function doGet(e) {
     '<title>Piper’s Path — Teacher dashboard</title><style>' +
     '*{box-sizing:border-box}body{font:16px system-ui,sans-serif;background:#f5f7f3;color:#16352c;margin:0;padding:24px}main{max-width:1050px;margin:auto}h1{font-size:clamp(26px,5vw,38px);margin:8px 0}h2{margin-bottom:8px}h3{margin:0;font-size:20px}.eyebrow{font-size:12px;letter-spacing:.12em;font-weight:700}.notice{background:#fff1cb;padding:12px 16px;border-radius:10px;margin:20px 0}.stats,.pupils{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.stats>div,article{background:white;border:1px solid #dce4dd;border-radius:14px;padding:20px}.stats strong{display:block;font-size:32px}.stats span,.muted,dt,footer{color:#52675e}.pupils{grid-template-columns:repeat(2,minmax(0,1fr))}article p{margin-top:5px}dl{margin:20px 0 0}dl>div{display:flex;justify-content:space-between;gap:12px;margin:12px 0}dd{margin:0;font-weight:600}footer{margin-top:28px;font-size:14px;overflow-wrap:anywhere}h1,h3{overflow-wrap:anywhere}@media(max-width:600px){body{padding:16px}.stats{gap:8px}.stats>div{padding:12px 8px}.stats strong{font-size:26px}.stats span{font-size:12px}.pupils{grid-template-columns:1fr}}</style>' +
     '</head><body><main>' + body + '</main></body></html>');
+}
+
+function teacherFeedbackControl_() {
+  return '<button type="button" id="feedbackOpen">Send feedback</button><p id="feedbackResult" role="status"></p>' +
+    '<script>document.getElementById("feedbackOpen").addEventListener("click",function(){const b=this,s=document.getElementById("feedbackResult");b.disabled=true;s.textContent="Preparing feedback…";google.script.run.withSuccessHandler(function(url){s.textContent="";const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener noreferrer";a.textContent="Open feedback form";s.appendChild(a);b.disabled=false;}).withFailureHandler(function(){s.textContent="Feedback is not ready. Ask the organisation owner to check setup.";b.disabled=false;}).getFeedbackLink();});</script>';
 }
