@@ -42,3 +42,21 @@ Additional isolated regression tests execute the original navigation and recordi
 Still outstanding: full reference equality inspection on the live sheets, feedback submission after teacher revocation on Google, phone/browser layout, and real microphone-to-test-Drive upload plus Path/Group data rendering on an isolated pupil preview with a recording-capable test backend. The current CONNECTION TEST adapter provides feedback and teacher overview, not the complete recording backend. No production release or pupil feedback activation is authorised by these test results. Screenshots remain deferred; the API rejects attachments.
 
 Source references: https://developers.google.com/apps-script/guides/web and https://developers.google.com/apps-script/guides/html/communication .
+
+
+## Isolated recording preview (2026-09-20)
+
+The test workflow now generates PupilPreview.html from the unchanged index.html using tools/build-pupil-test.cjs. It replaces the production fetch transport with authenticated google.script.run calls to pupilTestApi. Dummy credentials remain in the URL fragment. The production index, recording endpoint and disabled feedback configuration are unchanged. The preview reuses Record/Path/Group controls and feedback link, with a prominent test notice. Static bagpipe images load from the existing public site without a referrer.
+
+Owner steps:
+1. Run Apps Script test connection on feature/dual-feedback, confirmation TEST.
+2. Refresh the CONNECTION TEST editor and run setupPupilRecordingTest. It validates the test workbook name and recording folder parent, preserves practice rows, adds Drive File Link and End Time columns, and pins test destinations.
+3. Update only the Feedback TEST deployment to a new version, retaining owner execution and its existing access setting.
+4. Reuse the private dummy pupil feedback URL, replacing ?feedback=1 with ?pupil=1, retaining #p=TEST001&key=...&page=record.
+5. On laptop and phone, record a short dummy clip, stop, play it back, then open Path. Verify the new row and file in the test workbook/TEST Recordings. Open Group and submit feedback from each pupil screen. A clip below five minutes does not increase qualifying Group count.
+
+Limits: ten minutes and approximately 5 MB per clip, 100 test sessions per dummy pupil. Only TESTnnn pupils with valid active feedback-test credentials can use this adapter. Destination changes require owner setup again. Session IDs deduplicate log writes; deterministic filenames let a retry reuse a file if a preceding Sheet write failed. Files inherit the existing test folder permissions; the adapter never makes them public.
+
+Path returns stored sessions and basic totals; Group counts today's active qualifying dummy pupils. Targets, badges, daily community credit and production scoring parity are deliberately not implemented in this adapter. These results cannot certify those production features. The server trusts client timing within validated bounds, suitable for this dummy test only.
+
+Automated checks cover invalid credentials, production-shaped pupil IDs, ticket misuse, unsupported actions, audio limits/types, changed destinations, wrong project, duplicate sessions, basic Path/Group responses, and generated inline JavaScript syntax. Browser microphone permission in the Apps Script iframe, real audio upload/playback, mobile rendering and Google service behaviour remain live checks; no successful real recording is claimed yet. If iframe permissions block microphone access, a separately hosted secure preview will be needed.
