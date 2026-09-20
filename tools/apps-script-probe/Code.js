@@ -199,6 +199,10 @@ function renderDashboard_(result) {
 }
 
 function doGet(e) {
+  if (e && e.parameter && e.parameter.pupil === '1') {
+    assertTestProject_();
+    return HtmlService.createHtmlOutputFromFile('PupilPreview').addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  }
   if (e && e.parameter && e.parameter.feedback === '1') {
     assertTestProject_();
     return HtmlService.createHtmlOutputFromFile('FeedbackForm').addMetaTag('viewport', 'width=device-width, initial-scale=1');
