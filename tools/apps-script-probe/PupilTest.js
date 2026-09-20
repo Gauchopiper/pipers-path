@@ -67,3 +67,21 @@ function pupilTestFeedbackUrl() {
   if(!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(url||'')) throw Error('Test feedback URL required.');
   return url;
 }
+
+// Same authenticated test adapter, exposed for the standalone pupil preview.
+function doPost(e) {
+  assertTestProject_();
+  let result;
+  try {
+    if(!e || !e.postData || typeof e.postData.contents!=='string' || e.postData.contents.length>7100000) throw Error('Invalid request');
+    result=pupilTestApi(JSON.parse(e.postData.contents));
+  } catch (_) {result={ok:false,error:'Test request could not be completed. Check your dummy link and test setup.'};}
+  return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+}
+function pupilTestDownload_() {
+  assertTestProject_();
+  const url=pupilTestFeedbackUrl();
+  const html=HtmlService.createHtmlOutputFromFile('PupilStandalone').getContent().replace('__TEST_ENDPOINT__',url);
+  const encoded=Utilities.base64Encode(html,Utilities.Charset.UTF_8);
+  return HtmlService.createHtmlOutput('<h1>Piper’s Path — desktop recording test</h1><p>Download the test page, open the downloaded file in Chrome, then paste your existing dummy pupil test link when asked. No pupil key is stored in the downloaded file.</p><button id="download">Download test page</button><script>document.getElementById("download").onclick=function(){const bytes=Uint8Array.from(atob("'+encoded+'"),c=>c.charCodeAt(0));const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([bytes],{type:"text/html"}));a.download="Pipers-Path-Recording-Test.html";a.click();};</script>');
+}
