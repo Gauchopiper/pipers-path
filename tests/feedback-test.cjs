@@ -73,3 +73,25 @@ const sourceNames=fs.readdirSync(base).filter(n=>/\.(js|gs|html)$/.test(n)).map(
 assert.equal(new Set(sourceNames).size, sourceNames.length, 'Apps Script file base names must be unique');
 assert(fs.existsSync(base+'FeedbackForm.html'));
 console.log('PASS Apps Script file-name compatibility.');
+
+// Exercise the original navigation/recording handlers with feedback enabled.
+// All media and uploads are simulated; no network or microphone is used.
+(async()=>{
+ const element=()=>({dataset:{},style:{},listeners:{},classList:{values:new Set(),add(v){this.values.add(v)},remove(v){this.values.delete(v)},contains(v){return this.values.has(v)}},addEventListener(name,fn){this.listeners[name]=fn}});
+ const ids={};for(const id of ['recordView','pathView','groupView','recordButton','status','timer','playbackWrap','playback'])ids[id]=element();
+ const nav=['recordView','pathView','groupView'].map(view=>Object.assign(element(),{dataset:{view}}));nav[0].classList.add('active');ids.recordView.classList.add('active');
+ let link,pathLoads=0,groupLoads=0,uploads=0,stopped=0;
+ class Recorder {static isTypeSupported(){return true}constructor(){this.events={};this.mimeType='audio/webm';this.state='inactive'}addEventListener(n,fn){this.events[n]=fn}start(){this.state='recording'}stop(){this.state='inactive';this.events.dataavailable({data:new Blob(['dummy audio'])});this.events.stop()}}
+ const env={console,Date,String,Blob,URL,URLSearchParams,crypto,MediaRecorder:Recorder,setInterval:()=>1,clearInterval(){},t:{recordButton:'RECORD',stopButton:'STOP',recordingNow:'Recording'},practiceTarget:{value:''},targetStatus:{},loadPath(){pathLoads++},loadGroup(){groupLoads++},uploadRecording(blob){assert(blob.size>0);uploads++},location:{search:'?p=TEST001&key=dummy'},navigator:{language:'en',mediaDevices:{getUserMedia:async()=>({getTracks:()=>[{stop(){stopped++}}]})}},document:{documentElement:{lang:'en'},getElementById:id=>ids[id],querySelectorAll:selector=>selector==='.navButton'?nav:[ids.recordView,ids.pathView,ids.groupView],querySelector:selector=>selector==='main'?{appendChild(el){link=el}}:nav.find(b=>b.classList.contains('active')),createElement:element}};
+ env.window={MediaRecorder:Recorder,PIPERS_FEEDBACK:{url:'https://script.google.com/macros/s/dummy/exec'}};
+ vm.createContext(env);
+ const handlers=html.slice(html.indexOf("  const navButtons ="),html.indexOf('  async function uploadRecording('));
+ vm.runInContext(handlers,env);vm.runInContext(fs.readFileSync('feedback.js','utf8'),env);
+ assert(link);assert.equal(link.target,'_blank');
+ for(const [i,page] of ['record','path','group'].entries()){nav[i].listeners.click();link.listeners.click();assert(ids[nav[i].dataset.view].classList.contains('active'));assert.equal(new URLSearchParams(link.href.split('#')[1]).get('page'),page)}
+ assert.equal(pathLoads,1);assert.equal(groupLoads,1);
+ nav[0].listeners.click();ids.recordButton.listeners.click();await new Promise(resolve=>setImmediate(resolve));
+ assert(ids.recordButton.classList.contains('recording'));link.listeners.click();assert(ids.recordButton.classList.contains('recording'));
+ ids.recordButton.listeners.click();assert.equal(uploads,1);assert(stopped>0);assert.equal(ids.recordButton.textContent,'RECORD');assert.equal(ids.playbackWrap.style.display,'block');
+ console.log('PASS isolated Record/Stop/upload callback, Path/Group navigation, feedback context and recording continuity (simulated media/backend).');
+})().catch(error=>{console.error(error);process.exitCode=1});
