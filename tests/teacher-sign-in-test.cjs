@@ -8,6 +8,7 @@ const source = fs.readFileSync('tools/apps-script-probe/AssistantDashboard.js', 
 const approved = '1LJNfJzCwrVsIiaXB2Amxrkd8els6Nd_t3gK7AwyRfus8dzOgmsHTvuDJ';
 function scenario(options = {}) {
   let pupilReads = 0;
+  const logs = [];
   const secret = 'assistant-secret';
   const token = email => crypto.createHmac('sha256',secret).update(email).digest('base64url');
   const values = {
@@ -40,10 +41,11 @@ function scenario(options = {}) {
       return {getName: () => 'TEST Recordings'};
     }},
     HtmlService: {createHtmlOutput: html => html},
+    Logger: {log: value => logs.push(value)},
     Utilities:{computeHmacSha256Signature:(value,key)=>crypto.createHmac('sha256',key).update(value).digest(),base64EncodeWebSafe:value=>Buffer.from(value).toString('base64url')}
   };
   vm.createContext(c); vm.runInContext(source, c);
-  return {c, reads: () => pupilReads};
+  return {c, reads: () => pupilReads, logs};
 }
 for (const options of [{email: ''}, {effective: 'owner@example.test'}, {notReady: true},
   {noSheetAccess: true}, {email: 'outsider@example.test'}, {inactive: true}, {duplicate: true}]) {
@@ -55,6 +57,15 @@ const good = scenario();
 assert.equal(good.c.teacherDiagnostic_().ok, true);
 assert.equal(good.c.teacherDiagnostic_().pupils.length, 1);
 assert.equal(good.c.teacherDiagnostic_().folderReadable, true);
+const diagnosticResult = good.c.runTeacherDiagnosticTest();
+assert.equal(diagnosticResult.ok,true);
+assert.equal(diagnosticResult.role,'TEACHER');
+assert.equal(diagnosticResult.ownerOrganisationDataAvailable,false);
+assert.equal(good.logs.length,1);
+assert(!good.logs[0].includes('assistant-secret'));
+assert(!good.logs[0].includes('private-sheet'));
+assert(!good.logs[0].includes('Email Token'));
+assert.throws(() => scenario({wrongProject:true}).c.runTeacherDiagnosticTest(), /approved/);
 assert.equal(scenario({noFolderAccess: true}).c.teacherDiagnostic_().folderReadable, false);
 const html = good.c.doGet();
 assert(html.includes('ASSISTANT TEACHER'));
