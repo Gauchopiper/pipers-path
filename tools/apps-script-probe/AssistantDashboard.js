@@ -251,14 +251,23 @@ function findAllowedAssistantTeacher_(email, rows, secret) {
   return {id:String(row[0]), token, role:String(row[2]).trim().toUpperCase()};
 }
 
-function readAssistantSummary_(pupils, rows) {
+function normaliseAssistantSummaryDate_(value, timeZone) {
+  if (Object.prototype.toString.call(value) === '[object Date]') {
+    if (isNaN(value.getTime())) return null;
+    return Utilities.formatDate(value, timeZone, 'yyyy-MM-dd');
+  }
+  if (typeof value === 'string') return value.trim();
+  return value === '' || value == null ? '' : null;
+}
+
+function readAssistantSummary_(pupils, rows, timeZone) {
   if (JSON.stringify(rows[0] || []) !== JSON.stringify(ASSISTANT_SUMMARY_HEADERS)) throw Error('Assistant summary headers missing.');
   const byId = new Map(rows.slice(1).map(row => [String(row[0]),row]));
   const entries = pupils.map(pupil => {
     const row = byId.get(pupil.id) || [pupil.id,0,0,''];
-    const sessions = Number(row[1]), minutes = Number(row[2]), latest = String(row[3] || '');
+    const sessions = Number(row[1]), minutes = Number(row[2]), latest = normaliseAssistantSummaryDate_(row[3], timeZone);
     if (!Number.isFinite(sessions) || sessions < 0 || !Number.isInteger(sessions) || !Number.isFinite(minutes) || minutes < 0 ||
-        (latest && !/^\d{4}-\d{2}-\d{2}$/.test(latest))) throw Error('Invalid Assistant summary.');
+        latest === null || (latest && !/^\d{4}-\d{2}-\d{2}$/.test(latest))) throw Error('Invalid Assistant summary.');
     return {id:pupil.id,label:pupil.label,sessions,minutes,latest};
   });
   return {entries,skipped:0,sessions:entries.reduce((n,p)=>n+p.sessions,0),minutes:entries.reduce((n,p)=>n+p.minutes,0)};

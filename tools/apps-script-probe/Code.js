@@ -140,7 +140,7 @@ function teacherDiagnostic_() {
   if (configSheet) configSheet.getDataRange().getValues().slice(1).forEach(row => {config[String(row[0])] = String(row[1]);});
   const summarySheet = ss.getSheetByName(ASSISTANT_TABS.summary);
   if (!summarySheet) throw new Error('Practice summary missing');
-  const summary = readAssistantSummary_(pupils,summarySheet.getDataRange().getValues());
+  const summary = readAssistantSummary_(pupils,summarySheet.getDataRange().getValues(),ss.getSpreadsheetTimeZone());
   return {ok: true, email, pupils, folderReadable, summary,
     organisation: config['Organisation Name'] || 'Piper’s Path Test Organisation',
     profile: config.Profile || 'PIPE_SCHOOL'};

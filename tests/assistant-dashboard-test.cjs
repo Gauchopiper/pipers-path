@@ -39,6 +39,7 @@ const privateBook=new Book('private','Piper’s Path — TEST Data',privateTabs)
 const assistantBook=new Book('assistant','Piper’s Path — ASSISTANT DASHBOARD TEST',assistantTabs);
 const props={TEST_READY:'1',TEST_OWNER_EMAIL:'owner@example.test',TEST_SHEET_ID:'private',TEST_ASSISTANT_SHEET_ID:'assistant',TEST_RECORDINGS_ID:'recordings',ASSISTANT_EMAIL_HMAC_SECRET:'a-private-hmac-secret',TEST_ASSISTANT_SYNC_STATUS:'PENDING'};
 let active='owner@example.test',effective='owner@example.test',locked=false;
+const formattedDates=[];
 const user=email=>({getEmail:()=>email});
 const assistantFile={viewers:[user('inactive@example.test')],getViewers(){return [...this.viewers]},addViewer(email){if(!this.viewers.some(v=>v.getEmail()===email))this.viewers.push(user(email))},removeViewer(email){this.viewers=this.viewers.filter(v=>v.getEmail()!==email)}};
 const recordings={viewers:[user('assistant@example.test'),user('inactive@example.test')],getViewers(){return [...this.viewers]},removeViewer(email){this.viewers=this.viewers.filter(v=>v.getEmail()!==email)}};
@@ -49,7 +50,7 @@ const context={console,Date,Map,Set,Object,JSON,Number,String,Math,Error,
   SpreadsheetApp:{openById:id=>id==='private'?privateBook:id==='assistant'?assistantBook:(()=>{throw Error('unknown book')})(),flush(){}},
   LockService:{getScriptLock:()=>({waitLock(){assert(!locked);locked=true},releaseLock(){locked=false}})},
   DriveApp:{getFileById:id=>{assert.equal(id,'assistant');return assistantFile},getFolderById:id=>{assert.equal(id,'recordings');return recordings}},
-  Utilities:{formatDate:value=>value.toISOString().slice(0,10),computeHmacSha256Signature:(value,key)=>crypto.createHmac('sha256',key).update(value).digest(),base64EncodeWebSafe:value=>Buffer.from(value).toString('base64url')},
+  Utilities:{formatDate:(value,timeZone,format)=>{formattedDates.push({timeZone,format});return value.toISOString().slice(0,10);},computeHmacSha256Signature:(value,key)=>crypto.createHmac('sha256',key).update(value).digest(),base64EncodeWebSafe:value=>Buffer.from(value).toString('base64url')},
   HtmlService:{createHtmlOutput:html=>html}
 };
 vm.createContext(context);
@@ -72,6 +73,9 @@ assert(!recordings.viewers.some(v=>v.getEmail()==='inactive@example.test'));
 
 active=effective='assistant@example.test';
 const dashboard=context.teacherDiagnostic_();assert.equal(dashboard.ok,true);assert.equal(dashboard.summary.sessions,1);assert.equal(dashboard.pupils.length,1);
+assistantTabs['DASHBOARD PRACTICE SUMMARY'].rows[1][3]=new Date('2026-09-20T12:00:00.000Z');
+const dateDashboard=context.teacherDiagnostic_();assert.equal(dateDashboard.summary.entries[0].latest,'2026-09-20');
+assert.deepEqual(formattedDates.at(-1),{timeZone:'Europe/Madrid',format:'yyyy-MM-dd'});
 
 active=effective='owner@example.test';
 privateTabs.PUPILS.rows.push(['P003','Piper Three',true,'EN','second-secret','https://private/second']);
