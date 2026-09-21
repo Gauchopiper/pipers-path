@@ -2,30 +2,35 @@
 const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
-const source = fs.readFileSync('tools/apps-script-probe/Code.js', 'utf8');
+const crypto = require('node:crypto');
+const source = fs.readFileSync('tools/apps-script-probe/AssistantDashboard.js', 'utf8')+'\n'+
+  fs.readFileSync('tools/apps-script-probe/Code.js', 'utf8');
 const approved = '1LJNfJzCwrVsIiaXB2Amxrkd8els6Nd_t3gK7AwyRfus8dzOgmsHTvuDJ';
 function scenario(options = {}) {
   let pupilReads = 0;
+  const secret = 'assistant-secret';
+  const token = email => crypto.createHmac('sha256',secret).update(email).digest('base64url');
   const values = {
-    TEACHERS: [['ID', 'Email', 'Role', 'Active'], ['T1', 'teacher@example.test', 'TEACHER', true]],
-    'ORG CONFIG': [['Key', 'Value'], ['Organisation Name', '<School>']],
-    'PRACTICE LOG': [['Pupil ID', 'Date', 'Duration (min)'], ['TEST001', '2026-09-18', 6]],
-    PUPILS: [['ID', 'Name', 'Active', 'Lang'], ['TEST001', '<img src=x>', true, 'EN']]
+    'DASHBOARD TEACHERS': [['Teacher ID','Email Token','Role','Active'], ['T1',token('teacher@example.test'),'TEACHER',true]],
+    'DASHBOARD CONFIG': [['Key','Value'], ['Organisation Name','<School>'], ['Profile','PIPE_SCHOOL'], ['Time Zone','Europe/Madrid']],
+    'DASHBOARD PRACTICE SUMMARY': [['Pupil ID','Session Count','Total Minutes','Last Practice Date'], ['TEST001',1,6,'2026-09-18']],
+    'DASHBOARD PUPILS': [['Pupil ID','Display Name','Active'], ['TEST001','<img src=x>',true]]
   };
-  if (options.inactive) values.TEACHERS[1][3] = false;
-  if (options.duplicate) values.TEACHERS.push(values.TEACHERS[1]);
+  if (options.inactive) values['DASHBOARD TEACHERS'][1][3] = false;
+  if (options.duplicate) values['DASHBOARD TEACHERS'].push(values['DASHBOARD TEACHERS'][1]);
+  const props = {TEST_READY:options.notReady?'':'1',TEST_ASSISTANT_SYNC_STATUS:options.notReady?'':'OK',
+    TEST_ASSISTANT_SHEET_ID:'assistant-sheet',TEST_RECORDINGS_ID:'dummy-folder',ASSISTANT_EMAIL_HMAC_SECRET:secret};
   const c = {
     ScriptApp: {getScriptId: () => options.wrongProject ? 'wrong' : approved},
     Session: {
       getActiveUser: () => ({getEmail: () => options.email ?? 'teacher@example.test'}),
       getEffectiveUser: () => ({getEmail: () => options.effective ?? options.email ?? 'teacher@example.test'})
     },
-    PropertiesService: {getScriptProperties: () => ({getProperty: key =>
-      ({TEST_READY: options.notReady ? '' : '1', TEST_SHEET_ID: 'dummy-sheet', TEST_RECORDINGS_ID: 'dummy-folder'})[key]})},
+    PropertiesService: {getScriptProperties: () => ({getProperty:key=>props[key],setProperty:(key,value)=>{props[key]=value;}})},
     SpreadsheetApp: {openById: () => {
       if (options.noSheetAccess) throw Error('forbidden');
-      return {getSpreadsheetTimeZone: () => 'Europe/Madrid', getSheetByName: name => {
-        if (name === 'PUPILS') pupilReads++;
+      return {getName:()=> 'Piper’s Path — ASSISTANT DASHBOARD TEST',getSpreadsheetTimeZone: () => 'Europe/Madrid', getSheetByName: name => {
+        if (name === 'DASHBOARD PUPILS') pupilReads++;
         return {getDataRange: () => ({getValues: () => values[name]})};
       }};
     }},
@@ -33,7 +38,8 @@ function scenario(options = {}) {
       if (options.noFolderAccess) throw Error('forbidden');
       return {getName: () => 'TEST Recordings'};
     }},
-    HtmlService: {createHtmlOutput: html => html}
+    HtmlService: {createHtmlOutput: html => html},
+    Utilities:{computeHmacSha256Signature:(value,key)=>crypto.createHmac('sha256',key).update(value).digest(),base64EncodeWebSafe:value=>Buffer.from(value).toString('base64url')}
   };
   vm.createContext(c); vm.runInContext(source, c);
   return {c, reads: () => pupilReads};

@@ -58,6 +58,7 @@ function pupilTestApi(input) {
     const qualifying=duration>=300;
     tab.appendRow([actor.id,Utilities.formatDate(new Date(end),ss.getSpreadsheetTimeZone(),'yyyy-MM-dd'),duration/60,qualifying,input.sessionId,file.getUrl(),new Date(end).toISOString()]);
     SpreadsheetApp.flush();
+    try {syncAssistantDashboardDataLocked_();} catch (_) {console.log('Assistant dashboard sync pending after recording.');}
     return {ok:true,fileUrl:file.getUrl(),qualifying:qualifying?'Yes':'No'};
   } finally {lock.releaseLock();}
 }

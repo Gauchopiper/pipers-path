@@ -8,13 +8,16 @@ class Tab {
  getDataRange(){return {getValues:()=>this.rows.map(r=>[...r])};}
  getRange(r,c,n,m){return {getValues:()=>this.rows.slice(r-1,r-1+n).map(x=>x.slice(c-1,c-1+m)),setValues:values=>values.forEach((row,i)=>row.forEach((v,j)=>this.rows[r-1+i][c-1+j]=v))};}
 }
-const tabs={PUPILS:new Tab([['ID','Name','Active'],['TEST001','Secret full name',true]]),TEACHERS:new Tab([['ID','Email','Role','Active'],['T1','teacher@example.test','TEACHER',true]]),'FEEDBACK TEST PUPILS':new Tab([['ID','Key'],['TEST001','private-key']])};
+const tabs={PUPILS:new Tab([['Pupil ID','Display Name','Active'],['TEST001','Secret full name',true]]),TEACHERS:new Tab([['Teacher ID','Email','Role','Active'],['T1','teacher@example.test','TEACHER',true]]),'FEEDBACK TEST PUPILS':new Tab([['Pupil ID','Feedback key'],['TEST001','private-key']])};
 const centralTabs={};
+const assistantSecret='assistant-secret';
+const emailToken=email=>crypto.createHmac('sha256',assistantSecret).update(email).digest('base64url');
+const assistantTabs={'DASHBOARD TEACHERS':new Tab([['Teacher ID','Email Token','Role','Active'],['T1',emailToken('teacher@example.test'),'TEACHER',true]])};
 const book=t=>({getSheetByName:n=>t[n],insertSheet:n=>(t[n]=new Tab())});
-const props={TEST_SHEET_ID:'local',FEEDBACK_ORG_ID:'org-a',FEEDBACK_CENTRAL_SHEET_ID:'central',FEEDBACK_SECRET:'secret',TEST_OWNER_EMAIL:'owner@example.test',FEEDBACK_WEB_APP_URL:'https://script.google.com/macros/s/test/exec'};
+const props={TEST_SHEET_ID:'local',TEST_ASSISTANT_SHEET_ID:'assistant',TEST_ASSISTANT_SYNC_STATUS:'OK',ASSISTANT_EMAIL_HMAC_SECRET:assistantSecret,FEEDBACK_ORG_ID:'org-a',FEEDBACK_CENTRAL_SHEET_ID:'central',FEEDBACK_SECRET:'secret',TEST_OWNER_EMAIL:'owner@example.test',FEEDBACK_WEB_APP_URL:'https://script.google.com/macros/s/test/exec'};
 let active='owner@example.test', effective=active, outage=false, locked=false;
-const c={console,Date,Map,JSON,Number,String,Error,Session:{getActiveUser:()=>({getEmail:()=>active}),getEffectiveUser:()=>({getEmail:()=>effective})},ScriptApp:{getScriptId:()=> '1LJNfJzCwrVsIiaXB2Amxrkd8els6Nd_t3gK7AwyRfus8dzOgmsHTvuDJ'},PropertiesService:{getScriptProperties:()=>({getProperty:k=>props[k]})},SpreadsheetApp:{openById:id=>{if(id==='central'&&outage)throw Error('offline');return book(id==='central'?centralTabs:tabs)},flush(){}},LockService:{getScriptLock:()=>({waitLock(){assert(!locked);locked=true;},releaseLock(){locked=false;}})},Utilities:{base64EncodeWebSafe:v=>Buffer.from(v).toString('base64url'),base64DecodeWebSafe:v=>Buffer.from(v,'base64url'),newBlob:v=>({getDataAsString:()=>Buffer.from(v).toString()}),computeHmacSha256Signature:(v,key)=>crypto.createHmac('sha256',key).update(v).digest()}};
-vm.createContext(c);vm.runInContext(fs.readFileSync(base+'Code.js','utf8')+'\n'+fs.readFileSync(base+'Feedback.js','utf8'),c);
+const c={console,Date,Map,Set,JSON,Number,String,Error,Session:{getActiveUser:()=>({getEmail:()=>active}),getEffectiveUser:()=>({getEmail:()=>effective})},ScriptApp:{getScriptId:()=> '1LJNfJzCwrVsIiaXB2Amxrkd8els6Nd_t3gK7AwyRfus8dzOgmsHTvuDJ'},PropertiesService:{getScriptProperties:()=>({getProperty:k=>props[k]})},SpreadsheetApp:{openById:id=>{if(id==='central'&&outage)throw Error('offline');return book(id==='central'?centralTabs:id==='assistant'?assistantTabs:tabs)},flush(){}},LockService:{getScriptLock:()=>({waitLock(){assert(!locked);locked=true;},releaseLock(){locked=false;}})},Utilities:{base64EncodeWebSafe:v=>Buffer.from(v).toString('base64url'),base64DecodeWebSafe:v=>Buffer.from(v,'base64url'),newBlob:v=>({getDataAsString:()=>Buffer.from(v).toString()}),computeHmacSha256Signature:(v,key)=>crypto.createHmac('sha256',key).update(v).digest()}};
+vm.createContext(c);vm.runInContext(fs.readFileSync(base+'AssistantDashboard.js','utf8')+'\n'+fs.readFileSync(base+'Code.js','utf8')+'\n'+fs.readFileSync(base+'Feedback.js','utf8'),c);
 const input=(category='broken')=>({requestId:crypto.randomUUID(),pupilId:'TEST001',accessKey:'private-key',category,description:'Secret full name = spreadsheet issue',explanation:'personal detail',page:'record',browser:'Chrome'});
 const a=input(), saved=c.submitFeedback(a);
 assert.equal(saved.central,'SENT');assert.equal(tabs['TEST FEEDBACK'].rows.length,2);assert.equal(centralTabs['TEST FEEDBACK'].rows.length,2);
@@ -60,8 +63,8 @@ assert.equal(receiver.doPost(envelope([...row,'Personal info'])).ok,false);
 const tamper=envelope(row);tamper.postData.contents=tamper.postData.contents.replace('org-a','org-b');assert.equal(receiver.doPost(tamper).ok,false);
 console.log('PASS central receiver signature, strict schema and deduplication.');
 const ticketFor=claim=>{const payload=c.Utilities.base64EncodeWebSafe(JSON.stringify(claim));return payload+'.'+c.feedbackMac_(payload,'secret')};
-assert.throws(()=>c.submitFeedback({...input(),ticket:ticketFor({email:'teacher@example.test',org:'org-a',expires:Date.now()-1})}),/expired/);
-assert.throws(()=>c.submitFeedback({...input(),ticket:ticketFor({email:'teacher@example.test',org:'other-org',expires:Date.now()+10000})}),/expired/);
+assert.throws(()=>c.submitFeedback({...input(),ticket:ticketFor({teacherId:'T1',emailToken:emailToken('teacher@example.test'),org:'org-a',expires:Date.now()-1})}),/expired/);
+assert.throws(()=>c.submitFeedback({...input(),ticket:ticketFor({teacherId:'T1',emailToken:emailToken('teacher@example.test'),org:'other-org',expires:Date.now()+10000})}),/expired/);
 active='';assert.throws(()=>c.setupTestEnvironment(),/owner/);assert.throws(()=>c.setupFeedbackTest(),/Owner/);
 props.FEEDBACK_CENTRAL_URL='https://script.google.com/macros/s/central/exec';props.FEEDBACK_CENTRAL_SECRET='transport-secret';
 c.UrlFetchApp={fetch:(url,options)=>{const ack=receiver.doPost({postData:{contents:options.payload}});return {getResponseCode:()=>200,getContentText:()=>JSON.stringify(ack)}}};

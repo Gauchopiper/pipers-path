@@ -65,6 +65,7 @@ function setupTestEnvironment_() {
       ['TEST002', '2026-09-18', 3, false, 'dummy-session-002']
     ]);
     props.setProperty('TEST_READY', '1');
+    if (props.getProperty('TEST_ASSISTANT_SHEET_ID')) syncAssistantDashboardDataLocked_();
     // These are resource links, never pupil credentials or Google tokens.
     console.log('TEST Sheet: ' + ss.getUrl());
     console.log('TEST recordings folder: ' + recordings.getUrl());
@@ -112,18 +113,19 @@ function teacherDiagnostic_() {
   const effective = String(Session.getEffectiveUser().getEmail() || '').trim().toLowerCase();
   if (!email) return {ok: false, message: 'Google did not provide your identity. No pupil data was read.'};
   if (email !== effective) return {ok: false, message: 'Deployment must execute as the user accessing the app.'};
-  if (props.getProperty('TEST_READY') !== '1') return {ok: false, message: 'The owner must complete test setup first.'};
+  if (props.getProperty('TEST_READY') !== '1' || props.getProperty('TEST_ASSISTANT_SYNC_STATUS') !== 'OK') return {ok: false, message: 'The owner must complete test setup first.'};
   let ss;
   try {
-    ss = SpreadsheetApp.openById(props.getProperty('TEST_SHEET_ID'));
+    ss = SpreadsheetApp.openById(props.getProperty('TEST_ASSISTANT_SHEET_ID'));
   } catch (_) {
     return {ok: false, message: 'Google sign-in worked, but this account cannot read the test Sheet. This is the file-permission check.'};
   }
-  const teachers = ss.getSheetByName('TEACHERS');
-  if (!teachers || !isAllowedTeacher_(email, teachers.getDataRange().getValues())) {
+  const teachers = ss.getSheetByName(ASSISTANT_TABS.teachers);
+  const teacher = teachers && findAllowedAssistantTeacher_(email,teachers.getDataRange().getValues(),props.getProperty('ASSISTANT_EMAIL_HMAC_SECRET'));
+  if (!teacher) {
     return {ok: false, message: 'This account is not an active authorised test teacher.'};
   }
-  const pupilsSheet = ss.getSheetByName('PUPILS');
+  const pupilsSheet = ss.getSheetByName(ASSISTANT_TABS.pupils);
   if (!pupilsSheet) return {ok: false, message: 'Test pupil tab is missing.'};
   const pupils = pupilsSheet.getDataRange().getValues().slice(1)
     .filter(row => ['true', 'yes'].includes(String(row[2]).trim().toLowerCase()))
@@ -133,12 +135,12 @@ function teacherDiagnostic_() {
     DriveApp.getFolderById(props.getProperty('TEST_RECORDINGS_ID')).getName();
     folderReadable = true;
   } catch (_) { /* Report separately; do not expose resource IDs. */ }
-  const configSheet = ss.getSheetByName('ORG CONFIG');
+  const configSheet = ss.getSheetByName(ASSISTANT_TABS.config);
   const config = {};
   if (configSheet) configSheet.getDataRange().getValues().slice(1).forEach(row => {config[String(row[0])] = String(row[1]);});
-  const logSheet = ss.getSheetByName('PRACTICE LOG');
-  if (!logSheet) throw new Error('Practice log missing');
-  const summary = summarisePractice_(pupils, logSheet.getDataRange().getValues(), ss.getSpreadsheetTimeZone());
+  const summarySheet = ss.getSheetByName(ASSISTANT_TABS.summary);
+  if (!summarySheet) throw new Error('Practice summary missing');
+  const summary = readAssistantSummary_(pupils,summarySheet.getDataRange().getValues());
   return {ok: true, email, pupils, folderReadable, summary,
     organisation: config['Organisation Name'] || 'Piper’s Path Test Organisation',
     profile: config.Profile || 'PIPE_SCHOOL'};

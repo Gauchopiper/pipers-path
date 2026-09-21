@@ -55,11 +55,15 @@ function getFeedbackLink() {
   const c = feedbackConfig_();
   const email = Session.getActiveUser().getEmail().trim().toLowerCase();
   if (!email || email !== Session.getEffectiveUser().getEmail().trim().toLowerCase()) throw Error('Use the teacher sign-in deployment.');
-  const ss=SpreadsheetApp.openById(c.sheet), rows=ss.getSheetByName('TEACHERS').getDataRange().getValues();
-  if (!isAllowedTeacher_(email,rows)) throw Error('Teacher access denied.');
-  const url=PropertiesService.getScriptProperties().getProperty('FEEDBACK_WEB_APP_URL');
+  const p=PropertiesService.getScriptProperties();
+  if(p.getProperty('TEST_ASSISTANT_SYNC_STATUS')!=='OK') throw Error('Teacher access denied.');
+  const ss=SpreadsheetApp.openById(p.getProperty('TEST_ASSISTANT_SHEET_ID'));
+  const rows=ss.getSheetByName(ASSISTANT_TABS.teachers).getDataRange().getValues();
+  const teacher=findAllowedAssistantTeacher_(email,rows,p.getProperty('ASSISTANT_EMAIL_HMAC_SECRET'));
+  if (!teacher) throw Error('Teacher access denied.');
+  const url=p.getProperty('FEEDBACK_WEB_APP_URL');
   if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(url||'')) throw Error('Feedback deployment URL is not configured.');
-  const payload=Utilities.base64EncodeWebSafe(JSON.stringify({email,org:c.org,expires:Date.now()+15*60*1000}));
+  const payload=Utilities.base64EncodeWebSafe(JSON.stringify({teacherId:teacher.id,emailToken:teacher.token,org:c.org,expires:Date.now()+15*60*1000}));
   return url+'?feedback=1#ticket='+encodeURIComponent(payload+'.'+feedbackMac_(payload,c.secret))+'&page=teacher';
 }
 function feedbackActor_(input,c,ss) {
@@ -69,8 +73,14 @@ function feedbackActor_(input,c,ss) {
     const claim=JSON.parse(Utilities.newBlob(Utilities.base64DecodeWebSafe(parts[0])).getDataAsString());
     if(claim.org!==c.org || !Number.isFinite(claim.expires) || claim.expires<Date.now()) throw Error('Teacher link expired. Reopen feedback from the dashboard.');
     const rows=ss.getSheetByName('TEACHERS').getDataRange().getValues();
-    if(!isAllowedTeacher_(claim.email,rows)) throw Error('Teacher access denied.');
-    return {role:'teacher',id:String(rows.slice(1).find(r=>String(r[1]).trim().toLowerCase()===claim.email)[0])};
+    const cols=headerIndexes_(rows,['Teacher ID','Email','Role','Active']);
+    const secret=PropertiesService.getScriptProperties().getProperty('ASSISTANT_EMAIL_HMAC_SECRET');
+    const matches=rows.slice(1).filter(r=>String(r[cols['Teacher ID']])===String(claim.teacherId) &&
+      assistantEmailToken_(r[cols.Email],secret)===String(claim.emailToken) &&
+      ['OWNER','TEACHER'].includes(String(r[cols.Role]).trim().toUpperCase()) &&
+      ['true','yes'].includes(String(r[cols.Active]).trim().toLowerCase()));
+    if(matches.length!==1) throw Error('Teacher access denied.');
+    return {role:'teacher',id:String(matches[0][cols['Teacher ID']])};
   }
   const pupil=String(input.pupilId||''), key=String(input.accessKey||'');
   const creds=ss.getSheetByName('FEEDBACK TEST PUPILS').getDataRange().getValues().slice(1).filter(r=>String(r[0])===pupil);

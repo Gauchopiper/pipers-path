@@ -34,6 +34,8 @@ jobs:
         run: node --check tools/apps-script-probe/Code.js
       - name: Check authentication boundaries with dummy services
         run: node tests/teacher-sign-in-test.cjs
+      - name: Check sanitised Assistant workbook
+        run: node tests/assistant-dashboard-test.cjs
       - name: Check dual feedback
         run: node tests/feedback-test.cjs
       - name: Install pinned clasp
