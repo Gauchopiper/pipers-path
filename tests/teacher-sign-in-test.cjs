@@ -11,7 +11,7 @@ function scenario(options = {}) {
   const secret = 'assistant-secret';
   const token = email => crypto.createHmac('sha256',secret).update(email).digest('base64url');
   const values = {
-    'DASHBOARD TEACHERS': [['Teacher ID','Email Token','Role','Active'], ['T1',token('teacher@example.test'),'TEACHER',true]],
+    'DASHBOARD TEACHERS': [['Teacher ID','Email Token','Role','Active'], ['T1',token('teacher@example.test'),'TEACHER',true], ['T2',token('owner@example.test'),'OWNER',true]],
     'DASHBOARD CONFIG': [['Key','Value'], ['Organisation Name','<School>'], ['Profile','PIPE_SCHOOL'], ['Time Zone','Europe/Madrid']],
     'DASHBOARD PRACTICE SUMMARY': [['Pupil ID','Session Count','Total Minutes','Last Practice Date'], ['TEST001',1,6,'2026-09-18']],
     'DASHBOARD PUPILS': [['Pupil ID','Display Name','Active'], ['TEST001','<img src=x>',true]]
@@ -19,7 +19,7 @@ function scenario(options = {}) {
   if (options.inactive) values['DASHBOARD TEACHERS'][1][3] = false;
   if (options.duplicate) values['DASHBOARD TEACHERS'].push(values['DASHBOARD TEACHERS'][1]);
   const props = {TEST_READY:options.notReady?'':'1',TEST_ASSISTANT_SYNC_STATUS:options.notReady?'':'OK',
-    TEST_ASSISTANT_SHEET_ID:'assistant-sheet',TEST_RECORDINGS_ID:'dummy-folder',ASSISTANT_EMAIL_HMAC_SECRET:secret};
+    TEST_ASSISTANT_SHEET_ID:'assistant-sheet',TEST_SHEET_ID:'private-sheet',TEST_RECORDINGS_ID:'dummy-folder',ASSISTANT_EMAIL_HMAC_SECRET:secret};
   const c = {
     ScriptApp: {getScriptId: () => options.wrongProject ? 'wrong' : approved},
     Session: {
@@ -27,7 +27,8 @@ function scenario(options = {}) {
       getEffectiveUser: () => ({getEmail: () => options.effective ?? options.email ?? 'teacher@example.test'})
     },
     PropertiesService: {getScriptProperties: () => ({getProperty:key=>props[key],setProperty:(key,value)=>{props[key]=value;}})},
-    SpreadsheetApp: {openById: () => {
+    SpreadsheetApp: {openById: id => {
+      if (id === 'private-sheet') return {getUrl: () => 'https://docs.google.com/spreadsheets/d/private-sheet/edit'};
       if (options.noSheetAccess) throw Error('forbidden');
       return {getName:()=> 'Piper’s Path — ASSISTANT DASHBOARD TEST',getSpreadsheetTimeZone: () => 'Europe/Madrid', getSheetByName: name => {
         if (name === 'DASHBOARD PUPILS') pupilReads++;
@@ -56,6 +57,15 @@ assert.equal(good.c.teacherDiagnostic_().pupils.length, 1);
 assert.equal(good.c.teacherDiagnostic_().folderReadable, true);
 assert.equal(scenario({noFolderAccess: true}).c.teacherDiagnostic_().folderReadable, false);
 const html = good.c.doGet();
+assert(html.includes('ASSISTANT TEACHER'));
+assert(!html.includes('Open organisation data'));
+assert(!html.includes('private-sheet'));
+const ownerDashboard = scenario({email:'owner@example.test'});
+assert.equal(ownerDashboard.c.teacherDiagnostic_().role,'OWNER');
+const ownerHtml = ownerDashboard.c.doGet();
+assert(ownerHtml.includes('OWNER'));
+assert(ownerHtml.includes('Open organisation data'));
+assert(ownerHtml.includes('https://docs.google.com/spreadsheets/d/private-sheet/edit'));
 assert(html.includes('&lt;img src=x&gt;'));
 assert(!html.includes('<img src=x>'));
 const wrong = scenario({wrongProject: true});
@@ -63,10 +73,10 @@ assert.throws(() => wrong.c.setupTestEnvironment(), /approved/);
 const nonOwner = scenario();
 nonOwner.c.DriveApp.getFileById = () => ({getOwner: () => ({getEmail: () => 'owner@example.test'})});
 assert.throws(() => nonOwner.c.setupTestEnvironment(), /Only the script file owner/);
-const owner = scenario();
-owner.c.DriveApp.getFileById = () => ({getOwner: () => ({getEmail: () => 'teacher@example.test'})});
-owner.c.LockService = {getScriptLock: () => {throw Error('Reached authorised setup');}};
-assert.throws(() => owner.c.setupTestEnvironment(), /Reached authorised setup/);
+const setupOwner = scenario();
+setupOwner.c.DriveApp.getFileById = () => ({getOwner: () => ({getEmail: () => 'teacher@example.test'})});
+setupOwner.c.LockService = {getScriptLock: () => {throw Error('Reached authorised setup');}};
+assert.throws(() => setupOwner.c.setupTestEnvironment(), /Reached authorised setup/);
 assert.throws(() => wrong.c.setupTestEnvironment_(), /approved/);
 assert.throws(() => wrong.c.teacherDiagnostic_(), /approved/);
 let created = 0, written = 0;

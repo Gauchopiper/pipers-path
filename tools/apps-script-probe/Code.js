@@ -141,9 +141,13 @@ function teacherDiagnostic_() {
   const summarySheet = ss.getSheetByName(ASSISTANT_TABS.summary);
   if (!summarySheet) throw new Error('Practice summary missing');
   const summary = readAssistantSummary_(pupils,summarySheet.getDataRange().getValues(),ss.getSpreadsheetTimeZone());
-  return {ok: true, email, pupils, folderReadable, summary,
+  const result = {ok: true, email, role: teacher.role, pupils, folderReadable, summary,
     organisation: config['Organisation Name'] || 'Piper’s Path Test Organisation',
     profile: config.Profile || 'PIPE_SCHOOL'};
+  if (teacher.role === 'OWNER') {
+    result.organisationDataUrl = SpreadsheetApp.openById(props.getProperty('TEST_SHEET_ID')).getUrl();
+  }
+  return result;
 }
 
 function summarisePractice_(pupils, rows, timeZone) {
@@ -180,9 +184,12 @@ function renderDashboard_(result) {
   const h = escapeHtml_;
   const number = value => String(Math.round(value * 10) / 10);
   const label = result.profile === 'PIPE_BAND' ? 'Members' : 'Pupils';
+  const roleLabel = result.role === 'OWNER' ? 'OWNER' : 'ASSISTANT TEACHER';
+  const organisationDataControl = result.role === 'OWNER' && result.organisationDataUrl
+    ? '<p><a class="organisation-data" href="' + h(result.organisationDataUrl) + '" target="_blank" rel="noopener noreferrer">Open organisation data</a></p>' : '';
   const summary = result.summary;
   return '<header><p class="eyebrow">PIPER’S PATH · TEACHER</p><h1>' + h(result.organisation) +
-    '</h1><p>Practice overview</p></header><div class="notice">TEST ORGANISATION · DUMMY DATA ONLY</div>' +
+    '</h1><p>Practice overview</p><p class="role-badge">' + roleLabel + '</p>' + organisationDataControl + '</header><div class="notice">TEST ORGANISATION · DUMMY DATA ONLY</div>' +
     '<section class="stats" aria-label="Practice totals">' +
     '<div><strong>' + summary.entries.length + '</strong><span>Active ' + label.toLowerCase() + '</span></div>' +
     '<div><strong>' + summary.sessions + '</strong><span>Practice sessions</span></div>' +
@@ -224,7 +231,7 @@ function doGet(e) {
     '<h1>Piper’s Path</h1><p>Teacher dashboard · DUMMY DATA ONLY</p><p role="alert">' + escapeHtml_(result.message) + '</p>';
   return HtmlService.createHtmlOutput('<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width, initial-scale=1">' +
     '<title>Piper’s Path — Teacher dashboard</title><style>' +
-    '*{box-sizing:border-box}body{font:16px system-ui,sans-serif;background:#f5f7f3;color:#16352c;margin:0;padding:24px}main{max-width:1050px;margin:auto}h1{font-size:clamp(26px,5vw,38px);margin:8px 0}h2{margin-bottom:8px}h3{margin:0;font-size:20px}.eyebrow{font-size:12px;letter-spacing:.12em;font-weight:700}.notice{background:#fff1cb;padding:12px 16px;border-radius:10px;margin:20px 0}.stats,.pupils{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.stats>div,article{background:white;border:1px solid #dce4dd;border-radius:14px;padding:20px}.stats strong{display:block;font-size:32px}.stats span,.muted,dt,footer{color:#52675e}.pupils{grid-template-columns:repeat(2,minmax(0,1fr))}article p{margin-top:5px}dl{margin:20px 0 0}dl>div{display:flex;justify-content:space-between;gap:12px;margin:12px 0}dd{margin:0;font-weight:600}footer{margin-top:28px;font-size:14px;overflow-wrap:anywhere}h1,h3{overflow-wrap:anywhere}@media(max-width:600px){body{padding:16px}.stats{gap:8px}.stats>div{padding:12px 8px}.stats strong{font-size:26px}.stats span{font-size:12px}.pupils{grid-template-columns:1fr}}</style>' +
+    '*{box-sizing:border-box}body{font:16px system-ui,sans-serif;background:#f5f7f3;color:#16352c;margin:0;padding:24px}main{max-width:1050px;margin:auto}h1{font-size:clamp(26px,5vw,38px);margin:8px 0}h2{margin-bottom:8px}h3{margin:0;font-size:20px}.eyebrow{font-size:12px;letter-spacing:.12em;font-weight:700}.role-badge{display:inline-block;background:#16352c;color:white;border-radius:999px;padding:7px 11px;font-size:13px;font-weight:700;letter-spacing:.04em}.organisation-data{display:inline-block;background:#dcefe3;color:#16352c;border-radius:8px;padding:10px 14px;font-weight:700;text-decoration:none}.notice{background:#fff1cb;padding:12px 16px;border-radius:10px;margin:20px 0}.stats,.pupils{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.stats>div,article{background:white;border:1px solid #dce4dd;border-radius:14px;padding:20px}.stats strong{display:block;font-size:32px}.stats span,.muted,dt,footer{color:#52675e}.pupils{grid-template-columns:repeat(2,minmax(0,1fr))}article p{margin-top:5px}dl{margin:20px 0 0}dl>div{display:flex;justify-content:space-between;gap:12px;margin:12px 0}dd{margin:0;font-weight:600}footer{margin-top:28px;font-size:14px;overflow-wrap:anywhere}h1,h3{overflow-wrap:anywhere}@media(max-width:600px){body{padding:16px}.stats{gap:8px}.stats>div{padding:12px 8px}.stats strong{font-size:26px}.stats span{font-size:12px}.pupils{grid-template-columns:1fr}}</style>' +
     '</head><body><main>' + body + '</main></body></html>');
 }
 

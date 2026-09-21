@@ -19,7 +19,7 @@ class Tab {
 }
 class Book {
   constructor(id,name,tabs){this.id=id;this.name=name;this.tabs=tabs;this.timeZone='Europe/Madrid';}
-  getId(){return this.id;} getName(){return this.name;}
+  getId(){return this.id;} getName(){return this.name;} getUrl(){return 'https://docs.google.com/spreadsheets/d/'+this.id+'/edit';}
   getSpreadsheetTimeZone(){return this.timeZone;} setSpreadsheetTimeZone(value){this.timeZone=value;}
   getSheetByName(name){return this.tabs[name]||null;}
   insertSheet(name){return this.tabs[name]=new Tab(name);}
@@ -73,11 +73,15 @@ assert(!recordings.viewers.some(v=>v.getEmail()==='inactive@example.test'));
 
 active=effective='assistant@example.test';
 const dashboard=context.teacherDiagnostic_();assert.equal(dashboard.ok,true);assert.equal(dashboard.summary.sessions,1);assert.equal(dashboard.pupils.length,1);
+assert.equal(dashboard.role,'TEACHER');assert.equal(dashboard.organisationDataUrl,undefined);
+const assistantHtml=context.doGet();assert(assistantHtml.includes('ASSISTANT TEACHER'));assert(!assistantHtml.includes('Open organisation data'));assert(!assistantHtml.includes(privateBook.getUrl()));
 assistantTabs['DASHBOARD PRACTICE SUMMARY'].rows[1][3]=new Date('2026-09-20T12:00:00.000Z');
 const dateDashboard=context.teacherDiagnostic_();assert.equal(dateDashboard.summary.entries[0].latest,'2026-09-20');
 assert.deepEqual(formattedDates.at(-1),{timeZone:'Europe/Madrid',format:'yyyy-MM-dd'});
 
 active=effective='owner@example.test';
+const ownerDashboard=context.teacherDiagnostic_();assert.equal(ownerDashboard.role,'OWNER');assert.equal(ownerDashboard.organisationDataUrl,privateBook.getUrl());
+const ownerHtml=context.doGet();assert(ownerHtml.includes('OWNER'));assert(ownerHtml.includes('Open organisation data'));assert(ownerHtml.includes(privateBook.getUrl()));
 privateTabs.PUPILS.rows.push(['P003','Piper Three',true,'EN','second-secret','https://private/second']);
 privateTabs['PRACTICE LOG'].rows.push(['P003','2026-09-21',5,true,'second-session','https://drive.google.com/second','2026-09-21T10:00:00.000Z']);
 context.syncAssistantDashboardData();
