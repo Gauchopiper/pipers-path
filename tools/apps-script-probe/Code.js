@@ -150,25 +150,6 @@ function teacherDiagnostic_() {
   return result;
 }
 
-// Temporary TEST-only editor entry point. Deliberately does not catch errors so
-// the Apps Script execution log shows the original exception and stack trace.
-function runTeacherDiagnosticTest() {
-  const result = teacherDiagnostic_();
-  const safeResult = {
-    ok: result.ok,
-    message: result.message || '',
-    role: result.role || '',
-    organisation: result.organisation || '',
-    activePupilCount: result.pupils ? result.pupils.length : 0,
-    practiceSessions: result.summary ? result.summary.sessions : 0,
-    practiceMinutes: result.summary ? result.summary.minutes : 0,
-    recordingFolderReadable: !!result.folderReadable,
-    ownerOrganisationDataAvailable: !!result.organisationDataUrl
-  };
-  Logger.log(JSON.stringify(safeResult));
-  return safeResult;
-}
-
 function summarisePractice_(pupils, rows, timeZone) {
   const headers = rows[0] || [];
   const idCol = headers.indexOf('Pupil ID');

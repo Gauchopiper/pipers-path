@@ -45,3 +45,27 @@ The TEST root folder must not be broadly shared.
 Re-select the previous TEST web-app version and revoke Reader access to the
 Assistant workbook. The private canonical workbook is not migrated or altered
 by the sanitised workbook setup, so it remains the rollback source of truth.
+
+## Passed TEST milestone
+
+The sanitised Assistant dashboard design has passed the following live TEST
+checks:
+
+- An Assistant dashboard loads from the sanitised workbook after the Assistant's
+  direct Reader access to the private canonical workbook has been removed.
+- An Assistant cannot directly open the private workbook and receives neither
+  the Owner-only organisation-data control nor its private-workbook link in the
+  dashboard HTML.
+- The Owner retains access to private organisation data through the visible
+  Owner-only control.
+- The visible role labels are `OWNER` and `ASSISTANT TEACHER`.
+- Assistant teacher feedback was verified to save in both the local TEST record
+  and the central feedback record.
+- Pupil Record, Path and Group mobile checks had already passed in TEST.
+
+An earlier isolated experiment found that an external Gmail account received a
+blank value from `Session.getActiveUser().getEmail()` when the web app executed
+as the deploying Owner. The tested design therefore remains visitor-executed,
+with authorisation and dashboard data read from the sanitised workbook.
+
+This milestone is TEST-only. Production has not been altered.
