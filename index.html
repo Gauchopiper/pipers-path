@@ -1190,15 +1190,49 @@ function blobToBase64(blob) {
     pathStatus.textContent = '';
 const pathTargets = document.getElementById('pathTargets');
 
-if (data.targets && data.targets.length > 0) {
-  pathTargets.innerHTML = data.targets.map(target => `
+// Keep completed individual parts visible until the tune badge has actually
+// been awarded. Once the badge exists, hide all achieved parts for that tune
+// so the badge replaces them in the Path view.
+const earnedBadgeIds = new Set(
+  (data.badges || [])
+    .map(badge => String(badge.badgeId || '').trim())
+    .filter(Boolean)
+);
+
+const tuneBaseName = title =>
+  String(title || '')
+    .replace(/\s*[—-]\s*Part\s+\d+\s*$/i, '')
+    .trim();
+
+const completedTuneNames = new Set(
+  (data.targets || [])
+    .filter(target =>
+      target.badgeId &&
+      earnedBadgeIds.has(String(target.badgeId).trim())
+    )
+    .map(target => tuneBaseName(target.title))
+    .filter(Boolean)
+);
+
+const visibleTargets = (data.targets || []).filter(target => {
+  const status = String(target.status || '').trim().toUpperCase();
+  const tuneName = tuneBaseName(target.title);
+
+  return !(
+    status === 'ACHIEVED' &&
+    completedTuneNames.has(tuneName)
+  );
+});
+
+if (visibleTargets.length > 0) {
+  pathTargets.innerHTML = visibleTargets.map(target => `
     <div style="
       padding:16px;
       border:1px solid #ddd;
       border-radius:12px;
       margin-bottom:16px;
     ">
-      <>🎯 ${target.title}</><br>
+      <strong>🎯 ${target.title}</strong><br>
       <span>${translatedTargetStatus(target.status)}</span>
     </div>
   `).join('');
@@ -1231,7 +1265,7 @@ if (data.badges && data.badges.length > 0) {
     >
   ` : ''}
 
-  <>${badge.badgeName}</><br>
+  <strong>${badge.badgeName}</strong><br>
   <span>${badge.description}</span>
       </div>
     `).join('');
