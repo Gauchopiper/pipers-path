@@ -1,50 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="title desc">
-  <title id="title">The Green Hills of Tyrol</title>
-  <desc id="desc">A Scottish soldier piper looking across green Tyrolean hills toward snow-capped mountains.</desc>
-  <defs>
-    <clipPath id="c"><circle cx="128" cy="118" r="104"/></clipPath>
-  </defs>
-  <circle cx="128" cy="118" r="110" fill="#0b3b2e"/>
-  <circle cx="128" cy="118" r="104" fill="#f3c969"/>
-  <g clip-path="url(#c)">
-    <rect x="24" y="14" width="208" height="208" fill="#67aee8"/>
-    <path d="M24 104 L72 66 L95 89 L126 49 L153 86 L184 57 L232 103 L232 137 L24 137 Z" fill="#e9eef2"/>
-    <path d="M24 117 L72 78 L95 99 L126 61 L153 96 L184 69 L232 113 L232 144 L24 144 Z" fill="#5f7f96"/>
-    <path d="M24 136 Q68 108 103 134 T168 128 T232 132 L232 176 L24 176 Z" fill="#6fae45"/>
-    <path d="M24 160 Q64 131 101 154 T167 148 T232 150 L232 194 L24 194 Z" fill="#3f7f3e"/>
-    <path d="M24 186 Q62 156 101 177 T167 170 T232 173 L232 222 L24 222 Z" fill="#1f5b36"/>
-    <g fill="#f7f3e8">
-      <rect x="174" y="156" width="18" height="13"/><path d="M171 156l12-10 12 10z" fill="#9b5c3a"/>
-      <rect x="194" y="160" width="15" height="11"/><path d="M192 160l10-8 10 8z" fill="#9b5c3a"/>
-      <rect x="207" y="149" width="8" height="22"/><path d="M205 149l6-11 6 11z" fill="#2a3340"/>
-    </g>
-    <g transform="translate(58 71)">
-      <circle cx="31" cy="23" r="9" fill="#e2b58b"/>
-      <path d="M22 18 Q31 7 41 18 L40 12 L34 9 L28 11 L22 13 Z" fill="#14181b"/>
-      <circle cx="35" cy="10" r="3.2" fill="#c83a33"/>
-      <path d="M24 32 Q32 28 41 33 L46 76 L28 76 Z" fill="#171b20"/>
-      <path d="M17 40 L31 32 L39 78 L15 92 Z" fill="#bb2f34"/>
-      <path d="M17 46 L36 35 M15 57 L39 44 M14 69 L42 54 M13 81 L44 64" stroke="#20242a" stroke-width="2"/>
-      <path d="M30 76 L22 112 L31 112 L39 78 Z" fill="#171b20"/>
-      <path d="M41 76 L46 112 L55 112 L50 77 Z" fill="#171b20"/>
-      <rect x="20" y="108" width="12" height="7" fill="#f4f4ef"/>
-      <rect x="45" y="108" width="12" height="7" fill="#f4f4ef"/>
-      <ellipse cx="26" cy="115" rx="8" ry="3" fill="#171b20"/>
-      <ellipse cx="51" cy="115" rx="8" ry="3" fill="#171b20"/>
-      <ellipse cx="18" cy="35" rx="9" ry="12" fill="#171b20"/>
-      <path d="M14 23 L4 1 M20 23 L16 -4 M25 26 L27 2" stroke="#171b20" stroke-width="4" stroke-linecap="round"/>
-      <path d="M4 1 l4 0 M16 -4 l4 0 M27 2 l4 0" stroke="#f4f0df" stroke-width="3"/>
-      <path d="M19 46 Q29 40 40 49" fill="none" stroke="#f4f0df" stroke-width="2"/>
-    </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-labelledby="title desc">
+  <title id="title">Green Hills</title>
+  <desc id="desc">A lightweight badge showing a Scottish piper overlooking green Tyrolean hills and mountains.</desc>
+  <circle cx="64" cy="64" r="60" fill="#0b3b2e"/>
+  <circle cx="64" cy="64" r="56" fill="#f2c24f"/>
+  <circle cx="64" cy="64" r="51" fill="#6fb7ea"/>
+  <path d="M15 58 L34 39 L45 51 L62 31 L79 50 L96 36 L113 57 L113 69 L15 69 Z" fill="#eef3f5"/>
+  <path d="M15 63 L34 47 L45 57 L62 39 L79 57 L96 44 L113 62 L113 72 L15 72 Z" fill="#708da5"/>
+  <path d="M13 72 Q35 59 56 70 T94 68 T115 70 L115 92 L13 92 Z" fill="#7eb64b"/>
+  <path d="M13 83 Q35 70 55 81 T93 79 T115 81 L115 101 L13 101 Z" fill="#3f7f3e"/>
+  <path d="M13 94 Q36 82 56 92 T95 90 T115 91 L115 108 L13 108 Z" fill="#1f5b36"/>
+  <g fill="#f7f3e8">
+    <rect x="86" y="80" width="11" height="8"/><path d="M84 80 l7-5 8 5z" fill="#9b5c3a"/>
+    <rect x="99" y="82" width="9" height="7"/><path d="M98 82 l6-4 6 4z" fill="#9b5c3a"/>
+    <rect x="107" y="76" width="5" height="14"/><path d="M106 76 l3.5-7 3.5 7z" fill="#263442"/>
   </g>
-  <path d="M48 198 Q128 214 208 198 L198 233 Q128 247 58 233 Z" fill="#f5ebd0" stroke="#0b3b2e" stroke-width="4"/>
-  <text x="128" y="218" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="13" fill="#0b3b2e">GREEN HILLS OF TYROL</text>
-  <g transform="translate(112 229)">
-    <rect x="0" y="0" width="32" height="20" fill="#1f5fae"/>
-    <path d="M0 0 L32 20 M32 0 L0 20" stroke="#fff" stroke-width="5"/>
+  <g transform="translate(25 36)">
+    <circle cx="20" cy="14" r="6" fill="#e2b58b"/>
+    <path d="M13 11 q7-8 14 0 l-1-5 -4-3 -5 2 -4 3z" fill="#15191d"/>
+    <circle cx="23" cy="4" r="2" fill="#c73535"/>
+    <ellipse cx="10" cy="23" rx="6" ry="9" fill="#171b20"/>
+    <path d="M8 15 L0 0 M12 16 L9 -5 M16 18 L19 1" stroke="#171b20" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M0 0 h4 M9 -5 h4 M19 1 h4" stroke="#f4f0df" stroke-width="2.5"/>
+    <path d="M14 21 q7-4 14 1 l3 30 -13 0z" fill="#171b20"/>
+    <path d="M8 27 L19 21 L26 54 L6 62 Z" fill="#b92f35"/>
+    <path d="M8 31 L22 24 M7 39 L24 30 M6 47 L25 37 M6 55 L27 44" stroke="#24282e" stroke-width="1.5"/>
+    <path d="M18 52 l-6 24 h7 l6-24z" fill="#171b20"/>
+    <path d="M28 52 l4 24 h7 l-3-24z" fill="#171b20"/>
+    <rect x="11" y="72" width="9" height="5" fill="#f4f4ef"/>
+    <rect x="31" y="72" width="9" height="5" fill="#f4f4ef"/>
   </g>
-  <g fill="#c13a76">
-    <path d="M43 210 l5-12 5 12-5 10z"/><path d="M203 210 l5-12 5 12-5 10z"/>
+  <path d="M24 100 Q64 108 104 100 L99 117 Q64 123 29 117 Z" fill="#f5ebd0" stroke="#0b3b2e" stroke-width="2.5"/>
+  <text x="64" y="111" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="10" fill="#0b3b2e">GREEN HILLS</text>
+  <g transform="translate(53 115)">
+    <rect x="0" y="0" width="22" height="11" fill="#1f5fae"/>
+    <path d="M0 0 L22 11 M22 0 L0 11" stroke="#fff" stroke-width="3"/>
   </g>
 </svg>
