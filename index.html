@@ -799,10 +799,7 @@ practiceTarget.addEventListener('change', () => {
 async function tagSavedRecording(fileUrl, targetId) {
   targetStatus.textContent = '';
 
-  // Blank target means General practice.
-  if (!targetId) {
-    return true;
-  }
+  const isGeneralPractice = !targetId;
 
   try {
     // Write the target link.
@@ -845,7 +842,9 @@ try {
   console.warn('Target confirmation failed:', error);
 }
 if (confirmed) {
-  targetStatus.textContent = t.targetSaved;
+  if (!isGeneralPractice) {
+    targetStatus.textContent = t.targetSaved;
+  }
   return true;
 }
 // One safe retry only when read-back proves the recording exists
@@ -878,15 +877,19 @@ if (
     );
 
     if (retrySession && retrySession.targetId === targetId) {
-      targetStatus.textContent = t.targetSaved;
+      if (!isGeneralPractice) {
+        targetStatus.textContent = t.targetSaved;
+      }
       return true;
     }
   } catch (error) {
     console.warn('Target retry failed:', error);
   }
 }
-targetStatus.textContent =
-  t.targetUnconfirmed;
+if (!isGeneralPractice) {
+  targetStatus.textContent =
+    t.targetUnconfirmed;
+}
 return false;
   } catch (error) {
     console.error('Target tagging error:', error);
@@ -1097,11 +1100,7 @@ startRecording();
     : t.recordingSaved;
       const selectedTargetId = recordingTargetId;
 
-if (selectedTargetId) {
-  tagSavedRecording(result.fileUrl, selectedTargetId);
-} else {
-  targetStatus.textContent = '';
-}
+tagSavedRecording(result.fileUrl, selectedTargetId);
       
     } else {
       statusEl.textContent =
@@ -1131,14 +1130,10 @@ try {
   if (recoveredSession) {
     statusEl.textContent = t.recordingSaved;
 
-    if (recordingTargetId) {
-      tagSavedRecording(
-        recoveredSession.driveFileLink,
-        recordingTargetId
-      );
-    } else {
-      targetStatus.textContent = '';
-    }
+    tagSavedRecording(
+      recoveredSession.driveFileLink,
+      recordingTargetId
+    );
 
   } else {
    statusEl.textContent =
