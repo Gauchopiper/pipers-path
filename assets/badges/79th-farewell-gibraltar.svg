@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-labelledby="title desc">
+  <title id="title">79th's Farewell to Gibraltar</title>
+  <desc id="desc">A lightweight Scottish badge with the Rock of Gibraltar, a Saltire and the number 79.</desc>
+  <circle cx="64" cy="64" r="60" fill="#26384f"/>
+  <circle cx="64" cy="64" r="56" fill="#d6aa45"/>
+  <circle cx="64" cy="64" r="51" fill="#6fb7ea"/>
+  <path d="M19 86 Q36 70 52 58 Q67 44 82 40 Q95 39 109 47 L109 93 L19 93 Z" fill="#6f777d"/>
+  <path d="M28 84 Q43 72 54 62 Q67 50 82 47 Q92 46 103 51" fill="none" stroke="#aeb6bc" stroke-width="4" stroke-linecap="round"/>
+  <path d="M14 94 Q35 88 54 94 T92 94 T114 94 L114 108 L14 108 Z" fill="#2f79b7"/>
+  <g transform="translate(20 18)">
+    <rect x="0" y="0" width="30" height="20" rx="2" fill="#1f5fae"/>
+    <path d="M0 0 L30 20 M30 0 L0 20" stroke="#fff" stroke-width="5"/>
+  </g>
+  <text x="91" y="31" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="22" fill="#f7f1df">79</text>
+  <path d="M48 112 l5-13 5 13 -5 8z M61 112 l5-13 5 13 -5 8z" fill="#7b3fa1"/>
+  <path d="M40 118 q12-11 22 0 q12-11 24 0" fill="none" stroke="#2f7a3d" stroke-width="5" stroke-linecap="round"/>
+</svg>
