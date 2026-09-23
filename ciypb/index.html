@@ -1,0 +1,1342 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#ffffff">
+  <title>Piper's Path</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #fff;
+      padding: 18px 16px 12px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+    h1 { margin: 0; font-size: 28px; }
+    #identity { margin-top: 6px; font-size: 16px; color: #555; }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px 110px;
+      width: 100%;
+    }
+
+    .view { display: none; width: 100%; max-width: 520px; }
+    .view.active { display: block; }
+
+    #recordView { text-align: center; }
+
+    #timer {
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin: 10px 0 28px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #recordButton {
+      width: 210px;
+      height: 210px;
+      border: 0;
+      border-radius: 50%;
+      font-size: 28px;
+      font-weight: 700;
+      background: #c62828;
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(0,0,0,.22);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    #recordButton.recording { background: #222; }
+
+    #status {
+      margin-top: 24px;
+      min-height: 26px;
+      font-size: 18px;
+    }
+
+    #playbackWrap {
+      display: none;
+      margin: 28px auto 0;
+      max-width: 420px;
+    }
+    audio { width: 100%; }
+
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    }
+
+    .empty {
+      text-align: center;
+      color: #666;
+      line-height: 1.5;
+    }
+/* Community Bagpipe — 10 progressive parts */
+.community-bagpipe {
+  width: 100%;
+  margin: 20px auto;
+  text-align: center;
+}
+
+#communityBagpipeImage {
+  display: block;
+  width: 180px !important;
+  max-width: 180px !important;
+  height: auto !important;
+  margin: 0 auto;
+}
+
+    nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: #fff;
+      border-top: 1px solid #ccc;
+      padding-bottom: env(safe-area-inset-bottom);
+      z-index: 10;
+    }
+
+    .navButton {
+      border: 0;
+      background: #fff;
+      min-height: 82px;
+      padding: 8px 4px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .navButton .icon {
+      display: block;
+      font-size: 31px;
+      line-height: 1.1;
+      margin-bottom: 5px;
+    }
+    .navButton.active { background: #e9e9e9; }
+
+    .small {
+      font-size: 13px;
+      color: #777;
+      margin-top: 8px;
+      word-break: break-all;
+    }
+
+    .warning {
+      background: #fff3cd;
+      border: 1px solid #ffe69c;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 16px;
+      font-size: 14px;
+      text-align: left;
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>Piper's Path</h1>
+  <div id="identity"></div>
+</header>
+
+<main>
+  <section id="recordView" class="view active">
+
+    <div id="practiceTargetWrap" style="margin:0 auto 18px; max-width:320px; text-align:left;">
+    <label id="practiceForLabel"
+       for="practiceTarget"
+       style="display:block; font-weight:700; margin-bottom:6px;">
+  Practice for:
+</label>
+
+  <select id="practiceTarget" style="
+    width:100%;
+    padding:12px;
+    font-size:16px;
+    border:1px solid #ccc;
+    border-radius:10px;
+    background:#fff;
+  ">
+    <option id="generalPracticeOption" value="">General practice</option>
+  </select>
+      
+      <div id="targetStatus" style="margin-top:6px; font-size:14px;"></div>
+      
+</div>
+    <div id="timer">00:00</div>
+    <button id="recordButton" type="button">RECORD</button>
+    <div id="status">Tap RECORD to begin</div>
+<div id="playbackWrap">
+  <p><strong id="yourRecordingLabel">Your recording</strong></p>
+  <audio id="playback" controls></audio>
+</div>
+</div>
+    </div>
+  </section>
+
+ <section id="pathView" class="view">
+  <div class="card">
+    <h2>📈 <span id="pathViewTitle">Piper's Path</span></h2>
+
+<div id="pathStatus">Loading your practice history…</div>
+
+<div id="pathSummary" style="display:none; margin-top:20px;">
+  <p><strong id="pathTotalSessionsLabel">Total sessions:</strong> <span id="pathTotalSessions">0</span></p>
+
+  <p><strong id="pathQualifyingSessionsLabel">Qualifying sessions:</strong> <span id="pathQualifyingSessions">0</span></p>
+
+  <p><strong id="pathTotalPracticeLabel">Total practice:</strong> <span id="pathTotalMinutes">0</span> min</p>
+
+  <p><strong id="pathCreditedPracticeLabel">Credited practice:</strong> <span id="pathCreditedMinutes">0</span> min</p>
+</div>
+
+   <div id="pathTargets" style="margin-top:24px;"></div>
+<div id="pathBadges" style="margin-top:24px;"></div>
+<div id="pathSessions" style="margin-top:24px;"></div>
+  </div>
+</section>
+
+<section id="groupView" class="view">
+  <div class="card">
+    <h2>👥 <span id="groupViewTitle">Group</span></h2>
+
+    <div id="groupStatus">
+      Loading today's group practice…
+    </div>
+
+    <div id="groupContent" style="display:none; margin-top:20px;">
+      
+     <h3 id="groupBagpipeTitle">Community Bagpipe</h3>
+
+<p>
+  <strong><span id="groupPipersToday">0</span></strong>
+  <span id="groupPipersText">pipers practised today</span>
+</p>
+
+<p>
+  <strong id="groupBonusLabel">Community bonus today:</strong>
+  +<span id="groupBonusPercent">0</span>%
+</p><div id="communityBagpipe" class="community-bagpipe">
+  <img
+    id="communityBagpipeImage"
+    src="community-bagpipe-0.png"
+    alt="Community Great Highland Bagpipe"
+  >
+</div>
+      <p id="groupPartName" style="font-weight:600; margin-top:8px;"></p>
+      <p id="groupMessage" class="empty"></p>
+    </div>
+  </div>
+</section></main>
+
+<nav>
+  <button class="navButton active" data-view="recordView">
+    <span class="icon">🎙️</span>
+    RECORD
+  </button>
+  <button class="navButton" data-view="pathView">
+    <span class="icon">📈</span>
+    PATH
+  </button>
+  <button class="navButton" data-view="groupView">
+    <span class="icon">👥</span>
+    GROUP
+  </button>
+</nav>
+
+<script>
+  const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbxkKhl0rD_vlk37oLvWGEUqT2eONbQ2uLJLS0mwT0TfReV_cOKs-nJowvnwIW6El9hl/exec'; // Set to the CIYPB pupil backend /exec URL before publication.
+  function ciypbBackendUrl_() {
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(BACKEND_URL)) {
+      throw new Error('CIYPB pupil backend is not configured.');
+    }
+    return BACKEND_URL;
+  }
+  const params = new URLSearchParams(location.search);
+  const pupilId = params.get('p') || '';
+  const accessKey = params.get('key') || '';
+  const displayName = (params.get('n') || pupilId).trim();
+  const preferredLanguage =
+  (params.get('lang') || 'EN').trim().toUpperCase();
+
+const uiLanguage =
+  preferredLanguage === 'ES' ? 'ES' : 'EN';
+
+document.documentElement.lang =
+  uiLanguage === 'ES' ? 'es' : 'en';
+
+  const identity = document.getElementById('identity');
+
+  const TEXT = {
+  EN: {
+    record: 'RECORD',
+    path: 'PATH',
+    group: 'GROUP',
+    communityBagpipe: 'Community Bagpipe',
+    communityBonusToday: 'Community bonus today:',
+    piperPractisedToday: 'piper practised today',
+    pipersPractisedToday: 'pipers practised today',
+    waitingFirstPiper: 'Waiting for the first piper',
+    partRevealed: 'Part revealed:',
+    noQualifyingPractice: 'No qualifying group practice yet today.',
+    communityComplete: 'The Community Bagpipe is complete for today!',
+    partsCompletedToday: 'of 10 parts completed today.',
+    loadingGroup: "Loading today's group practice…",
+    groupUnavailable: 'Group practice is temporarily unavailable.',
+    pathTitle: "Piper's Path",
+    loadingPath: 'Loading your practice history…',
+    totalSessions: 'Total sessions:',
+    qualifyingSessions: 'Qualifying sessions:',
+    totalPractice: 'Total practice:',
+    creditedPractice: 'Credited practice:',
+    dailyCreditedPractice: 'Daily credited practice',
+    today: 'Today',
+    actualMinutes: 'min actual',
+    community: 'community',
+    creditedMinutes: 'min credited',
+    soFar: 'so far',
+    recentPractice: 'Recent practice',
+    noPracticeSessions: 'No practice sessions yet.',
+    pathLoadError: 'Could not load your practice history.',
+    badges: 'Badges',
+statusInProgress: 'IN PROGRESS',
+statusReadyForReview: 'READY FOR REVIEW',
+statusAchieved: 'ACHIEVED',
+    practiceFor: 'Practice for:',
+generalPractice: 'General practice',
+yourRecording: 'Your recording',
+    recordButton: 'RECORD',
+stopButton: 'STOP',
+tapRecordToBegin: 'Tap RECORD to begin',
+recordingNow: 'Recording...',
+microphoneDenied: 'Microphone permission was denied.',
+microphoneNotFound: 'No microphone was found.',
+microphoneStartFailed: 'Could not start the microphone.',
+    practiceSaved: 'Practice saved ✓',
+recordingSaved: 'Recording saved ✓',
+couldNotSave: 'Could not save: ',
+uploadUnconfirmed: 'Recording made, but the upload could not be confirmed.',
+    targetSaved: 'Target saved ✓',
+targetUnconfirmed: 'Recording saved — target could not be confirmed',
+recordingNoPupilLink: 'Recording complete, but no pupil link was supplied.',
+    loadingPracticeTargets: 'Loading practice targets...',
+targetsUnavailableGeneralPractice:
+  'Targets unavailable — general practice is still available.',
+    testModeNoPupilLink: 'Test mode — no pupil link supplied'
+  },
+
+  ES: {
+    record: 'GRABAR',
+    path: 'CAMINO',
+    group: 'GRUPO',
+    communityBagpipe: 'Gaita Comunitaria',
+    communityBonusToday: 'Bonificación comunitaria de hoy:',
+    piperPractisedToday: 'gaitero ha practicado hoy',
+    pipersPractisedToday: 'gaiteros han practicado hoy',
+    waitingFirstPiper: 'Esperando al primer gaitero',
+    partRevealed: 'Parte revelada:',
+   noQualifyingPractice: 'Todavía no hay práctica grupal válida hoy.',
+   communityComplete: '¡La Gaita Comunitaria está completa por hoy!',
+   partsCompletedToday: 'de 10 partes completadas hoy.',
+   loadingGroup: 'Cargando la práctica del grupo de hoy…',
+   groupUnavailable: 'La práctica del grupo no está disponible temporalmente.',
+   pathTitle: "Piper's Path",
+   loadingPath: 'Cargando tu historial de práctica…',
+   totalSessions: 'Sesiones totales:',
+   qualifyingSessions: 'Sesiones válidas:',
+   totalPractice: 'Práctica total:',
+   creditedPractice: 'Práctica acreditada:',
+   dailyCreditedPractice: 'Práctica acreditada diaria',
+   today: 'Hoy',
+   actualMinutes: 'min reales',
+   community: 'comunidad',
+   creditedMinutes: 'min acreditados',
+   soFar: 'hasta ahora',
+   recentPractice: 'Práctica reciente',
+   noPracticeSessions: 'Todavía no hay sesiones de práctica.',
+   pathLoadError: 'No se pudo cargar tu historial de práctica.',
+    badges: 'Insignias',
+statusInProgress: 'EN PROGRESO',
+statusReadyForReview: 'LISTO PARA REVISIÓN',
+statusAchieved: 'CONSEGUIDO',
+    practiceFor: 'Practicar:',
+generalPractice: 'Práctica general',
+yourRecording: 'Tu grabación',
+    recordButton: 'GRABAR',
+stopButton: 'PARAR',
+tapRecordToBegin: 'Pulsa GRABAR para comenzar',
+recordingNow: 'Grabando...',
+microphoneDenied: 'Se denegó el permiso para usar el micrófono.',
+microphoneNotFound: 'No se encontró ningún micrófono.',
+microphoneStartFailed: 'No se pudo iniciar el micrófono.',
+    practiceSaved: 'Práctica guardada ✓',
+recordingSaved: 'Grabación guardada ✓',
+couldNotSave: 'No se pudo guardar: ',
+uploadUnconfirmed: 'La grabación se realizó, pero no se pudo confirmar que se guardara.',
+    targetSaved: 'Objetivo guardado ✓',
+targetUnconfirmed: 'Grabación guardada — no se pudo confirmar el objetivo',
+recordingNoPupilLink: 'Grabación completada, pero no se encontró el enlace personal del alumno.',
+    loadingPracticeTargets: 'Cargando objetivos de práctica...',
+targetsUnavailableGeneralPractice:
+  'Los objetivos no están disponibles — la práctica general sigue disponible.',
+    testModeNoPupilLink: 'Modo de prueba — no se proporcionó un enlace de alumno'
+  }
+};
+
+const t = TEXT[uiLanguage];
+
+  document.getElementById('practiceForLabel').textContent =
+  t.practiceFor;
+
+document.getElementById('generalPracticeOption').textContent =
+  t.generalPractice;
+
+document.getElementById('yourRecordingLabel').textContent =
+  t.yourRecording;
+
+  document.getElementById('recordButton').textContent =
+  t.recordButton;
+
+document.getElementById('status').textContent =
+  t.tapRecordToBegin;
+
+  function translatedTargetStatus(status) {
+  const value = String(status || '').trim().toUpperCase();
+
+  if (value === 'IN PROGRESS') return t.statusInProgress;
+  if (value === 'READY FOR REVIEW') return t.statusReadyForReview;
+  if (value === 'ACHIEVED') return t.statusAchieved;
+
+  return status || '';
+}
+
+  document.getElementById('pathViewTitle').textContent =
+  t.pathTitle;
+
+document.getElementById('pathTotalSessionsLabel').textContent =
+  t.totalSessions;
+
+document.getElementById('pathQualifyingSessionsLabel').textContent =
+  t.qualifyingSessions;
+
+document.getElementById('pathTotalPracticeLabel').textContent =
+  t.totalPractice;
+
+document.getElementById('pathCreditedPracticeLabel').textContent =
+  t.creditedPractice;
+
+  document.getElementById('groupViewTitle').textContent =
+  t.group;
+
+  document.querySelector('[data-view="recordView"]')
+  .lastChild.textContent = '\n  ' + t.record + '\n';
+
+document.querySelector('[data-view="pathView"]')
+  .lastChild.textContent = '\n  ' + t.path + '\n';
+
+document.querySelector('[data-view="groupView"]')
+  .lastChild.textContent = '\n  ' + t.group + '\n';
+  
+  if (pupilId && accessKey) {
+    identity.textContent = displayName;
+  } else {
+    identity.textContent = t.testModeNoPupilLink;
+  }
+const practiceTarget = document.getElementById('practiceTarget');
+  const practiceTargetStorageKey =
+  pupilId ? 'pipersPath.practiceTarget.' + pupilId : '';
+
+  async function getPathWithRetry(maxAttempts = 3, delayMs = 750, timeoutMs = 15000) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(ciypbBackendUrl_(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify({
+          action: 'getPath',
+          pupilId: pupilId,
+          accessKey: accessKey
+        }),
+        signal: controller.signal
+      });
+
+      const data = await response.json();
+
+      if (!data.ok) {
+        throw new Error(data.error || 'Could not load PATH data.');
+      }
+
+      return data;
+
+    } catch (error) {
+      lastError = error;
+
+      if (attempt < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  throw lastError || new Error('Could not load PATH data.');
+}
+async function getGroupWithRetry(
+  maxAttempts = 3,
+  delayMs = 750,
+  timeoutMs = 15000
+) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      timeoutMs
+    );
+
+    try {
+      const response = await fetch(ciypbBackendUrl_(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify({
+          action: 'getGroup',
+          pupilId: pupilId,
+          accessKey: accessKey
+        }),
+        signal: controller.signal
+      });
+
+      const data = await response.json();
+
+      if (!data.ok) {
+        throw new Error(
+          data.error || 'Could not load GROUP data.'
+        );
+      }
+
+      return data;
+
+    } catch (error) {
+      lastError = error;
+      console.warn(
+        'GROUP read attempt ' + attempt + ' failed:',
+        error
+      );
+
+      if (attempt < maxAttempts) {
+        await new Promise(
+          resolve => setTimeout(resolve, delayMs)
+        );
+      }
+
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  throw lastError || new Error(
+    'Could not load GROUP data.'
+  );
+}
+async function loadGroup() {
+  const status = document.getElementById('groupStatus');
+  const content = document.getElementById('groupContent');
+  const pipersEl = document.getElementById('groupPipersToday');
+  const bonusEl = document.getElementById('groupBonusPercent');
+  const titleEl =
+  document.getElementById('groupBagpipeTitle');
+
+const pipersTextEl =
+  document.getElementById('groupPipersText');
+
+const bonusLabelEl =
+  document.getElementById('groupBonusLabel');
+  const bagpipeEl = document.getElementById('communityBagpipe');
+  const messageEl = document.getElementById('groupMessage');
+
+  status.textContent = t.loadingGroup;
+  content.style.display = 'none';
+
+  try {
+    const data = await getGroupWithRetry();
+
+    const pipersToday = Number(data.pipersToday || 0);
+    const bagpipeParts = Math.max(
+      0,
+      Math.min(10, Number(data.bagpipeParts || 0))
+    );
+const communityBonusPercent = Math.max(
+  0,
+  Math.min(20, Number(data.communityBonusPercent || 0))
+);
+    pipersEl.textContent = pipersToday;
+    bonusEl.textContent = communityBonusPercent;
+    titleEl.textContent = t.communityBagpipe;
+
+bonusLabelEl.textContent =
+  t.communityBonusToday;
+
+pipersTextEl.textContent =
+  pipersToday === 1
+    ? t.piperPractisedToday
+    : t.pipersPractisedToday;
+
+const bagpipeImage =
+  document.getElementById('communityBagpipeImage');
+
+const partNameEl =
+  document.getElementById('groupPartName');
+
+const bagpipePartNames = [
+  '',
+  'Blow Pipe',
+  'Bag',
+  'Bass Drone — parte inferior',
+  'Middle Tenor — parte inferior',
+  'Outer Tenor — parte inferior',
+  'Bass Drone — parte media',
+  'Middle Tenor — parte superior',
+  'Outer Tenor — parte superior',
+  'Bass Drone — parte superior',
+  'Chanter — Great Highland Bagpipe completo'
+];
+    
+bagpipeImage.src =
+  'community-bagpipe-' + bagpipeParts + '.png';
+
+bagpipeImage.alt =
+  'Community Great Highland Bagpipe — stage ' +
+  bagpipeParts +
+  ' of 10';
+
+if (bagpipeParts === 0) {
+  partNameEl.textContent = t.waitingFirstPiper;
+} else {
+  partNameEl.textContent =
+    t.partRevealed + ' ' + bagpipePartNames[bagpipeParts];
+}
+
+   if (bagpipeParts === 0) {
+  messageEl.textContent =
+    t.noQualifyingPractice;
+} else if (bagpipeParts >= 10) {
+  messageEl.textContent =
+    t.communityComplete;
+} else {
+  messageEl.textContent =
+    bagpipeParts + ' ' + t.partsCompletedToday;
+}
+
+    status.textContent = '';
+    content.style.display = 'block';
+
+  } catch (error) {
+    console.warn('GROUP load failed:', error);
+
+    status.textContent = t.groupUnavailable;
+    content.style.display = 'none';
+  }
+}
+async function loadPracticeTargets() {
+  practiceTarget.innerHTML = '';
+  practiceTarget.disabled = true;
+
+  const loadingOption = document.createElement('option');
+  loadingOption.value = '';
+  loadingOption.textContent = t.loadingPracticeTargets;
+  practiceTarget.appendChild(loadingOption);
+
+  if (!pupilId || !accessKey) {
+    practiceTarget.innerHTML = '';
+
+    const generalOption = document.createElement('option');
+    generalOption.value = '';
+    generalOption.textContent = t.generalPractice;
+    practiceTarget.appendChild(generalOption);
+
+    practiceTarget.disabled = false;
+    return;
+  }
+
+  try {
+    const data = await getPathWithRetry();
+
+    practiceTarget.innerHTML = '';
+
+    const generalOption = document.createElement('option');
+    generalOption.value = '';
+    generalOption.textContent = t.generalPractice;
+    practiceTarget.appendChild(generalOption);
+
+    const eligibleTargets = (data.targets || []).filter(target => {
+      const status = String(target.status || '').trim().toUpperCase();
+
+      return (
+        status === 'IN PROGRESS' ||
+        status === 'READY FOR REVIEW'
+      );
+    });
+
+    eligibleTargets.forEach(target => {
+      const option = document.createElement('option');
+      option.value = target.targetId;
+      option.textContent = target.title;
+      practiceTarget.appendChild(option);
+    });
+
+    if (practiceTargetStorageKey) {
+  try {
+    const savedTargetId =
+      localStorage.getItem(practiceTargetStorageKey) || '';
+
+    if (
+      savedTargetId &&
+      Array.from(practiceTarget.options).some(
+        option => option.value === savedTargetId
+      )
+    ) {
+      practiceTarget.value = savedTargetId;
+    } else if (savedTargetId) {
+      localStorage.removeItem(practiceTargetStorageKey);
+    }
+  } catch (error) {
+    console.warn('Could not restore practice target:', error);
+  }
+}
+    practiceTarget.disabled = false;
+    const status = document.getElementById('targetStatus');
+if (status) {
+  status.textContent = '';
+}
+
+  } catch (error) {
+    console.warn('Practice target load failed:', error);
+
+    practiceTarget.innerHTML = '';
+
+    const generalOption = document.createElement('option');
+    generalOption.value = '';
+    generalOption.textContent = t.generalPractice;
+    practiceTarget.appendChild(generalOption);
+
+    practiceTarget.disabled = false;
+
+    const status = document.getElementById('targetStatus');
+    if (status) {
+      status.textContent =
+  t.targetsUnavailableGeneralPractice;
+    }
+  }
+}
+if (pupilId && accessKey) {
+  loadPracticeTargets();
+}
+  
+const targetStatus = document.getElementById('targetStatus');
+
+practiceTarget.addEventListener('change', () => {
+  targetStatus.textContent = '';
+
+  if (!practiceTargetStorageKey) return;
+
+  try {
+    const selectedTargetId = practiceTarget.value;
+
+    if (selectedTargetId) {
+      localStorage.setItem(
+        practiceTargetStorageKey,
+        selectedTargetId
+      );
+    } else {
+      localStorage.removeItem(practiceTargetStorageKey);
+    }
+  } catch (error) {
+    console.warn('Could not save practice target:', error);
+  }
+});
+  
+async function tagSavedRecording(fileUrl, targetId) {
+  targetStatus.textContent = '';
+  const isGeneralPractice = !targetId;
+
+  try {
+    // Write the target link.
+    // We do not trust/read this response because Apps Script redirects
+    // have been unreliable specifically for setSessionTarget.
+    await fetch(ciypbBackendUrl_(), {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify({
+        action: 'setSessionTarget',
+        pupilId: pupilId,
+        accessKey: accessKey,
+        driveFileLink: fileUrl,
+        targetId: targetId
+      })
+    });
+
+// Confirm the saved state using getPath.
+// Retry the READ only; never repeat the target write.
+let confirmed = false;
+let savedSession = null;
+let confirmationReadSucceeded = false;
+
+try {
+  const data = await getPathWithRetry();
+  confirmationReadSucceeded = true;
+
+  savedSession = (data.sessions || []).find(
+    session => session.driveFileLink === fileUrl
+  );
+
+  if (savedSession && savedSession.targetId === targetId) {
+    confirmed = true;
+  }
+
+} catch (error) {
+  console.warn('Target confirmation failed:', error);
+}
+if (confirmed) {
+  if (!isGeneralPractice) {
+    targetStatus.textContent = t.targetSaved;
+  }
+  return true;
+}
+// One safe retry only when read-back proves the recording exists
+// but the requested target was not saved.
+if (
+  confirmationReadSucceeded &&
+  savedSession &&
+  savedSession.targetId !== targetId
+) {
+  try {
+    await fetch(ciypbBackendUrl_(), {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify({
+        action: 'setSessionTarget',
+        pupilId: pupilId,
+        accessKey: accessKey,
+        driveFileLink: fileUrl,
+        targetId: targetId
+      })
+    });
+
+    const retryData = await getPathWithRetry();
+
+    const retrySession = (retryData.sessions || []).find(
+      session => session.driveFileLink === fileUrl
+    );
+
+    if (retrySession && retrySession.targetId === targetId) {
+      if (!isGeneralPractice) {
+        targetStatus.textContent = t.targetSaved;
+      }
+      return true;
+    }
+  } catch (error) {
+    console.warn('Target retry failed:', error);
+  }
+}
+if (!isGeneralPractice) {
+  targetStatus.textContent =
+    t.targetUnconfirmed;
+}
+return false;
+  } catch (error) {
+    console.error('Target tagging error:', error);
+    targetStatus.textContent =
+  t.targetUnconfirmed;
+    return false;
+  }
+}
+  const navButtons = document.querySelectorAll('.navButton');
+  const views = document.querySelectorAll('.view');
+
+  navButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      navButtons.forEach(b => b.classList.remove('active'));
+      views.forEach(v => v.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.view).classList.add('active');
+      
+ if (btn.dataset.view === 'pathView') {
+  loadPath();
+}
+  if (btn.dataset.view === 'groupView') {
+  loadGroup();
+}
+});
+});
+
+  let mediaRecorder = null;
+  let stream = null;
+  let chunks = [];
+  let recording = false;
+  let startedAt = null;
+  let timerHandle = null;
+  let lastObjectUrl = null;
+  let recordingTargetId = '';
+  let recordingSessionId = '';
+
+  const recordButton = document.getElementById('recordButton');
+  const statusEl = document.getElementById('status');
+  const timerEl = document.getElementById('timer');
+  const playbackWrap = document.getElementById('playbackWrap');
+  const playback = document.getElementById('playback');
+
+  function formatTime(totalSeconds) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+  }
+
+  function updateTimer() {
+    if (!startedAt) return;
+    const seconds = Math.floor((Date.now() - startedAt) / 1000);
+    timerEl.textContent = formatTime(seconds);
+  }
+
+  async function startRecording() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      statusEl.textContent = 'This browser does not support microphone recording.';
+      return;
+    }
+
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      chunks = [];
+
+      let options = {};
+      const preferred = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/mp4'
+      ];
+
+      for (const type of preferred) {
+        if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(type)) {
+          options = { mimeType: type };
+          break;
+        }
+      }
+
+      mediaRecorder = new MediaRecorder(stream, options);
+
+      mediaRecorder.addEventListener('dataavailable', e => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      });
+
+      mediaRecorder.addEventListener('stop', () => {
+        const type = mediaRecorder.mimeType || 'audio/webm';
+        const blob = new Blob(chunks, { type });
+
+        if (lastObjectUrl) URL.revokeObjectURL(lastObjectUrl);
+        lastObjectUrl = URL.createObjectURL(blob);
+
+        playback.src = lastObjectUrl;
+        playbackWrap.style.display = 'block';
+        statusEl.textContent = 'Saving recording…';
+        uploadRecording(blob, type);
+
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+          stream = null;
+        }
+      });
+
+      mediaRecorder.start();
+      recording = true;
+      startedAt = Date.now();
+      playbackWrap.style.display = 'none';
+      timerEl.textContent = '00:00';
+      recordButton.textContent = t.stopButton;
+      recordButton.classList.add('recording');
+      statusEl.textContent = t.recordingNow;
+      updateTimer();
+      timerHandle = setInterval(updateTimer, 500);
+
+    } catch (err) {
+      console.error(err);
+      if (err && err.name === 'NotAllowedError') {
+        statusEl.textContent = t.microphoneDenied;
+      } else if (err && err.name === 'NotFoundError') {
+        statusEl.textContent = t.microphoneNotFound;
+      } else {
+        statusEl.textContent = t.microphoneStartFailed;
+      }
+    }
+  }
+
+function stopRecording() {
+
+  if (!recording) return;
+
+  recording = false;
+
+  const stoppedAt = Date.now();
+
+  if (timerHandle) {
+    clearInterval(timerHandle);
+    timerHandle = null;
+  }
+
+  const elapsedSeconds =
+    Math.floor((stoppedAt - startedAt) / 1000);
+
+  timerEl.textContent = formatTime(elapsedSeconds);
+
+  recordButton.textContent = t.recordButton;
+  recordButton.classList.remove('recording');
+
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+    stream = null;
+  }
+}
+
+recordButton.addEventListener('click', () => {
+  if (recording) {
+    stopRecording();
+  } else {
+recordingTargetId = practiceTarget.value;
+recordingSessionId = crypto.randomUUID();
+targetStatus.textContent = '';
+startRecording();
+  }
+});
+
+  async function uploadRecording(blob, mimeType) {
+  try {
+    if (!pupilId || !accessKey) {
+      statusEl.textContent =
+  t.recordingNoPupilLink;
+      return;
+    }
+
+    const base64 = await blobToBase64(blob);
+
+    const endTime = new Date();
+    const durationSeconds =
+     Math.floor((endTime.getTime() - startedAt) / 1000);
+
+    const payload = {
+      pupilId: pupilId,
+      accessKey: accessKey,
+      audioBase64: base64,
+      mimeType: mimeType,
+      startIso: new Date(startedAt).toISOString(),
+      endIso: endTime.toISOString(),
+      durationSeconds: durationSeconds,
+      sessionId: recordingSessionId
+    };
+
+    const response = await fetch(ciypbBackendUrl_(), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (result.ok) {
+      statusEl.textContent =
+  result.qualifying === 'Yes'
+    ? t.practiceSaved
+    : t.recordingSaved;
+      const selectedTargetId = recordingTargetId;
+
+tagSavedRecording(result.fileUrl, selectedTargetId);
+      
+    } else {
+      statusEl.textContent =
+  t.couldNotSave + result.error;
+    }
+
+} catch (err) {
+  console.error(err);
+
+  // Do NOT upload again here.
+  // The recording may already have been saved even though
+  // Google's response could not be read.
+
+let recoveredSession = null;
+
+try {
+  const data = await getPathWithRetry();
+
+  recoveredSession = (data.sessions || []).find(session =>
+    String(session.sessionId || '').trim() === recordingSessionId &&
+    session.driveFileLink
+  );
+
+} catch (checkError) {
+  console.warn('Recording confirmation failed:', checkError);
+}
+  if (recoveredSession) {
+    statusEl.textContent = t.recordingSaved;
+
+    tagSavedRecording(
+      recoveredSession.driveFileLink,
+      recordingTargetId
+    );
+
+  } else {
+   statusEl.textContent =
+  t.uploadUnconfirmed;
+  }
+}
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      const dataUrl = reader.result;
+      const base64 = dataUrl.split(',')[1];
+      resolve(base64);
+    };
+
+    reader.onerror = reject;
+
+    reader.readAsDataURL(blob);
+  });
+}
+  async function loadPath() {
+  const pathStatus = document.getElementById('pathStatus');
+  const pathSummary = document.getElementById('pathSummary');
+  const pathSessions = document.getElementById('pathSessions');
+
+  pathStatus.textContent = t.loadingPath;
+  pathSummary.style.display = 'none';
+  pathSessions.innerHTML = '';
+
+  try {
+ const data = await getPathWithRetry();
+
+    document.getElementById('pathTotalSessions').textContent =
+      data.summary.totalSessions;
+
+    document.getElementById('pathQualifyingSessions').textContent =
+      data.summary.qualifyingSessions;
+
+    document.getElementById('pathTotalMinutes').textContent =
+      Number(data.summary.totalMinutes).toFixed(2);
+
+    document.getElementById('pathCreditedMinutes').textContent =
+  Number(data.summary.creditedQualifyingMinutes || 0).toFixed(0);
+
+    pathSummary.style.display = 'block';
+    pathStatus.textContent = '';
+const pathTargets = document.getElementById('pathTargets');
+
+// Keep completed individual parts visible until the tune badge has actually
+// been awarded. Once the badge exists, hide all achieved parts for that tune
+// so the badge replaces them in the Path view.
+const earnedBadgeIds = new Set(
+  (data.badges || [])
+    .map(badge => String(badge.badgeId || '').trim())
+    .filter(Boolean)
+);
+
+const tuneBaseName = title =>
+  String(title || '')
+    .replace(/\s*[—-]\s*Part\s+\d+\s*$/i, '')
+    .trim();
+
+const completedTuneNames = new Set(
+  (data.targets || [])
+    .filter(target =>
+      target.badgeId &&
+      earnedBadgeIds.has(String(target.badgeId).trim())
+    )
+    .map(target => tuneBaseName(target.title))
+    .filter(Boolean)
+);
+
+const visibleTargets = (data.targets || []).filter(target => {
+  const status = String(target.status || '').trim().toUpperCase();
+  const tuneName = tuneBaseName(target.title);
+
+  return !(
+    status === 'ACHIEVED' &&
+    completedTuneNames.has(tuneName)
+  );
+});
+
+if (visibleTargets.length > 0) {
+  pathTargets.innerHTML = visibleTargets.map(target => `
+    <div style="
+      padding:16px;
+      border:1px solid #ddd;
+      border-radius:12px;
+      margin-bottom:16px;
+    ">
+      <strong>🎯 ${target.title}</strong><br>
+      <span>${translatedTargetStatus(target.status)}</span>
+    </div>
+  `).join('');
+} else {
+  pathTargets.innerHTML = '';
+}
+    const pathBadges = document.getElementById('pathBadges');
+
+if (data.badges && data.badges.length > 0) {
+  pathBadges.innerHTML =
+    '<h3>' + t.badges + '</h3>' +
+    data.badges.map(badge => `
+      <div style="
+        padding:16px;
+        border:1px solid #ddd;
+        border-radius:12px;
+        margin-bottom:16px;
+      ">
+  ${badge.imageLink ? `
+    <img
+      src="${badge.imageLink}"
+      alt="${badge.badgeName}"
+      style="
+        width:60px;
+        height:60px;
+        object-fit:contain;
+        display:block;
+        margin-bottom:10px;
+      "
+    >
+  ` : ''}
+
+  <strong>${badge.badgeName}</strong><br>
+  <span>${badge.description}</span>
+      </div>
+    `).join('');
+} else {
+  pathBadges.innerHTML = '';
+}
+    if (!data.sessions || data.sessions.length === 0) {
+      pathSessions.innerHTML =
+  '<p>' + t.noPracticeSessions + '</p>';
+      return;
+    }
+
+const creditedDays = Array.isArray(data.creditedPracticeByDate)
+  ? [...data.creditedPracticeByDate].sort(
+      (a, b) => String(b.date).localeCompare(String(a.date))
+    )
+  : [];
+
+const creditedHtml = creditedDays.length
+ ? '<h3>' + t.dailyCreditedPractice + '</h3>' +
+    creditedDays.map(day => {
+const when = day.isToday
+  ? t.today
+  : day.date
+    ? new Date(day.date + 'T12:00:00').toLocaleDateString()
+    : '';
+
+      const actual =
+        Number(day.actualMinutes || 0).toFixed(2);
+
+      const bonus =
+        Number(day.communityBonusPercent || 0);
+
+      const credited =
+        Number(day.creditedMinutes || 0).toFixed(0);
+
+      return `
+        <div style="
+          padding:12px 0;
+          border-bottom:1px solid #ddd;
+        ">
+          <strong>${when}</strong><br>
+${actual} ${t.actualMinutes} ·
++${bonus}% ${t.community} ·
+${credited} ${t.creditedMinutes}${day.isToday ? ' ' + t.soFar : ''}
+        </div>
+      `;
+    }).join('')
+  : '';
+
+const recent = data.sessions.slice(0, 10);
+
+pathSessions.innerHTML =
+  creditedHtml +
+  `<h3 style="margin-top:24px;">${t.recentPractice}</h3>` +
+      recent.map(session => {
+        const date = session.endTime || session.date;
+        const when = date
+          ? new Date(date).toLocaleString()
+          : '';
+
+        const duration =
+          Number(session.durationMinutes || 0).toFixed(2);
+
+        const qualifying =
+          session.qualifying ? ' ✓' : '';
+
+        return `
+          <div style="
+            padding:12px 0;
+            border-bottom:1px solid #ddd;
+          ">
+            <>${when}</><br>
+            ${duration} min${qualifying}
+          </div>
+        `;
+      }).join('');
+
+  } catch(error) {
+  console.error('PATH load error:', error);
+  pathStatus.textContent = t.pathLoadError;
+}
+}
+</script>
+<script src="feedback-config.js"></script>
+<script src="feedback.js" defer></script>
+</body>
+</html>
