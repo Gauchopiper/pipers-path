@@ -1,55 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-labelledby="title desc">
   <title id="title">Regular Piper</title>
-  <desc id="desc">A bold side-profile piper playing a practice chanter, designed to remain clear at small size.</desc>
+  <desc id="desc">A schematic side-profile piper with a Glengarry, simple hands and a black practice chanter.</desc>
 
   <circle cx="64" cy="64" r="60" fill="#8a4f24"/>
   <circle cx="64" cy="64" r="56" fill="#f2c24f"/>
   <circle cx="64" cy="64" r="51" fill="#bfe8ff"/>
 
-  <!-- simple background -->
-  <path d="M13 75 Q34 60 55 70 T114 66 L114 108 L13 108 Z" fill="#68a252"/>
-  <path d="M13 91 Q37 76 58 87 T114 82 L114 108 L13 108 Z" fill="#3f7f48"/>
+  <path d="M13 73 Q34 59 55 69 T114 65 L114 108 L13 108 Z" fill="#69a755"/>
+  <path d="M13 88 Q36 76 57 85 T114 81 L114 108 L13 108 Z" fill="#3e7f48"/>
 
-  <!-- cap -->
-  <path d="M27 31 Q42 18 67 20 Q79 21 88 28 L85 38 Q59 31 34 43 Z" fill="#1f2636"/>
-  <circle cx="53" cy="20" r="4" fill="#d8332f"/>
-  <path d="M30 39 Q48 30 84 35" fill="none" stroke="#111723" stroke-width="4" stroke-linecap="round"/>
+  <!-- Glengarry -->
+  <path d="M26 31 Q42 19 65 20 Q80 21 91 28 L87 39 Q60 31 35 43 Z" fill="#171d29"/>
+  <circle cx="50" cy="20" r="4" fill="#d8332f"/>
+  <path d="M31 39 Q50 31 86 35" fill="none" stroke="#0e131c" stroke-width="4" stroke-linecap="round"/>
+  <path d="M29 39 L24 61 L34 54 L36 39 Z" fill="#171d29"/>
 
-  <!-- head profile -->
-  <path d="M40 39
-           Q52 31 67 36
-           Q76 40 79 48
-           L84 52
-           Q87 55 82 58
+  <!-- head, no hair -->
+  <path d="M39 39
+           Q49 32 62 34
+           Q73 36 79 45
+           L84 51
+           Q88 55 82 58
            L77 59
-           Q76 66 69 71
-           Q59 75 49 68
-           Q40 61 38 52
-           Q37 45 40 39 Z"
-        fill="#e5aa7d"/>
-  <path d="M42 42 Q45 35 53 33 Q49 45 43 52 Q39 49 42 42 Z" fill="#8d8d8d"/>
+           Q75 66 68 70
+           Q58 74 49 69
+           Q41 64 38 55
+           Q36 46 39 39 Z"
+        fill="#e8ae80"
+        stroke="#171d29"
+        stroke-width="3"
+        stroke-linejoin="round"/>
 
-  <!-- body -->
-  <path d="M33 72 Q45 64 57 69 Q70 74 76 91 L76 110 L24 110 Q23 89 33 72 Z" fill="#202738"/>
-  <path d="M37 71 Q49 67 60 72 L56 80 Q46 76 33 80 Z" fill="#eef4fb"/>
+  <!-- simple black body silhouette -->
+  <path d="M35 69
+           Q45 64 56 69
+           Q68 76 74 90
+           L76 110
+           L24 110
+           Q23 88 35 69 Z"
+        fill="#171d29"/>
 
-  <!-- chanter -->
-  <path d="M77 56 L101 89" stroke="#1f232b" stroke-width="7" stroke-linecap="round"/>
-  <path d="M77 56 L101 89" stroke="#4d5561" stroke-width="2" stroke-linecap="round"/>
-  <path d="M98 86 L104 95" stroke="#1f232b" stroke-width="6" stroke-linecap="round"/>
-  <path d="M101 96 Q106 99 110 95" fill="none" stroke="#1f232b" stroke-width="5" stroke-linecap="round"/>
-  <rect x="80" y="62" width="7" height="5" rx="1.5" transform="rotate(54 83.5 64.5)" fill="#d9d9d9"/>
+  <!-- chanter clearly from mouth -->
+  <path d="M77 58 L100 88" stroke="#11151d" stroke-width="6" stroke-linecap="round"/>
+  <path d="M99 87 L106 96" stroke="#11151d" stroke-width="6" stroke-linecap="round"/>
+  <path d="M103 97 Q108 100 112 96" fill="none" stroke="#11151d" stroke-width="5" stroke-linecap="round"/>
 
   <!-- hands -->
-  <path d="M65 76 Q72 71 80 75 Q84 78 82 83 Q79 87 73 86 L68 82 Z" fill="#e5aa7d"/>
-  <path d="M69 88 Q78 82 87 86 Q91 90 88 95 Q84 99 77 97 L71 93 Z" fill="#e5aa7d"/>
+  <ellipse cx="79" cy="78" rx="8" ry="6" transform="rotate(35 79 78)" fill="#e8ae80" stroke="#171d29" stroke-width="2"/>
+  <ellipse cx="88" cy="90" rx="8" ry="6" transform="rotate(35 88 90)" fill="#e8ae80" stroke="#171d29" stroke-width="2"/>
 
-  <!-- finger marks -->
-  <g stroke="#8a563d" stroke-width="1.5" stroke-linecap="round">
-    <path d="M75 76 l4 3"/>
-    <path d="M78 79 l4 3"/>
-    <path d="M79 88 l4 3"/>
-    <path d="M82 91 l4 3"/>
-  </g>
+  <!-- simple finger indication -->
+  <path d="M76 76 l6 4 M85 88 l6 4" stroke="#171d29" stroke-width="1.5" stroke-linecap="round"/>
 </svg>
