@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-labelledby="title desc">
   <title id="title">First Step</title>
-  <desc id="desc">A ladder with its first rung highlighted, symbolising the first qualifying step on Piper's Path.</desc>
-  <circle cx="64" cy="64" r="60" fill="#0b3b66"/>
+  <desc id="desc">A large wooden ladder on a light blue field with its first rung highlighted in gold.</desc>
+
+  <circle cx="64" cy="64" r="60" fill="#8a4f24"/>
   <circle cx="64" cy="64" r="56" fill="#f2c24f"/>
-  <circle cx="64" cy="64" r="51" fill="#1767a6"/>
-  <path d="M35 104 L47 26" stroke="#8a4f24" stroke-width="9" stroke-linecap="round"/>
-  <path d="M93 104 L81 26" stroke="#8a4f24" stroke-width="9" stroke-linecap="round"/>
-  <path d="M42 86 H86 M45 69 H83 M48 52 H80 M51 35 H77" stroke="#d89a4a" stroke-width="7" stroke-linecap="round"/>
-  <path d="M39 101 H89" stroke="#ffd84d" stroke-width="10" stroke-linecap="round"/>
-  <path d="M39 101 H89" stroke="#fff2a6" stroke-width="3" stroke-linecap="round"/>
-  <g stroke="#ffe26a" stroke-width="3" stroke-linecap="round">
-    <path d="M64 88 V82"/>
-    <path d="M49 91 L45 86"/>
-    <path d="M79 91 L83 86"/>
-  </g>
+  <circle cx="64" cy="64" r="51" fill="#bfe8ff"/>
+
+  <path d="M15 84 Q34 72 52 82 T87 82 T113 79 L113 108 L15 108 Z" fill="#93d0f3"/>
+  <path d="M15 95 Q34 86 54 94 T91 94 T113 91 L113 108 L15 108 Z" fill="#73b8e4"/>
+
+  <path d="M34 104 L44 27" stroke="#8a4f24" stroke-width="11" stroke-linecap="round"/>
+  <path d="M94 104 L84 27" stroke="#8a4f24" stroke-width="11" stroke-linecap="round"/>
+
+  <path d="M41 83 H87" stroke="#c9823d" stroke-width="8" stroke-linecap="round"/>
+  <path d="M43 67 H85" stroke="#c9823d" stroke-width="8" stroke-linecap="round"/>
+  <path d="M45 51 H83" stroke="#c9823d" stroke-width="8" stroke-linecap="round"/>
+  <path d="M47 35 H81" stroke="#c9823d" stroke-width="8" stroke-linecap="round"/>
+
+  <path d="M39 99 H89" stroke="#d49a00" stroke-width="11" stroke-linecap="round"/>
+  <path d="M39 97 H89" stroke="#ffd84d" stroke-width="8" stroke-linecap="round"/>
+  <path d="M42 95 H86" stroke="#fff3a8" stroke-width="2.5" stroke-linecap="round"/>
 </svg>
