@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-labelledby="title desc">
+  <title id="title">Regular Piper</title>
+  <desc id="desc">A side-profile piper playing a practice chanter, representing regular practice.</desc>
+
+  <circle cx="64" cy="64" r="60" fill="#8a4f24"/>
+  <circle cx="64" cy="64" r="56" fill="#f2c24f"/>
+  <circle cx="64" cy="64" r="51" fill="#bfe8ff"/>
+
+  <path d="M14 78 Q37 63 58 73 T114 69 L114 108 L14 108 Z" fill="#6fa35a"/>
+  <path d="M14 91 Q36 79 57 87 T114 83 L114 108 L14 108 Z" fill="#4d7f48"/>
+
+  <g transform="translate(17 16)">
+    <path d="M26 27 q11-17 34-13 q11 2 17 9 l-4 8 q-17-6-42 4z" fill="#202534"/>
+    <circle cx="48" cy="10" r="4" fill="#d7322f"/>
+
+    <path d="M37 30 q9-6 19-2 q8 4 12 12 q3 7-1 14 q-5 8-14 10 q-12 1-21-10 q-5-8-2-16z" fill="#e6ad83"/>
+    <path d="M34 39 q-4 4-3 10 q2 7 7 8" fill="none" stroke="#b87756" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M48 31 q8 1 13 7" fill="none" stroke="#9c6448" stroke-width="2" stroke-linecap="round"/>
+
+    <path d="M35 60 q-12 6-18 18 l7 30 h43 l3-28 q-5-13-17-19z" fill="#2b3242"/>
+    <path d="M37 62 q8 5 17 0 l4 9 q-13 8-26 1z" fill="#dceaf7"/>
+
+    <path d="M66 49 L94 83" stroke="#1f232b" stroke-width="6" stroke-linecap="round"/>
+    <path d="M66 49 L94 83" stroke="#4d5561" stroke-width="2" stroke-linecap="round"/>
+    <path d="M91 81 l5 8" stroke="#1f232b" stroke-width="5" stroke-linecap="round"/>
+    <path d="M94 89 q4 3 7 0" fill="none" stroke="#1f232b" stroke-width="4" stroke-linecap="round"/>
+
+    <path d="M64 68 q9 3 13 11" fill="none" stroke="#e6ad83" stroke-width="8" stroke-linecap="round"/>
+    <path d="M56 76 q8 2 13 10" fill="none" stroke="#e6ad83" stroke-width="8" stroke-linecap="round"/>
+    <path d="M69 77 l4-3 M72 81 l4-3 M61 83 l4-3 M64 87 l4-3" stroke="#8b563d" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+</svg>
