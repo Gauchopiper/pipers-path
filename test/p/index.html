@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#ffffff">
+  <title>Piper's Path — Short Link Test</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+    }
+    .card {
+      width: min(100%, 440px);
+      background: #fff;
+      border-radius: 18px;
+      padding: 28px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    }
+    h1 { margin: 0 0 12px; font-size: 28px; }
+    #status { margin: 0; font-size: 18px; line-height: 1.45; }
+    #detail { margin-top: 12px; color: #666; font-size: 14px; }
+    iframe { display: none; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Piper's Path</h1>
+    <p id="status">Checking your short link…</p>
+    <div id="detail"></div>
+  </main>
+
+  <iframe id="resolver" title="Short-link resolver"></iframe>
+
+  <script>
+    const BACKEND_URL =
+      'https://script.google.com/macros/s/AKfycbzcKqDnyr8qBH1t4EEsyKxxXD6N4dP1D9g27pYOYhuqlni0WgzrN44NtPyYB7Vq8lPVuQ/exec';
+
+    const statusEl = document.getElementById('status');
+    const detailEl = document.getElementById('detail');
+    const resolver = document.getElementById('resolver');
+
+    const code = decodeURIComponent(
+      (location.hash || '').replace(/^#/, '').trim()
+    ).toUpperCase();
+
+    if (!code) {
+      statusEl.textContent = 'This short link is incomplete.';
+      detailEl.textContent = 'No pupil code was supplied.';
+    } else {
+      window.addEventListener('message', event => {
+        const data = event.data || {};
+
+        if (
+          data.source !== 'pipers-path-backend' ||
+          data.type !== 'short-profile-result'
+        ) {
+          return;
+        }
+
+        if (!data.ok) {
+          statusEl.textContent = 'This short link was not recognised.';
+          detailEl.textContent = data.error || '';
+          return;
+        }
+
+        statusEl.textContent =
+          'Short link working — ' + (data.displayName || data.pupilId || 'pupil');
+
+        detailEl.textContent =
+          'TEST pupil: ' + (data.pupilId || '') +
+          ' · Language: ' + (data.preferredLanguage || 'EN');
+      });
+
+      resolver.src =
+        BACKEND_URL +
+        '?action=shortProfile&code=' +
+        encodeURIComponent(code);
+    }
+  </script>
+</body>
+</html>
