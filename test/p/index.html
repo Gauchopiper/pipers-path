@@ -75,11 +75,17 @@
         }
 
         statusEl.textContent =
-          'Short link working — ' + (data.displayName || data.pupilId || 'pupil');
+          'Opening Piper\'s Path — ' + (data.displayName || data.pupilId || 'pupil');
 
-        detailEl.textContent =
-          'TEST pupil: ' + (data.pupilId || '') +
-          ' · Language: ' + (data.preferredLanguage || 'EN');
+        detailEl.textContent = 'Short link recognised.';
+
+        const destination =
+          '../?p=' + encodeURIComponent(data.pupilId || '') +
+          '&key=' + encodeURIComponent(code) +
+          '&n=' + encodeURIComponent(data.displayName || data.pupilId || '') +
+          '&lang=' + encodeURIComponent(data.preferredLanguage || 'EN');
+
+        location.replace(destination);
       });
 
       resolver.src =
