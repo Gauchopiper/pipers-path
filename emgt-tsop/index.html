@@ -267,6 +267,8 @@
   </button>
 </nav>
 
+<script src="../assets/js/local-outbox.js"></script>
+<script src="../assets/js/recording-outbox.js"></script>
 <script>
   const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbyX0bmLmbr4wPqGseWCaBAdDtILC93UyJzp1bazr9l0Kk_aLYl2w-mOCEQn9ww86796pQ/exec'; // Set to the EMGT-TSOP pupil backend /exec URL before publication.
   function emgtBackendUrl_() {
@@ -917,6 +919,12 @@ return false;
   let lastObjectUrl = null;
   let recordingTargetId = '';
   let recordingSessionId = '';
+  let recordingStoppedAt = null;
+  let protectingRecording = false;
+  let recordingOutboxPromise = null;
+  window.addEventListener('beforeunload', event => {
+    if (recording || protectingRecording) { event.preventDefault(); event.returnValue = ''; }
+  });
 
   const recordButton = document.getElementById('recordButton');
   const statusEl = document.getElementById('status');
@@ -966,7 +974,7 @@ return false;
         if (e.data && e.data.size > 0) chunks.push(e.data);
       });
 
-      mediaRecorder.addEventListener('stop', () => {
+      mediaRecorder.addEventListener('stop', async () => {
         const type = mediaRecorder.mimeType || 'audio/webm';
         const blob = new Blob(chunks, { type });
 
@@ -976,7 +984,7 @@ return false;
         playback.src = lastObjectUrl;
         playbackWrap.style.display = 'block';
         statusEl.textContent = 'Saving recording…';
-        uploadRecording(blob, type);
+        await uploadRecording(blob, type, { sessionId: recordingSessionId, targetId: recordingTargetId, startedAt, stoppedAt: recordingStoppedAt });
 
         if (stream) {
           stream.getTracks().forEach(track => track.stop());
@@ -1014,6 +1022,9 @@ function stopRecording() {
   recording = false;
 
   const stoppedAt = Date.now();
+  recordingStoppedAt = stoppedAt;
+  protectingRecording = true;
+  recordButton.disabled = true;
 
   if (timerHandle) {
     clearInterval(timerHandle);
@@ -1039,6 +1050,7 @@ function stopRecording() {
 }
 
 recordButton.addEventListener('click', () => {
+  if (protectingRecording) return;
   if (recording) {
     stopRecording();
   } else {
@@ -1049,89 +1061,39 @@ startRecording();
   }
 });
 
-  async function uploadRecording(blob, mimeType) {
-  try {
-    if (!pupilId || !accessKey) {
-      statusEl.textContent =
-  t.recordingNoPupilLink;
-      return;
+  function getRecordingOutbox() {
+    if (!recordingOutboxPromise) {
+      recordingOutboxPromise = createRecordingOutbox({
+        endpoint: emgtBackendUrl_(), pupilId, accessKey,
+        language: document.documentElement.lang.toLowerCase().startsWith('es') ? 'es' : 'en',
+        parent: document.getElementById('recordView'),
+        status: message => { if (!recording) statusEl.textContent = message; },
+        toBase64: blobToBase64, readPath: () => getPathWithRetry(2), tagTarget: tagSavedRecording
+      }).catch(error => { recordingOutboxPromise = null; throw error; });
     }
-
-    const base64 = await blobToBase64(blob);
-
-    const endTime = new Date();
-    const durationSeconds =
-     Math.floor((endTime.getTime() - startedAt) / 1000);
-
-    const payload = {
-      pupilId: pupilId,
-      accessKey: accessKey,
-      audioBase64: base64,
-      mimeType: mimeType,
-      startIso: new Date(startedAt).toISOString(),
-      endIso: endTime.toISOString(),
-      durationSeconds: durationSeconds,
-      sessionId: recordingSessionId
-    };
-
-    const response = await fetch(emgtBackendUrl_(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json();
-
-    if (result.ok) {
-      statusEl.textContent =
-  result.qualifying === 'Yes'
-    ? t.practiceSaved
-    : t.recordingSaved;
-      const selectedTargetId = recordingTargetId;
-
-tagSavedRecording(result.fileUrl, selectedTargetId);
-      
-    } else {
-      statusEl.textContent =
-  t.couldNotSave + result.error;
-    }
-
-} catch (err) {
-  console.error(err);
-
-  // Do NOT upload again here.
-  // The recording may already have been saved even though
-  // Google's response could not be read.
-
-let recoveredSession = null;
-
-try {
-  const data = await getPathWithRetry();
-
-  recoveredSession = (data.sessions || []).find(session =>
-    String(session.sessionId || '').trim() === recordingSessionId &&
-    session.driveFileLink
-  );
-
-} catch (checkError) {
-  console.warn('Recording confirmation failed:', checkError);
-}
-  if (recoveredSession) {
-    statusEl.textContent = t.recordingSaved;
-
-    tagSavedRecording(
-      recoveredSession.driveFileLink,
-      recordingTargetId
-    );
-
-  } else {
-   statusEl.textContent =
-  t.uploadUnconfirmed;
+    return recordingOutboxPromise;
   }
-}
-}
+  if (pupilId && accessKey) getRecordingOutbox().catch(() => {
+    statusEl.textContent = PipersOutbox.messages[document.documentElement.lang === 'es' ? 'es' : 'en'].unavailable;
+  });
+  async function uploadRecording(blob, mimeType, context) {
+    try {
+      const outbox = await getRecordingOutbox();
+      await outbox.protect(blob, context);
+    } catch (_) {
+      // Storage failure must never pretend the audio is protected. Preserve the
+      // actual Blob in the download closure and retain the existing playback.
+      const t = PipersOutbox.messages[document.documentElement.lang === 'es' ? 'es' : 'en'];
+      statusEl.textContent = t.unavailable;
+      const button = document.createElement('button');
+      button.type = 'button'; button.textContent = t.download;
+      button.onclick = () => PipersOutbox.download({ id: context.sessionId, kind: 'audio', data: { blob } });
+      document.getElementById('recordView').append(button);
+    } finally {
+      protectingRecording = false;
+      recordButton.disabled = false;
+    }
+  }
 
 function blobToBase64(blob) {
   return new Promise((resolve, reject) => {
