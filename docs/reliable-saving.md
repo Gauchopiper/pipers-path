@@ -4,7 +4,7 @@ Status: implementation branch, **not deployed**. The current pupil frontend is i
 
 ## Baseline and source limits
 
-Base: `Gauchopiper/pipers-path`, `main` at `1d629da`. Working branch: `feature/reliable-local-outbox`. Initial implementation commit: `cb3d38c` (local). Automatic approval review blocked pushing this branch to the public repository because external publication was considered outside the authorization given. The branch is not published; user approval is required before retrying the push.
+Base: `Gauchopiper/pipers-path`, `main` at `1d629da`. Working branch: `feature/reliable-local-outbox`. Initial local implementation commit: `cb3d38c`. After explicit authorization from Leslie, the reviewed source was published to the public repository as commit `9e5490f5df0bd78fdce5743ac658a408e22c0076`, with a tree identical to local commit `3775a53`. The earlier approval block is resolved. Branch: https://github.com/Gauchopiper/pipers-path/tree/feature/reliable-local-outbox . No merge or deployment has been performed.
 
 Read: Common Foundation, Shared Standards, Piper's Path Identity & Guidelines, Current Project Instructions, Sharing & Deployment Guide and Organisation Clone Runbook. Existing legacy pupil/session IDs remain local; no cross-app entity identity has been introduced.
 
