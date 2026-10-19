@@ -166,8 +166,9 @@ function gdbPUpload_(ss,id,d){
  const diff=(end.getTime()-start.getTime())/1000;
  if(!Number.isFinite(diff)||!Number.isFinite(seconds)||diff<=0||diff>7200||
     Math.abs(diff-seconds)>3)throw Error('Recording duration does not match timestamps.');
- const threshold=Number(gdbPProp_('GDB_QUALIFY_MINUTES'));
- if(!Number.isFinite(threshold)||threshold<=0||threshold>120)throw Error('Practice rule not configured.');
+ const rule=String(PropertiesService.getScriptProperties().getProperty('GDB_QUALIFY_MINUTES')||'').trim();
+ const threshold=rule===''?null:Number(rule);
+ if(threshold!==null&&(!Number.isFinite(threshold)||threshold<=0||threshold>120))throw Error('Practice rule invalid.');
  const mime=String(d.mimeType||'').split(';')[0];
  const extensions={'audio/webm':'webm','audio/mp4':'m4a','audio/ogg':'ogg','audio/wav':'wav'};
  if(!Object.prototype.hasOwnProperty.call(extensions,mime))throw Error('Unsupported recording format.');
@@ -185,7 +186,7 @@ function gdbPUpload_(ss,id,d){
   const blob=Utilities.newBlob(bytes,mime,sid+'.'+extensions[mime]);
   const file=DriveApp.getFolderById(gdbPProp_('GDB_PUPIL_RECORDINGS_FOLDER_ID')).createFile(blob);
   const url=file.getUrl();
-  const mins=Math.round(diff/60*100)/100,qualifying=mins>=threshold?'Yes':'No';
+  const mins=Math.round(diff/60*100)/100,qualifying=threshold===null?'Pending rule':mins>=threshold?'Yes':'No';
   const row=[id,Utilities.formatDate(end,'Europe/Madrid','yyyy-MM-dd'),
     start.toISOString(),end.toISOString(),mins,qualifying,url,sid];
   gdbPTab_(ss,'PRACTICE LOG').appendRow(row);
