@@ -129,4 +129,10 @@ check('undecided qualification permits storage without credit',()=>{
  assert.equal(result.ok,true);assert.equal(result.qualifying,'Pending rule');
  assert.equal(post({pupilId:id,accessKey:key,action:'getPath'}).summary.qualifyingSessions,1);
 });
+properties.GDB_QUALIFY_MINUTES='5';
+for(const seconds of [299,299.9,300,301]) check('five minute boundary '+seconds,()=>{
+ const sid='55555555-2222-4333-8444-'+String(Math.round(seconds*10)).padStart(12,'0');
+ const result=post({...request,sessionId:sid,endIso:new Date(Date.parse(request.startIso)+seconds*1000).toISOString(),durationSeconds:seconds});
+ assert.equal(result.ok,true);assert.equal(result.qualifying,seconds>=300?'Yes':'No');
+});
 process.stdout.write('Mock contract checks passed: '+count+'\n');
