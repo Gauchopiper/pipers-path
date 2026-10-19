@@ -31,6 +31,14 @@ a{color:#1a5490}
 <label>Language <select id="lang"><option>ES</option><option>EN</option></select></label>
 <button>Create pupil</button></form>
 <p class="muted">A personal link is a private access key. Send it only to that pupil.</p>
+<h3>New target</h3>
+<form id="createTarget"><input id="targetTitle" placeholder="Target title" required maxlength="160">
+<textarea id="targetInstructions" placeholder="Instructions" maxlength="1000"></textarea>
+<select id="targetBadge"><option value="">No badge</option></select><button>Add target</button></form>
+<h3>New badge</h3>
+<form id="createBadge"><input id="badgeTitle" placeholder="Badge name" required maxlength="160">
+<textarea id="badgeDescription" placeholder="Description" maxlength="1000"></textarea>
+<button>Add badge</button></form>
 </section></div>
 <div><section class="panel"><h2 id="selectedTitle">Select a pupil</h2>
 <div id="detail"></div></section></div></div>
@@ -70,7 +78,10 @@ async function refresh(){
   state.role=data.role;state.pupils=data.pupils||[];state.targets=data.targets||[];state.badges=data.badges||[];
   el('role').textContent=data.role+' · '+data.actor;
   el('ownerPanel').hidden=state.role!=='OWNER';
-  renderPupils();status('Connected to Gaita de Boto teacher service.');
+  renderPupils();
+  const cb=el('targetBadge');cb.replaceChildren();node('option','No badge',cb,{value:''});
+  for(const b of state.badges)node('option',b.name,cb,{value:b.id});
+  status('Connected to Gaita de Boto teacher service.');
   if(state.selected&&state.pupils.some(p=>p.id===state.selected)) await selectPupil(state.selected);
  }catch(err){
   el('role').textContent='Not authorised';
@@ -109,6 +120,22 @@ async function selectPupil(id){
  try{
   const detail=await rpc('gdb_detail',id);
   if(state.selected!==id)return;
+  node('h3','Teacher comments',box);
+  const commentInput=node('textarea',null,box,{placeholder:'Comment for this pupil; no central sharing'});
+  const sendComment=node('button','Send teacher comment',box);
+  let op=crypto.randomUUID();
+  sendComment.onclick=async()=>{
+   if(!commentInput.value.trim())return;
+   sendComment.disabled=true;status('Saving teacher comment…');
+   try{
+    const result=await rpc('gdb_comment',id,commentInput.value,op);
+    if(!result||result.ok!==true||result.reference!=='C-'+op)throw Error('Comment not confirmed.');
+    commentInput.value='';op=crypto.randomUUID();status('Comment saved ✓');
+    await selectPupil(id);
+   }catch(err){status(err.message||'Comment pending; retry without retyping.');}
+   finally{sendComment.disabled=false;}
+  };
+  for(const c of detail.comments||[])node('p',c.text+' — '+c.role,box);
   node('h3','Assigned targets',box);
   if(!detail.targets.length)node('p','None yet.',box);
   for(const t of detail.targets)node('p',t.id+': '+t.status,box);
@@ -159,6 +186,16 @@ el('create').addEventListener('submit',async ev=>{
  if(!name)return;
  const created=await mutate('gdb_createPupil',name,el('lang').value);
  if(created&&created.id){el('name').value='';await selectPupil(created.id);}
+});
+el('createTarget').addEventListener('submit',async ev=>{
+ ev.preventDefault();
+ const result=await mutate('gdb_createTarget',el('targetTitle').value,el('targetInstructions').value,el('targetBadge').value);
+ if(result&&result.ok){el('targetTitle').value='';el('targetInstructions').value='';}
+});
+el('createBadge').addEventListener('submit',async ev=>{
+ ev.preventDefault();
+ const result=await mutate('gdb_createBadge',el('badgeTitle').value,el('badgeDescription').value);
+ if(result&&result.ok){el('badgeTitle').value='';el('badgeDescription').value='';}
 });
 refresh();
 </script></body></html>
