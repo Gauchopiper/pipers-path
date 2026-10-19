@@ -1,0 +1,81 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gaita de Boto – Feedback</title>
+<style>
+body{font-family:system-ui,sans-serif;color:#213047;background:#f3f6fa;max-width:650px;margin:18px auto;padding:15px}
+section{background:#fff;border-radius:12px;padding:20px}
+label{display:block;margin:12px 0}textarea,select{box-sizing:border-box;width:100%;padding:12px;border:1px solid #b7c3d5;border-radius:7px}
+textarea{height:110px}button{padding:12px 20px;background:#1a4a73;color:white;border:none;border-radius:9px;cursor:pointer}
+button:disabled{opacity:.5}#status{font-weight:600;min-height:50px;margin-top:14px}
+small{color:#536579}
+</style></head><body><section>
+<h1>Piper's Path — Gaita de Boto</h1><h2>Send feedback / Enviar comentarios</h2>
+<p>Your comments go to this organisation only.</p>
+<form id="feedback">
+<label>Category / Categoría
+<select id="category"><option value="Suggestion">Suggestion</option><option value="Problem">Problem</option><option value="Other">Other</option></select></label>
+<label>Comment / Comentario<textarea id="description" maxlength="3000" required></textarea></label>
+<label>More detail / Más detalles<textarea id="explanation" maxlength="3000"></textarea></label>
+<button id="send" disabled>Save and send / Guardar y enviar</button>
+</form><div id="status" role="status" aria-live="polite">Connecting…</div>
+<small>Submitted comments are retained on this device until a matching server confirmation. Browser storage can still be cleared or unavailable.</small>
+</section><script>
+'use strict';
+const $=id=>document.getElementById(id);
+let context=null,pending=null,storeKey='',busy=false;
+function message(s){$('status').textContent=s;}
+function scriptSubmit(data){
+ return new Promise((resolve,reject)=>google.script.run
+  .withSuccessHandler(resolve).withFailureHandler(reject).gdb_submitFeedback(data));
+}
+function readFields(){
+ return {category:$('category').value,description:$('description').value.trim(),
+ explanation:$('explanation').value.trim(),page:context.page};
+}
+function applyFields(d){
+ $('category').value=d.category||'Other';$('description').value=d.description||'';
+ $('explanation').value=d.explanation||'';
+}
+function keepLocal(data){
+ // No pupil key or Google tokens persisted; only unsent feedback and operation ID.
+ localStorage.setItem(storeKey,JSON.stringify(data));
+}
+async function send(){
+ if(!context||busy)return;
+ const d=pending||Object.assign(readFields(),{operationId:crypto.randomUUID()});
+ if(!d.description){message('Please write a comment.');return;}
+ if(!pending){
+  try{keepLocal(d);pending=d;}
+  catch(_){message('Device storage is unavailable. Copy your text; it has not been safely saved here.');return;}
+ }
+ busy=true;$('send').disabled=true;message('Saved on this device — checking server delivery…');
+ try{
+  const result=await scriptSubmit(Object.assign({},pending,{pupilId:context.p,accessKey:context.key}));
+  if(!result||result.ok!==true||result.reference!=='F-'+pending.operationId)
+   throw Error('Delivery confirmation did not match.');
+  localStorage.removeItem(storeKey);pending=null;
+  $('feedback').reset();message('Saved ✓ — feedback confirmed at this organisation.');
+ }catch(err){message('Saved on this device — delivery not confirmed. Press Send to retry. '+
+   String(err&&err.message||''));}
+ finally{busy=false;$('send').disabled=false;}
+}
+$('feedback').addEventListener('submit',e=>{e.preventDefault();send();});
+google.script.url.getLocation(loc=>{
+ const params=new URLSearchParams(loc.hash||'');
+ const p=params.get('p')||'',key=params.get('key')||'';
+ if(!p||key.length<40){message('Open this form from your personal pupil link.');return;}
+ context={p,key,page:(params.get('page')||'other').slice(0,40)};
+ storeKey='gdb-feedback-v1-'+encodeURIComponent(p);
+ try{
+  const stored=localStorage.getItem(storeKey);
+  if(stored){
+   const parsed=JSON.parse(stored);
+   if(!parsed||typeof parsed!=='object'||!parsed.operationId||!parsed.description)
+    throw Error('Invalid saved submission');
+   pending=parsed;applyFields(pending);
+   message('Unconfirmed feedback restored from this device. Press Send to retry.');
+  }else message('Ready. Your comment stays on this device until confirmed.');
+  $('send').disabled=false;
+ }catch(_){message('Pending feedback could not be safely recovered. Do not clear browser storage.');}
+});
+</script></body></html>
