@@ -123,4 +123,10 @@ for(const part of ['teacher/TeacherDashboard.html','feedback/FeedbackForm.html']
  const js=html.match(/<script>([\s\S]*?)<\/script>/);
  check(part+' JS syntax',()=>assert.doesNotThrow(()=>new Function(js[1])));
 }
+delete properties.GDB_QUALIFY_MINUTES;
+check('undecided qualification permits storage without credit',()=>{
+ const result=post({...request,sessionId:'77777777-2222-4333-8444-555555555555'});
+ assert.equal(result.ok,true);assert.equal(result.qualifying,'Pending rule');
+ assert.equal(post({pupilId:id,accessKey:key,action:'getPath'}).summary.qualifyingSessions,1);
+});
 process.stdout.write('Mock contract checks passed: '+count+'\n');
