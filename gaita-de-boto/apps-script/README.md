@@ -4,7 +4,7 @@ This directory is a **development candidate** for the Gaita de Boto organisation
 
 ## Components already staged
 
-- `teacher/Code.gs` + `TeacherDashboard.html` + `appsscript.json`: role-checked teacher UI, owner pupil creation and activation, practice summaries, assigned targets, badges, per-session review, server-mediated protected audio playback. Assistant sees server-filtered data, not canonical workbook or access keys.
+- `teacher/Code.gs` + `TeacherDashboard.html` + `appsscript.json`: role-checked teacher UI, owner pupil creation and activation, practice summaries, target/badge catalogue creation and assignments, per-session reviews, local teacher comments, server-mediated protected audio playback. Assistant sees server-filtered data, not canonical workbook or access keys.
 - `pupil/Code.gs` + manifest: owner-run independent recorder API matching the staged pupil page's existing JSON POST actions, exact Session-ID duplicate detection, receipt reservation, PRACTICE LOG and SESSION META, Record/Path/Group, assigned target tagging. Qualification requires a **Gaita-specific** threshold; no Highland default.
 - `feedback/Code.gs` + `FeedbackForm.html` + manifest: independent pupil feedback with operation-ID deduplication and **organisation-only** destination. The browser keeps an unconfirmed submission in local storage where available. No central collection is enabled.
 
@@ -40,12 +40,12 @@ This source intentionally uses private **property names** only; resource values 
 
 ## Dry-run verification
 
-In the Chat implementation session 19 mocked service-contract checks passed against these GAS sources for Owner vs Assistant, pupil link, protected pupil JSON actions, session replay, receipt/log/meta, targets, reviews and feedback idempotency. These are **not live Google, real microphone or external-account tests**. The full set of privacy, recovery and identity limitations is in the existing Google Doc `Piper's Path – Gaita de Boto – Current Implementation Handover`.
+In the Chat implementation session 28 mocked service-contract checks passed against these GAS sources for Owner vs Assistant, pupil link, protected pupil JSON actions, session replay, receipt/log/meta, targets, reviews and feedback idempotency. These are **not live Google, real microphone or external-account tests**. The full set of privacy, recovery and identity limitations is in the existing Google Doc `Piper's Path – Gaita de Boto – Current Implementation Handover`.
 
 ## Known gaps to resolve before release
 
 - Backend source lacks live-proven authentication, deployed project IDs, script versions, production test evidence and short-link setup.
-- Badge *award* and target *assignment* are present; management of the master catalogues and teacher comment/review routes beyond session review remain to be integrated/validated.
+- Badge and target master catalogue creation, assignment/award, teacher comments and session reviews are staged in the teacher backend; **live compatibility and permissions are still unverified**, and any additional proven teacher workflow must be integrated before release.
 - The staged frontend's GROUP artwork/text is inherited from Highland piping; adapt Gaita terminology and illustration only after confirmation.
 - Pupil frontend still has blank `BACKEND_URL`, and `feedback-config.js` still has blank endpoint. These are deliberate protection against falsely claiming deployment.
 
