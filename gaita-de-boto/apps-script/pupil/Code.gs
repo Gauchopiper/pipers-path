@@ -186,7 +186,7 @@ function gdbPUpload_(ss,id,d){
   const blob=Utilities.newBlob(bytes,mime,sid+'.'+extensions[mime]);
   const file=DriveApp.getFolderById(gdbPProp_('GDB_PUPIL_RECORDINGS_FOLDER_ID')).createFile(blob);
   const url=file.getUrl();
-  const mins=Math.round(diff/60*100)/100,qualifying=threshold===null?'Pending rule':mins>=threshold?'Yes':'No';
+  const mins=Math.round(diff/60*100)/100,qualifying=threshold===null?'Pending rule':diff>=threshold*60?'Yes':'No';
   const row=[id,Utilities.formatDate(end,'Europe/Madrid','yyyy-MM-dd'),
     start.toISOString(),end.toISOString(),mins,qualifying,url,sid];
   gdbPTab_(ss,'PRACTICE LOG').appendRow(row);
