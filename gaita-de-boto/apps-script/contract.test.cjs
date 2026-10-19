@@ -69,7 +69,7 @@ function load(part,names){
  const c=read(part),f=new Function(...Object.keys(globals),c+'\nreturn {'+names.join(',')+'};');
  return f(...Object.values(globals));
 }
-const teacher=load('teacher',['gdb_dashboard','gdb_createPupil','gdb_assignTarget','gdb_review','gdb_detail','gdb_awardBadge']);
+const teacher=load('teacher',['gdb_dashboard','gdb_createPupil','gdb_assignTarget','gdb_review','gdb_detail','gdb_awardBadge','gdb_createTarget','gdb_createBadge','gdb_comment']);
 const pupil=load('pupil',['doPost']);
 const feedback=load('feedback',['gdb_submitFeedback']);
 const post=data=>JSON.parse(pupil.doPost({postData:{contents:JSON.stringify(data)}}).body);
@@ -107,6 +107,17 @@ const fb={pupilId:id,accessKey:key,operationId,category:'Suggestion',description
 check('feedback inserted once',()=>assert.equal(feedback.gdb_submitFeedback(fb).reference,'F-'+operationId));
 check('same operation deduplicated',()=>{assert.equal(feedback.gdb_submitFeedback(fb).duplicate,true);assert.equal(db['PUPIL FEEDBACK'].length,2)});
 check('different content same ID rejected',()=>assert.throws(()=>feedback.gdb_submitFeedback({...fb,description:'changed'})));
+const newBadge=teacher.gdb_createBadge('Gaita test badge','Test only');
+check('owner creates badge catalogue entry',()=>assert.ok(db.BADGES.some(r=>r[0]===newBadge.id)));
+const newTarget=teacher.gdb_createTarget('Gaita breathing','Testing',newBadge.id);
+check('owner creates target catalogue entry',()=>assert.ok(db.TARGETS.some(r=>r[0]===newTarget.id)));
+const commentId='22222222-3333-4444-8555-666666666666';
+actor='assistant@example.test';
+check('assistant teacher comment saved',()=>assert.equal(teacher.gdb_comment(id,'Well done',commentId).reference,'C-'+commentId));
+check('assistant comment deduplicated',()=>assert.equal(teacher.gdb_comment(id,'Well done',commentId).duplicate,true));
+check('assistant cannot change catalogue',()=>assert.throws(()=>teacher.gdb_createBadge('No','Denied')));
+actor='owner@example.test';
+check('owner can read comment in pupil detail',()=>assert.equal(teacher.gdb_detail(id).comments[0].text,'Well done'));
 for(const part of ['teacher/TeacherDashboard.html','feedback/FeedbackForm.html']){
  const html=fs.readFileSync(path.join(root,part),'utf8');
  const js=html.match(/<script>([\s\S]*?)<\/script>/);
