@@ -108,7 +108,13 @@ function gdb_detail(pupilId) {
     .map(r=>({id:String(r[1]),status:String(r[2]),teacherNote:String(r[6]||'')}));
   const badges = gdbRows_('PUPIL BADGES').filter(r=>String(r[0])===id)
     .map(r=>({id:String(r[1]),date:String(r[2])}));
-  return {pupilId:id,sessions,targets,badges};
+  const commentSheet=SpreadsheetApp.openById(gdbProperty_('GDB_DATA_SHEET_ID')).getSheetByName('TEACHER COMMENTS');
+  const comments=!commentSheet||commentSheet.getLastRow()<2?[]:
+    commentSheet.getRange(2,1,commentSheet.getLastRow()-1,7).getValues()
+    .filter(r=>String(r[1])===id)
+    .map(r=>({id:String(r[0]),teacher:String(r[2]),role:String(r[3]),
+      date:String(r[4]),text:String(r[5])})).reverse().slice(0,30);
+  return {pupilId:id,sessions,targets,badges,comments};
 }
 function gdb_createPupil(name,language) {
   gdbOwner_();
@@ -194,4 +200,60 @@ function gdb_recordingAudio(pupilId,sessionId) {
   const blob=file.getBlob();
   if(!/^audio\//.test(blob.getContentType()))throw Error('Recording is not an audio file.');
   return {mime:blob.getContentType(),data:Utilities.base64Encode(blob.getBytes())};
+}
+
+/** Owner-managed catalogue creation (no inherited Highland defaults). */
+function gdb_createTarget(title,instructions,badgeId) {
+ gdbOwner_();
+ const name=gdbText_(title,160),note=gdbText_(instructions,1000),badge=gdbStr_(badgeId,100);
+ if(!name)throw Error('Target title required.');
+ const lock=LockService.getScriptLock();lock.waitLock(15000);
+ try{
+  if(badge&&!gdbRows_('BADGES').some(r=>String(r[0])===badge))throw Error('Badge does not exist.');
+  const id='t-'+Utilities.getUuid(),sh=gdbSheet_('TARGETS');
+  sh.appendRow([id,name,note,'',badge,'TEACHER','','','Yes',sh.getLastRow()]);
+  SpreadsheetApp.flush();return {ok:true,id};
+ }finally{lock.releaseLock();}
+}
+function gdb_createBadge(title,description) {
+ gdbOwner_();
+ const name=gdbText_(title,160),desc=gdbText_(description,1000);
+ if(!name)throw Error('Badge name required.');
+ const lock=LockService.getScriptLock();lock.waitLock(15000);
+ try{
+  const id='b-'+Utilities.getUuid(),sh=gdbSheet_('BADGES');
+  sh.appendRow([id,name,desc,'','Yes',sh.getLastRow(),'','']);
+  SpreadsheetApp.flush();return {ok:true,id};
+ }finally{lock.releaseLock();}
+}
+/** Separate organisation-private teacher comments, not generic beta feedback. */
+function gdb_commentTab_() {
+ const ss=SpreadsheetApp.openById(gdbProperty_('GDB_DATA_SHEET_ID'));
+ const name='TEACHER COMMENTS';
+ const columns=['Comment ID','Pupil ID','Teacher Email','Role','Created UTC','Text','Session ID'];
+ let sh=ss.getSheetByName(name);
+ if(!sh){sh=ss.insertSheet(name);sh.appendRow(columns);SpreadsheetApp.flush();}
+ const actual=sh.getRange(1,1,1,columns.length).getValues()[0];
+ if(JSON.stringify(actual)!==JSON.stringify(columns))throw Error('Teacher comment schema mismatch.');
+ return sh;
+}
+function gdb_comment(pupilId,text,operationId) {
+ const actor=gdbActor_();
+ const id=gdbStr_(pupilId,100),message=gdbText_(text,2000),op=gdbStr_(operationId,100).toLowerCase();
+ if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(op))
+  throw Error('Invalid comment reference.');
+ if(!message)throw Error('Comment cannot be empty.');
+ const lock=LockService.getScriptLock();lock.waitLock(15000);
+ try{
+  if(!gdbPupilExists_(id))throw Error('Pupil not found.');
+  const sh=gdb_commentTab_(),rows=sh.getDataRange().getValues(),ref='C-'+op;
+  const prev=rows.find((r,i)=>i>0&&String(r[0])===ref);
+  if(prev){
+   if(String(prev[1])!==id||String(prev[2])!==actor.email||String(prev[5])!==message)
+    throw Error('Comment operation conflict.');
+   return {ok:true,reference:ref,duplicate:true};
+  }
+  sh.appendRow([ref,id,actor.email,actor.role,new Date(),message,'']);SpreadsheetApp.flush();
+  return {ok:true,reference:ref};
+ }finally{lock.releaseLock();}
 }
