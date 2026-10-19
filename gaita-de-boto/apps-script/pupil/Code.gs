@@ -61,7 +61,7 @@ function gdbPEnsureMeta_(ss,row){
 }
 function gdbPRecordingState_(ss,id,sid){
  const logs=gdbPRows_(ss,'PRACTICE LOG').filter(r=>String(r[0])===id&&String(r[7]).toLowerCase()===sid);
- const base={ok:true,protocol:'gdb-recording-state-v1',sessionId:sid,saved:false,retrySafe:false};
+ const base={ok:true,protocol:'pipers-path-recording-recovery-v1',sessionId:sid,saved:false,retrySafe:false};
  if(logs.length>1)return Object.assign(base,{state:'attention'});
  if(logs.length===1){
   gdbPEnsureMeta_(ss,logs[0]);
