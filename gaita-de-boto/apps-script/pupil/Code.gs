@@ -213,7 +213,7 @@ function gdbPUpload_(ss,id,d){
   if(state.saved)return {ok:true,fileUrl:state.fileUrl,qualifying:state.qualifying,duplicate:true};
   if(state.state!=='absent')throw Error('Save uncertain: contact teacher; do not re-upload.');
   const evidence=gdbPMediaSeconds_(bytes,mime);
-  if(Math.abs(evidence.seconds-seconds)>0.002)throw Error('Audio sample duration does not match declared duration; owner reconciliation required.');
+  if(Math.abs(evidence.seconds-seconds)>0.002)throw Error('Audio sample duration does not match declared duration.');
   gdbPReceipts_(ss).appendRow([sid,id,new Date(),'STARTED']);SpreadsheetApp.flush();
   // From this point an uncertain write must be reconciled, never blindly retried.
   const blob=Utilities.newBlob(bytes,mime,sid+'.'+extensions[mime]);
