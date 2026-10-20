@@ -1,7 +1,7 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
-const html=fs.readFileSync('dist/index.html','utf8');
+const html=fs.readFileSync('index.html','utf8');
 for(const m of html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g))new vm.Script(m[1]);
-new vm.Script(fs.readFileSync('bridge/Code.gs','utf8'));
+new vm.Script(fs.readFileSync('../apps-script/pupil/Code.gs','utf8'));
 assert(!/ciypb|spbasa|emgt/i.test(html));
 assert(!/no-cors/.test(html));
 assert(html.includes('navigator.mediaDevices.getUserMedia({ audio: true })'));
@@ -9,7 +9,7 @@ assert(html.includes('new URLSearchParams(location.hash.slice(1))'));
 assert(html.includes('Math.floor(actualSeconds)'));
 const origin='https://gaita-owner-recorder-test.lesliepiper.chatgpt.site';
 const config={origin,channel:'11111111-1111-4111-8111-111111111111'};
-const script=fs.readFileSync('bridge/PupilBridge.html','utf8').match(/<script>([\s\S]*?)<\/script>/)[1].replace(/<\?!=[\s\S]*?\?>/,JSON.stringify(config));
+const script=fs.readFileSync('../apps-script/pupil/PupilBridge.html','utf8').match(/<script>([\s\S]*?)<\/script>/)[1].replace(/<\?!=[\s\S]*?\?>/,JSON.stringify(config));
 let listener,calls=0,sends=[];
 const top={postMessage:(m,o)=>sends.push({m,o})};
 const ctx={window:{top,self:{},addEventListener:(n,f)=>listener=f},document:{getElementById:()=>({textContent:''})},google:{script:{run:{withSuccessHandler(fn){this.success=fn;return this},withFailureHandler(){return this},gdb_testRequest(){calls++;this.success({ok:true})}}}}};
