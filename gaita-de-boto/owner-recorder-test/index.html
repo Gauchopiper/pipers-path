@@ -284,14 +284,17 @@ const GOOGLE_BRIDGE_ORIGIN = 'https://n-tvzedmwt4d3grunxxuwzfas7uzzxiizbi3svd3y-
 function newId(){const b=crypto.getRandomValues(new Uint8Array(16));b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);}
 const channel = newId();
 let bridgeWindow = null;
+let connectionTimer=null;
 const waiting = new Map();
 let bridgeResolve;
-const bridgeReady = new Promise(resolve=>bridgeResolve=resolve);
+let bridgeReady = new Promise(resolve=>bridgeResolve=resolve);
 window.addEventListener('message',event=>{
   const m=event.data;
   if(event.origin!==GOOGLE_BRIDGE_ORIGIN || !m || m.protocol!=='gdb-owner-bridge-v1' || m.channel!==channel) return;
   if(m.type==='ready' && !bridgeWindow){
     bridgeWindow=event.source;
+    clearTimeout(connectionTimer);
+    document.getElementById('connectOwner').textContent='Reconnect';
     document.getElementById('connectionStatus').textContent='Google Owner connection ready';
     bridgeResolve();
   }
@@ -310,12 +313,23 @@ function fetch(url,options){
  }));
 }
 function connectOwner(){
- if(document.getElementById('ownerBridge')) return;
+ const status=document.getElementById('connectionStatus');
+ if(waiting.size){status.textContent='A Google request is still running. Wait for its result before reconnecting.';return;}
+ clearTimeout(connectionTimer);
+ const previous=document.getElementById('ownerBridge');
+ if(previous)previous.remove();
+ bridgeWindow=null;
+ bridgeReady=new Promise(resolve=>bridgeResolve=resolve);
+ status.textContent='Connecting to Google Owner…';
+ document.getElementById('connectOwner').textContent='Try connection again';
  const frame=document.createElement('iframe'); frame.id='ownerBridge'; frame.title='Google Owner connection';
  frame.src=BACKEND_URL+'?bridge=1&channel='+encodeURIComponent(channel);
  frame.style.cssText='width:100%;height:85px;border:1px solid #ddd;border-radius:8px';
  document.getElementById('connectionPanel').appendChild(frame);
- document.getElementById('connectionStatus').textContent='Connecting to Google Owner…';
+ frame.addEventListener('error',()=>{status.textContent='Google connection could not load. Open Google Owner connection in a separate tab and check its message, then try again.';});
+ connectionTimer=setTimeout(()=>{
+  if(!bridgeWindow)status.textContent='No connection response from Google after 20 seconds. Check the Google panel below for a sign-in or blocked-page message. Open Google Owner connection in a separate tab, then try again. Recording has not been saved.';
+ },20000);
 }
 document.getElementById('googleConnection').href=BACKEND_URL;
 document.getElementById('connectOwner').onclick=connectOwner;
