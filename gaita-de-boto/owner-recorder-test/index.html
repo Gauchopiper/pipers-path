@@ -1369,8 +1369,9 @@ pathSessions.innerHTML =
         const duration =
           Number(session.durationMinutes || 0).toFixed(2);
 
-        const qualifying =
-          session.qualifying ? ' ✓' : '';
+        const loggedSeconds=(Date.parse(session.endTime)-Date.parse(session.startTime))/1000;
+        const precision=Number.isFinite(loggedSeconds)?' · '+loggedSeconds.toFixed(3)+' s logged':'';
+        const qualifying=session.qualifying?' · '+(uiLanguage==='ES'?'Válida para crédito ✓':'Qualifying ✓'):' · '+(uiLanguage==='ES'?'Sin crédito':'Not qualifying');
 
         return `
           <div style="
@@ -1378,8 +1379,8 @@ pathSessions.innerHTML =
             border-bottom:1px solid #ddd;
           ">
             ${when}<br>
-            ${duration} min${qualifying}
-            ${session.teacherStatus ? `<p><strong>${uiLanguage==='ES'?'Revisión':'Session review'}: ${escapeText(session.teacherStatus)}</strong><br>${escapeText(session.teacherNote)}</p>` : ''}
+            ${duration} min${precision}${qualifying}
+            ${(session.teacherStatus||session.teacherNote) ? `<p><strong>${session.teacherStatus?(uiLanguage==='ES'?'Revisión':'Session review')+': '+escapeText(session.teacherStatus):(uiLanguage==='ES'?'Nota de sesión':'Session note')}</strong><br>${escapeText(session.teacherNote)}</p>` : ''}
           </div>
         `;
       }).join('');
