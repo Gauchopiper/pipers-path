@@ -195,12 +195,14 @@
 </div>
     <div id="timer">00:00</div>
     <button id="recordButton" type="button">RECORD</button>
-    <div id="status">Tap RECORD to begin</div>
+    <div id="status" role="status">Tap RECORD to begin</div>
+<p id="localProtection" class="small" role="status"></p><p class="small">Pending recordings stay on this browser until saved or deleted. Private browsing, clearing site data or browser storage eviction can remove them. Download a copy for extra protection. Stop recording and wait for local protection before closing.</p>
 <div id="playbackWrap">
   <p><strong id="yourRecordingLabel">Your recording</strong></p>
   <audio id="playback" controls></audio>
 <button id="saveRecording" type="button" disabled>SAVE RECORDING</button>
 <a id="downloadRecording">Download a local copy</a>
+<button id="deletePending" type="button">Delete this local recording</button>
 </div>
 </div>
     </div>
@@ -276,6 +278,7 @@
   </button>
 </nav>
 
+<script src="pending-store.js"></script>
 <script>
 const BACKEND_URL = 'https://script.google.com/macros/s/AKfycby5Dil6AH7Q6CNDJ8EXohbyP_-RHyw9m3_MNtI5yq5EdmnDetwztlEPNYiAQzx88fox/exec';
 const TEST_BOOT = {feedbackUrl:'https://script.google.com/macros/s/AKfycbzSZ6HhoU8Xzf_ND4Qf92U3uElcBb3ixQjOiR97H9FaE7X7YYL2TikI15b2WyecZCuw/exec'};
@@ -973,6 +976,7 @@ return false;
 });
 
   let pendingBlob=null, pendingMime=null, saving=false, recordingConfirmed=false;
+  let localStore=null, locallyProtected=false, preparing=false, recoveryBlocked=false;
   let mediaRecorder = null;
   let stream = null;
   let chunks = [];
@@ -990,7 +994,42 @@ return false;
   const playbackWrap = document.getElementById('playbackWrap');
   const playback = document.getElementById('playback');
   if(!pupilId||!accessKey){recordButton.disabled=true;statusEl.textContent=t.testModeNoPupilLink;}
-  window.addEventListener('beforeunload',event=>{if(pendingBlob&&!recordingConfirmed){event.preventDefault();event.returnValue='';}});
+  window.addEventListener('beforeunload',event=>{if(recording||preparing||(pendingBlob&&!recordingConfirmed&&!locallyProtected)){event.preventDefault();event.returnValue='';}});
+
+  const protectionEl=document.getElementById('localProtection');
+  const saveButton=document.getElementById('saveRecording');
+  function storageWarning(){protectionEl.textContent='Local protection failed. Keep this tab open and download a copy before closing. Saving online is still available.';}
+  function displayPending(){
+    if(lastObjectUrl)URL.revokeObjectURL(lastObjectUrl);
+    lastObjectUrl=URL.createObjectURL(pendingBlob);playback.src=lastObjectUrl;playbackWrap.style.display='block';
+    const download=document.getElementById('downloadRecording');download.href=lastObjectUrl;download.download='gaita-'+recordingSessionId+(pendingMime.includes('mp4')?'.m4a':'.webm');
+    saveButton.disabled=false;document.getElementById('deletePending').disabled=false;
+  }
+  async function protectPending(){
+    locallyProtected=false;
+    try{
+      if(!localStore)localStore=await GaitaPendingStore.open(pupilId,accessKey);
+      await localStore.put({sessionId:recordingSessionId,mime:pendingMime,startedAt,endedAt:recordingEndedAt,targetId:recordingTargetId,createdAt:startedAt,blob:pendingBlob});
+      locallyProtected=true;protectionEl.textContent='Recording kept on this device until saving is confirmed.';
+      if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+    }catch(e){storageWarning();}
+  }
+  async function restorePending(){
+    if(!pupilId||!accessKey)return;
+    recordButton.disabled=true;
+    try{
+      localStore=await GaitaPendingStore.open(pupilId,accessKey);
+      const item=await localStore.read();
+      if(item){pendingBlob=item.blob;pendingMime=item.mime;recordingSessionId=item.sessionId;startedAt=item.startedAt;recordingEndedAt=item.endedAt;recordingTargetId=item.targetId;locallyProtected=true;displayPending();statusEl.textContent='Recording recovered — ready to save. Press SAVE to check whether it already arrived.';protectionEl.textContent='Your pending recording is kept on this device. It has not been deleted.';timerEl.textContent=formatTime(Math.floor((recordingEndedAt-startedAt)/1000));}
+      else protectionEl.textContent='Local recording protection is ready.';
+    }catch(e){recoveryBlocked=true;storageWarning();statusEl.textContent='Cannot check earlier pending recordings. Reopen this page before starting another recording.';}
+    finally{recordButton.disabled=recoveryBlocked;}
+  }
+  const recoveryReady=restorePending();
+  document.getElementById('deletePending').onclick=async()=>{
+    if(saving||preparing||!pendingBlob||!confirm('Delete this local recording? If it has not reached Google, this cannot be undone. Download a copy first if needed.'))return;
+    try{if(localStore)await localStore.remove(recordingSessionId);pendingBlob=null;locallyProtected=false;playback.pause();playback.removeAttribute('src');playbackWrap.style.display='none';URL.revokeObjectURL(lastObjectUrl);statusEl.textContent='Local recording deleted. You can record again.';protectionEl.textContent='';}catch(e){storageWarning();}
+  };
 
 
   function formatTime(totalSeconds) {
@@ -1036,20 +1075,16 @@ return false;
         if (e.data && e.data.size > 0) chunks.push(e.data);
       });
 
-      mediaRecorder.addEventListener('stop', () => {
+      mediaRecorder.addEventListener('stop', async () => {
+        preparing=true;recordButton.disabled=true;
         const type = mediaRecorder.mimeType || 'audio/webm';
         const blob = new Blob(chunks, { type });
 
-        if (lastObjectUrl) URL.revokeObjectURL(lastObjectUrl);
-        lastObjectUrl = URL.createObjectURL(blob);
-
-        playback.src = lastObjectUrl;
-        playbackWrap.style.display = 'block';
-        pendingBlob = blob; pendingMime = type;
-        document.getElementById('saveRecording').disabled=false;
-        document.getElementById('downloadRecording').href=lastObjectUrl;
-        document.getElementById('downloadRecording').download='gaita-test-'+recordingSessionId+(type.includes('mp4')?'.m4a':'.webm');
-        statusEl.textContent = 'Listen, then press SAVE. Audio is not saved yet.';
+        pendingBlob=blob;pendingMime=type;displayPending();saveButton.disabled=true;
+        statusEl.textContent='Protecting your recording on this device…';
+        await protectPending();
+        preparing=false;recordButton.disabled=false;saveButton.disabled=false;
+        statusEl.textContent='Recording ready to save. Listen, then press SAVE.';
 
         if (stream) {
           stream.getTracks().forEach(track => track.stop());
@@ -1086,6 +1121,7 @@ function stopRecording() {
   if (!recording) return;
 
   recording = false;
+  preparing=true;recordButton.disabled=true;
 
   const stoppedAt = Date.now();
   recordingEndedAt = stoppedAt;
@@ -1117,7 +1153,8 @@ recordButton.addEventListener('click', () => {
   if (recording) {
     stopRecording();
   } else {
-if(pendingBlob && !confirm('Starting another recording replaces this page’s current audio. Download it first if its save is unconfirmed. Continue?'))return;
+if(preparing||recoveryBlocked)return;
+if(pendingBlob&&!recordingConfirmed){statusEl.textContent='Save or deliberately delete the pending recording before starting another.';return;}
 recordingTargetId = practiceTarget.value;
 recordingSessionId = newId();
 targetStatus.textContent = '';
@@ -1126,11 +1163,15 @@ startRecording();
 });
 
   document.getElementById('saveRecording').onclick=async()=>{
-    if(!pendingBlob||saving)return;
+    if(!pendingBlob||saving||preparing||recordingConfirmed)return;
     saving=true; recordButton.disabled=true;
     document.getElementById('saveRecording').disabled=true;
-    statusEl.textContent='Saving recording…';
-    try { await uploadRecording(pendingBlob,pendingMime); }
+    statusEl.textContent='Saving — confirmation pending';
+    try {
+      const run=async()=>{if(!locallyProtected)await protectPending();await uploadRecording(pendingBlob,pendingMime);};
+      if(navigator.locks&&localStore)await navigator.locks.request('gaita-save-'+localStore.slot,{ifAvailable:true},async lock=>{if(!lock){statusEl.textContent='This recording is being saved in another tab. Try again after it finishes.';saveButton.disabled=false;return;}await run();});
+      else await run();
+    }
     finally { saving=false; recordButton.disabled=false; }
   };
   async function recordingState(){
@@ -1142,12 +1183,14 @@ startRecording();
 async function confirmSaved(state){
  if(!state.saved||!state.fileUrl)throw Error('Missing server save confirmation.');
  recordingConfirmed=true;
- statusEl.textContent=state.qualifying==='Yes'?t.practiceSaved:t.recordingSaved;
+ statusEl.textContent='Recording safely saved';
+ try{if(localStore)await localStore.remove(recordingSessionId);locallyProtected=false;protectionEl.textContent='Confirmed by Google. Pending local copy removed.';}catch(e){protectionEl.textContent='Saved by Google, but local cleanup failed. Reopening will check the same recording before any upload.';}
  document.getElementById('saveRecording').disabled=true;
  await tagSavedRecording(state.fileUrl,recordingTargetId);
 }
 async function uploadRecording(blob,mimeType){
  if(!pupilId||!accessKey){statusEl.textContent=t.recordingNoPupilLink;return;}
+ if(navigator.onLine===false){statusEl.textContent=locallyProtected?'Your recording has been kept on this device. You can try saving it again when your connection returns.':'No connection. Keep this tab open and download a copy; local protection is unavailable.';saveButton.disabled=false;return;}
  try{
   // Every initial upload AND retry is gated by authoritative server state.
   const prior=await recordingState();
@@ -1171,9 +1214,9 @@ async function uploadRecording(blob,mimeType){
   try{
    const state=await recordingState();
    if(state.saved){await confirmSaved(state);return;}
-   if(state.state==='absent'&&state.retrySafe){statusEl.textContent='Not saved: '+error.message+' Local audio remains in this tab. Download a copy or retry Save.';document.getElementById('saveRecording').disabled=false;}
+   if(state.state==='absent'&&state.retrySafe){statusEl.textContent=(locallyProtected?'Your recording has been kept on this device. You can try saving it again when your connection returns.':'Save unconfirmed. Local protection is unavailable: keep this tab open and download a copy.');document.getElementById('saveRecording').disabled=false;}
    else{statusEl.textContent='Save uncertain — Owner reconciliation required. Do not upload again. Download your local copy.';}
-  }catch(checkError){statusEl.textContent='Save unconfirmed. Keep this page open and download the audio. Retry Save will check the Session ID first.';document.getElementById('saveRecording').disabled=false;}
+  }catch(checkError){statusEl.textContent=(locallyProtected?'Your recording has been kept on this device. You can try saving it again when your connection returns.':'Save unconfirmed. Keep this tab open and download the audio; local protection is unavailable.');document.getElementById('saveRecording').disabled=false;}
  }
 }
 
