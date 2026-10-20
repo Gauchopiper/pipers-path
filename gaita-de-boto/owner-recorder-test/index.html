@@ -53,20 +53,22 @@
       font-variant-numeric: tabular-nums;
     }
 
-    #recordButton {
-      width: 210px;
-      height: 210px;
-      border: 0;
-      border-radius: 50%;
-      font-size: 28px;
-      font-weight: 700;
-      background: #c62828;
-      color: #fff;
-      box-shadow: 0 8px 24px rgba(0,0,0,.22);
-      cursor: pointer;
-      touch-action: manipulation;
-    }
-    #recordButton.recording { background: #222; }
+    #recordCircle {width:210px;height:210px;margin:0 auto;overflow:hidden;border-radius:50%;box-shadow:0 8px 24px rgba(0,0,0,.22)}
+    #recordCircle [hidden] {display:none!important}
+    .circleFull {width:100%;height:100%;display:flex;align-items:center;justify-content:center;border:0;text-align:center;padding:14px;font:700 24px/1.25 Arial,Helvetica,sans-serif;white-space:pre-line;touch-action:manipulation}
+    button.circleFull {cursor:pointer}
+    #recordButton {background:#c62828;color:#fff;font-size:28px}
+    #recordSplit {width:100%;height:100%;display:flex;flex-direction:column}
+    .circleHalf {flex:1;width:100%;border:0;padding:12px 20px;font:800 21px/1.15 Arial,Helvetica,sans-serif;cursor:pointer;touch-action:manipulation}
+    #pauseButton {background:#f2c84b;color:#1c1c1c;border-bottom:3px solid #fff}
+    #finishButton {background:#315f96;color:#fff}
+    #saveRecording {background:#b65d18;color:#fff;font-size:19px}
+    #savingIndicator {background:#455a64;color:#fff}
+    #savedIndicator {background:#237a3b;color:#fff}
+    #attentionIndicator {background:#755119;color:#fff;font-size:19px}
+    #recordCircle button:focus-visible {outline:5px solid #111;outline-offset:-7px}
+    #recordCircle button:disabled {cursor:default;opacity:1}
+    @media (max-width:340px){#recordCircle{width:190px;height:190px}}
 
     #status {
       margin-top: 24px;
@@ -194,13 +196,23 @@
       
 </div>
     <div id="timer">00:00</div>
-    <button id="recordButton" type="button">RECORD</button>
+    <div id="recordCircle" aria-label="Recording control">
+      <button id="recordButton" class="circleFull" type="button">RECORD</button>
+      <div id="recordSplit" role="group" aria-label="Recording actions" hidden>
+        <button id="pauseButton" class="circleHalf" type="button">PAUSE</button>
+        <button id="finishButton" class="circleHalf" type="button">FINISH &amp; SAVE</button>
+      </div>
+      <button id="saveRecording" class="circleFull" type="button" hidden disabled>SAFE ON DEVICE</button>
+      <div id="savingIndicator" class="circleFull" role="status" hidden>SAVING…</div>
+      <div id="savedIndicator" class="circleFull" role="status" hidden>SAVED ✓</div>
+      <div id="attentionIndicator" class="circleFull" role="status" hidden>SAVE UNCERTAIN</div>
+    </div>
     <div id="status" role="status">Tap RECORD to begin</div>
 <p id="localProtection" class="small" role="status"></p><p class="small">Pending recordings stay on this browser until saved or deleted. Private browsing, clearing site data or browser storage eviction can remove them. Download a copy for extra protection. Stop recording and wait for local protection before closing.</p>
 <div id="playbackWrap">
   <p><strong id="yourRecordingLabel">Your recording</strong></p>
   <audio id="playback" controls></audio>
-<button id="saveRecording" type="button" disabled>SAVE RECORDING</button>
+<!-- Save and retry are performed by the unified circular control. -->
 <a id="downloadRecording">Download a local copy</a>
 <button id="deletePending" type="button">Delete this local recording</button>
 </div>
@@ -399,6 +411,12 @@ generalPractice: 'General practice',
 yourRecording: 'Your recording',
     recordButton: 'RECORD',
 stopButton: 'STOP',
+    pauseButton:'PAUSE',resumeButton:'RESUME',finishAndSave:'FINISH & SAVE',
+    savingState:'SAVING…',savedState:'SAVED ✓',safeRetry:'SAFE ON DEVICE\\nRETRY SAVE',
+    unsafeRetry:'RETRY ONLINE SAVE',uncertainSave:'SAVE UNCERTAIN',
+    pausedNow:'Recording paused.',
+    localFailure:'Local protection failed. Keep this tab open and download a copy before closing. Saving online is still available.',
+    restoredRecording:'Recording recovered. Press RETRY SAVE to check if it reached Google.',
 tapRecordToBegin: 'Tap RECORD to begin',
 recordingNow: 'Recording...',
 microphoneDenied: 'Microphone permission was denied.',
@@ -456,6 +474,12 @@ generalPractice: 'Práctica general',
 yourRecording: 'Tu grabación',
     recordButton: 'GRABAR',
 stopButton: 'PARAR',
+    pauseButton:'PAUSA',resumeButton:'CONTINUAR',finishAndSave:'FINALIZAR Y GUARDAR',
+    savingState:'GUARDANDO…',savedState:'GUARDADO ✓',safeRetry:'A SALVO EN DISPOSITIVO\\nREINTENTAR GUARDAR',
+    unsafeRetry:'REINTENTAR GUARDADO ONLINE',uncertainSave:'GUARDADO SIN CONFIRMAR',
+    pausedNow:'Grabación en pausa.',
+    localFailure:'Fallo al proteger la grabación. Mantén la página abierta y descarga una copia antes de cerrarla.',
+    restoredRecording:'Grabación recuperada. Pulsa REINTENTAR GUARDAR para comprobar si ya llegó.',
 tapRecordToBegin: 'Pulsa GRABAR para comenzar',
 recordingNow: 'Grabando...',
 microphoneDenied: 'Se denegó el permiso para usar el micrófono.',
@@ -980,7 +1004,8 @@ return false;
   let mediaRecorder = null;
   let stream = null;
   let chunks = [];
-  let recording = false;
+  let recording=false,recordingPaused=false,starting=false,needsReconciliation=false;
+  let activeDurationMs=null,activeSegmentStartMs=null,savedResetTimer=null;
   let startedAt = null;
   let recordingEndedAt = null;
   let timerHandle = null;
@@ -998,7 +1023,29 @@ return false;
 
   const protectionEl=document.getElementById('localProtection');
   const saveButton=document.getElementById('saveRecording');
-  function storageWarning(){protectionEl.textContent='Local protection failed. Keep this tab open and download a copy before closing. Saving online is still available.';}
+  const pauseButton=document.getElementById('pauseButton');
+  const finishButton=document.getElementById('finishButton');
+  const recordSplit=document.getElementById('recordSplit');
+  const savingIndicator=document.getElementById('savingIndicator');
+  const savedIndicator=document.getElementById('savedIndicator');
+  const attentionIndicator=document.getElementById('attentionIndicator');
+  let recorderUiState='ready';
+  function setRecorderState(state){
+    recorderUiState=state;
+    recordButton.hidden=state!=='ready';recordSplit.hidden=state!=='recording'&&state!=='paused';
+    saveButton.hidden=state!=='retry'&&state!=='unsafe';
+    savingIndicator.hidden=state!=='saving';savedIndicator.hidden=state!=='saved';
+    attentionIndicator.hidden=state!=='attention';
+    pauseButton.textContent=state==='paused'?t.resumeButton:t.pauseButton;
+    finishButton.textContent=t.finishAndSave;
+    saveButton.textContent=state==='unsafe'?t.unsafeRetry:t.safeRetry;
+    savingIndicator.textContent=t.savingState;savedIndicator.textContent=t.savedState;
+    attentionIndicator.textContent=t.uncertainSave;
+    saveButton.disabled=state!=='retry'&&state!=='unsafe';
+    recordButton.disabled=state!=='ready'||recoveryBlocked||!pupilId||!accessKey||starting;
+  }
+  function storageWarning(){protectionEl.textContent=t.localFailure;}
+  setRecorderState('ready');
   function displayPending(){
     if(lastObjectUrl)URL.revokeObjectURL(lastObjectUrl);
     lastObjectUrl=URL.createObjectURL(pendingBlob);playback.src=lastObjectUrl;playbackWrap.style.display='block';
@@ -1009,7 +1056,7 @@ return false;
     locallyProtected=false;
     try{
       if(!localStore)localStore=await GaitaPendingStore.open(pupilId,accessKey);
-      await localStore.put({sessionId:recordingSessionId,mime:pendingMime,startedAt,endedAt:recordingEndedAt,targetId:recordingTargetId,createdAt:startedAt,blob:pendingBlob});
+      await localStore.put({sessionId:recordingSessionId,mime:pendingMime,startedAt,endedAt:recordingEndedAt,activeDurationMs:typeof activeDurationMs==='number'?activeDurationMs:null,targetId:recordingTargetId,createdAt:startedAt,blob:pendingBlob});
       locallyProtected=true;protectionEl.textContent='Recording kept on this device until saving is confirmed.';
       if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
     }catch(e){storageWarning();}
@@ -1020,7 +1067,7 @@ return false;
     try{
       localStore=await GaitaPendingStore.open(pupilId,accessKey);
       const item=await localStore.read();
-      if(item){pendingBlob=item.blob;pendingMime=item.mime;recordingSessionId=item.sessionId;startedAt=item.startedAt;recordingEndedAt=item.endedAt;recordingTargetId=item.targetId;locallyProtected=true;displayPending();statusEl.textContent='Recording recovered — ready to save. Press SAVE to check whether it already arrived.';protectionEl.textContent='Your pending recording is kept on this device. It has not been deleted.';timerEl.textContent=formatTime(Math.floor((recordingEndedAt-startedAt)/1000));}
+      if(item){pendingBlob=item.blob;pendingMime=item.mime;recordingSessionId=item.sessionId;startedAt=item.startedAt;recordingEndedAt=item.endedAt;activeDurationMs=Number.isFinite(item.activeDurationMs)?item.activeDurationMs:null;recordingTargetId=item.targetId;locallyProtected=true;displayPending();setRecorderState('retry');statusEl.textContent=t.restoredRecording;protectionEl.textContent='Your pending recording is kept on this device. It has not been deleted.';timerEl.textContent=formatTime(Math.floor((activeDurationMs===null?recordingEndedAt-startedAt:activeDurationMs)/1000));}
       else protectionEl.textContent='Local recording protection is ready.';
     }catch(e){recoveryBlocked=true;storageWarning();statusEl.textContent='Cannot check earlier pending recordings. Reopen this page before starting another recording.';}
     finally{recordButton.disabled=recoveryBlocked;}
@@ -1028,7 +1075,7 @@ return false;
   const recoveryReady=restorePending();
   document.getElementById('deletePending').onclick=async()=>{
     if(saving||preparing||!pendingBlob||!confirm('Delete this local recording? If it has not reached Google, this cannot be undone. Download a copy first if needed.'))return;
-    try{if(localStore)await localStore.remove(recordingSessionId);pendingBlob=null;locallyProtected=false;playback.pause();playback.removeAttribute('src');playbackWrap.style.display='none';URL.revokeObjectURL(lastObjectUrl);statusEl.textContent='Local recording deleted. You can record again.';protectionEl.textContent='';}catch(e){storageWarning();}
+    try{if(localStore)await localStore.remove(recordingSessionId);pendingBlob=null;locallyProtected=false;playback.pause();playback.removeAttribute('src');playbackWrap.style.display='none';URL.revokeObjectURL(lastObjectUrl);statusEl.textContent='Local recording deleted. You can record again.';protectionEl.textContent='';recordingConfirmed=false;recordingSessionId='';activeDurationMs=null;setRecorderState('ready');}catch(e){storageWarning();}
   };
 
 
