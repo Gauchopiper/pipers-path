@@ -1,0 +1,41 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+const source=fs.readFileSync('../apps-script/pupil/Code.gs','utf8')+'\n'+fs.readFileSync('../apps-script/pupil/MediaDuration.gs','utf8');
+const schema=vm.runInNewContext(source+';GDB_PUPIL_SCHEMAS');
+const id='fixture-pupil',key='a'.repeat(64),sid='11111111-2222-4333-8444-555555555555';
+function wav(seconds){const count=Math.round(seconds*8000),b=Buffer.alloc(44+count*2);b.write('RIFF');b.writeUInt32LE(b.length-8,4);b.write('WAVEfmt ',8);b.writeUInt32LE(16,16);b.writeUInt16LE(1,20);b.writeUInt16LE(1,22);b.writeUInt32LE(8000,24);b.writeUInt32LE(16000,28);b.writeUInt16LE(2,32);b.writeUInt16LE(16,34);b.write('data',36);b.writeUInt32LE(count*2,40);return b;}
+function setup(fault=''){
+ const db=Object.fromEntries(Object.entries(schema).map(([n,h])=>[n,[Array.from(h)]]));db.PUPILS.push([id,'Dummy','Yes','EN','',key,'','']);
+ let files=0,fail=fault,actor='owner@test.invalid';
+ function sheet(name){if(!db[name])return null;return {getLastRow:()=>db[name].length,getRange:(r,c,n=1,m=1)=>({getValues:()=>Array.from({length:n},(_,i)=>Array.from({length:m},(_,j)=>db[name][r-1+i]?.[c-1+j]??'')),setValue:v=>db[name][r-1][c-1]=v}),getDataRange:()=>({getValues:()=>db[name].map(r=>r.slice())}),appendRow:row=>{if((name==='PRACTICE LOG'&&fail==='log')||(name==='SESSION META'&&fail==='meta')){fail='';throw Error('Injected write interruption');}db[name].push(row.slice());}};}
+ const ctx={PropertiesService:{getScriptProperties:()=>({getProperty:k=>({GDB_PUPIL_DATA_SHEET_ID:'gaita-only',GDB_PUPIL_RECORDINGS_FOLDER_ID:'gaita-folder',GDB_QUALIFY_MINUTES:'5'})[k]})},
+  Session:{getActiveUser:()=>({getEmail:()=>actor}),getEffectiveUser:()=>({getEmail:()=>'owner@test.invalid'})},
+  SpreadsheetApp:{openById:x=>{assert.equal(x,'gaita-only');return{getSheetByName:sheet,insertSheet:n=>{db[n]=[];return sheet(n)}}},flush(){}},
+  LockService:{getScriptLock:()=>({waitLock(){},releaseLock(){}})},
+  Utilities:{base64Decode:s=>Array.from(Buffer.from(s,'base64')),newBlob:(bytes,mime,name)=>({bytes,mime,name}),formatDate:d=>new Date(d).toISOString().slice(0,10)},
+  DriveApp:{getFolderById:x=>{assert.equal(x,'gaita-folder');return {createFile:()=>{if(fail==='drive-before'){fail='';throw Error('Interrupted before file creation');}files++;if(fail==='drive-after'){fail='';throw Error('Interrupted after file creation');}return {getUrl:()=>'https://drive.google.com/file/d/fixture'+files+'/view'};}}}},
+  ContentService:{MimeType:{JSON:'json'},createTextOutput:t=>({setMimeType(){return this},getContent:()=>t})}};
+ vm.createContext(ctx);vm.runInContext(source,ctx);
+ const post=p=>JSON.parse(ctx.doPost({postData:{contents:JSON.stringify({pupilId:id,accessKey:key,...p})}}).getContent());
+ const state=()=>post({action:'getRecordingState',sessionId:sid});
+ return {post,state,db,files:()=>files,ctx,actor:v=>actor=v};
+}
+function request(seconds=1){return {sessionId:sid,mimeType:'audio/wav',audioBase64:wav(seconds).toString('base64'),durationSeconds:seconds,startIso:'2026-10-20T12:00:00Z',endIso:new Date(Date.parse('2026-10-20T12:00:00Z')+seconds*1000).toISOString()};}
+let count=0;function test(name,fn){fn();count++;console.log('PASS simulated — '+name);}
+test('positive absence before any upload is retry safe',()=>{const t=setup();assert.equal(t.state().retrySafe,true);assert.equal(t.files(),0);});
+for(const stage of ['drive-before','drive-after','log'])test('uncertain '+stage+' blocks repeated upload',()=>{const t=setup(stage),r=request();assert.equal(t.post(r).ok,false);const files=t.files();assert.equal(t.state().state,'attention');assert.equal(t.post(r).ok,false);assert.equal(t.files(),files);});
+test('log saved / meta failure is reconciled without a second file',()=>{const t=setup('meta'),r=request();assert.equal(t.post(r).ok,false);assert.equal(t.state().saved,true);assert.equal(t.db['SESSION META'].length,2);assert.equal(t.post(r).duplicate,true);assert.equal(t.files(),1);});
+test('lost confirmation: query and replay produce one audio/log/meta',()=>{const t=setup(),r=request();t.post(r);assert.equal(t.state().saved,true);assert.equal(t.post(r).duplicate,true);assert.equal(t.files(),1);assert.equal(t.db['PRACTICE LOG'].length,2);assert.equal(t.db['SESSION META'].length,2);});
+test('comment and review isolation; blank/outsider identity rejected',()=>{const t=setup();t.post(request());t.db['SESSION META'][1][3]='REVIEWED';t.db['SESSION META'][1][4]='Own session review';t.db['TEACHER COMMENTS']=[['Comment ID','Pupil ID','Teacher Email','Role','Created UTC','Text','Session ID'],['c1',id,'owner@test.invalid','OWNER','today','Own comment',''],['c2','other-pupil','other@test.invalid','OWNER','today','Do not disclose','']];const p=t.post({action:'getPath'});assert.equal(p.comments.length,1);assert.equal(p.comments[0].text,'Own comment');assert.equal(p.sessions[0].teacherNote,'Own session review');assert.equal(t.post({action:'getPath',accessKey:'wrong'}).ok,false);t.actor('');assert.throws(()=>t.ctx.gdb_testRequest({}));t.actor('outsider@test.invalid');assert.throws(()=>t.ctx.gdb_testRequest({}));});
+for(const seconds of [299,299.875,299.999875,300,300.000125,300.125,301])test('independent PCM boundary '+seconds,()=>{const t=setup();const r=t.post(request(seconds));assert.equal(r.ok,true,r.error);assert.equal(r.qualifying,seconds>=300?'Yes':'No');assert.equal(r.durationSeconds,seconds);});
+test('299-second audio claimed as 300 rejected BEFORE journal/file',()=>{const t=setup(),r=request(300);r.audioBase64=wav(299).toString('base64');assert.equal(t.post(r).ok,false);assert.equal(t.files(),0);assert.equal(t.state().retrySafe,true);});
+test('declared duration vs timestamp mismatch rejected',()=>{const t=setup(),r=request(299);r.endIso=request(300).endIso;assert.equal(t.post(r).ok,false);assert.equal(t.files(),0);});
+const html=fs.readFileSync('index.html','utf8');const save=html.slice(html.indexOf('  async function recordingState()'),html.indexOf('\nfunction blobToBase64'));
+async function clientTest(name,states,uploadError){let calls=0,confirmed=0;const elements={status:{textContent:''},saveRecording:{disabled:true},durationEvidence:{textContent:''}};const c={pupilId:id,accessKey:key,recordingSessionId:sid,recordingTargetId:'',startedAt:0,recordingEndedAt:1000,recordingConfirmed:false,statusEl:elements.status,t:{recordingSaved:'Saved',practiceSaved:'Saved qualifying'},document:{getElementById:k=>elements[k]},window:{AudioContext:class{async decodeAudioData(){return{duration:1}}async close(){}}},console:{warn(){}},gaitaBackendUrl_:()=>'',tagSavedRecording:async()=>{},blobToBase64:async()=>'',fetch:async(u,o)=>{const p=JSON.parse(o.body);if(p.action==='getRecordingState'){const s=states.shift();if(s instanceof Error)throw s;return{json:async()=>({...s,ok:true,sessionId:sid})};}calls++;if(uploadError)throw uploadError;return{json:async()=>({ok:true,fileUrl:'file',sessionId:sid})};}};
+ vm.createContext(c);vm.runInContext(save,c);await c.uploadRecording({arrayBuffer:async()=>new ArrayBuffer(0)},'audio/wav');confirmed=c.recordingConfirmed?1:0;console.log('PASS simulated client — '+name);return {calls,confirmed,status:elements.status.textContent,disabled:elements.saveRecording.disabled};}
+(async()=>{
+ let r=await clientTest('failure before upload cannot claim saved',[Error('offline'),Error('offline')]);assert.equal(r.calls,0);assert.equal(r.confirmed,0);
+ r=await clientTest('already saved is confirmed without upload',[{saved:true,fileUrl:'file',qualifying:'No'}]);assert.equal(r.calls,0);assert.equal(r.confirmed,1);
+ r=await clientTest('backend saved / confirmation lost recovered by Session ID',[{state:'absent',retrySafe:true},{saved:true,fileUrl:'file',qualifying:'No'}],Error('lost response'));assert.equal(r.calls,1);assert.equal(r.confirmed,1);
+ r=await clientTest('uncertain journal prevents retry upload',[{state:'attention',retrySafe:false}]);assert.equal(r.calls,0);assert.equal(r.confirmed,0);assert.equal(r.disabled,true);
+ console.log(count+' backend tests and 4 client tests passed. All simulated; no live certification.');
+})().catch(e=>{console.error(e);process.exitCode=1});
