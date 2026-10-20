@@ -73,6 +73,17 @@ function gdbPRecordingState_(ss,id,sid){
  return Object.assign(base,{state:started?'attention':'absent',retrySafe:!started});
 }
 function doGet(e){
+ if(e && e.parameter && e.parameter.bridge==='1'){
+  gdbTestOwner_();
+  const origin=gdbPProp_('GDB_TEST_FRONTEND_ORIGIN');
+  if(origin!=='https://gaita-owner-recorder-test.lesliepiper.chatgpt.site')throw Error('Unapproved test origin.');
+  const channel=String(e.parameter.channel||'');
+  if(!/^[0-9a-f-]{36}$/.test(channel))throw Error('Test connection reference invalid.');
+  const page=HtmlService.createTemplateFromFile('PupilBridge');
+  page.bridge={origin:origin,channel:channel};
+  return page.evaluate().setTitle('Gaita Owner connection').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+ }
+
  if(e && e.parameter && e.parameter.test==='1'){
   gdbTestOwner_();
   const page=HtmlService.createTemplateFromFile('PupilTest');
@@ -211,3 +222,14 @@ function gdb_testRequest(data){
  gdbTestOwner_();
  return JSON.parse(doPost({postData:{contents:JSON.stringify(data)}}).getContent());
 }
+
+// Owner-run readiness check. Does not write organisation data.
+function gdb_authorizeAndCheck(){
+ ScriptApp.requireAllScopes(ScriptApp.AuthMode.FULL);
+ gdbTestOwner_();
+ const ss=gdbPBook_();
+ for(const name of ['PUPILS','PRACTICE LOG','SESSION META','TARGETS','BADGES'])gdbPTab_(ss,name);
+ const folder=DriveApp.getFolderById(gdbPProp_('GDB_PUPIL_RECORDINGS_FOLDER_ID'));
+ Logger.log('Owner identity, Gaita workbook schemas and recordings folder read successfully.');
+}
+
