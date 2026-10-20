@@ -3,10 +3,12 @@
 <button id="path">Read pupil history/comments</button><button id="group">Read group</button><button id="invalid">Check wrong pupil key</button>
 <label>Session ID <input id="sid" size="40"></label><button id="state">Read recording state</button>
 <label>Audio file <input id="audio" type="file" accept="audio/*"></label>
+<label>Controlled silence duration <select id="fixtureSeconds"><option>299</option><option>299.875</option><option>300</option><option>300.125</option><option>301</option></select></label>
+<button id="generate">Generate labelled PCM WAV fixture</button><button id="replay">Replay existing stored session without altering it</button>
 <button id="send">Submit selected file / replay same Session ID</button><button id="lost">Submit but discard first success response, then query state</button>
 <p id="status" role="status">Loading private link…</p><pre id="result"></pre>
 <script>
-let credentials={},busy=false;
+let credentials={},busy=false,fixture=null;
 const $=id=>document.getElementById(id);
 google.script.url.getLocation(loc=>{const p=new URLSearchParams(loc.hash||'');credentials={pupilId:p.get('p')||'',accessKey:p.get('key')||''};$('status').textContent=credentials.pupilId&&credentials.accessKey?'Private pupil link loaded.':'No private pupil link supplied.';});
 function rpc(payload){return new Promise((resolve,reject)=>google.script.run.withSuccessHandler(resolve).withFailureHandler(e=>reject(Error(e.message||'Owner RPC failed'))).gdb_testRequest({...credentials,...payload}));}
@@ -16,7 +18,7 @@ $('group').onclick=()=>run(()=>rpc({action:'getGroup'}));
 $('invalid').onclick=()=>run(()=>rpc({action:'getPath',accessKey:'incorrect-test-key'}));
 $('state').onclick=()=>run(()=>rpc({action:'getRecordingState',sessionId:$('sid').value.trim()}));
 async function upload(drop){
- const file=$('audio').files[0];if(!file)throw Error('Select an actual audio file first.');
+ const file=fixture||$('audio').files[0];if(!file)throw Error('Select an actual audio file or generate a labelled fixture first.');
  const sessionId=$('sid').value.trim();if(!sessionId)throw Error('Explicit test Session ID required.');
  const a=await file.arrayBuffer(),ctx=new AudioContext();let decoded;
  try{decoded=await ctx.decodeAudioData(a.slice(0));}finally{await ctx.close();}
@@ -33,4 +35,12 @@ async function upload(drop){
  return {ok:recovered.ok&&recovered.saved,test:'discarded-first-success-response',firstResponseDiscarded:true,recovered,clientDecodedSeconds:seconds};
 }
 $('send').onclick=()=>run(()=>upload(false));$('lost').onclick=()=>run(()=>upload(true));
+$('audio').onchange=()=>fixture=null;
+$('generate').onclick=()=>{
+ const seconds=Number($('fixtureSeconds').value),samples=Math.round(seconds*8000),a=new ArrayBuffer(44+samples*2),v=new DataView(a);
+ const text=(p,s)=>{for(let i=0;i<s.length;i++)v.setUint8(p+i,s.charCodeAt(i));};
+ text(0,'RIFF');v.setUint32(4,a.byteLength-8,true);text(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,8000,true);v.setUint32(28,16000,true);v.setUint16(32,2,true);v.setUint16(34,16,true);text(36,'data');v.setUint32(40,samples*2,true);
+ fixture=new Blob([a],{type:'audio/wav'});$('status').textContent='Controlled silence fixture generated: '+seconds+' seconds / '+samples+' samples. Not a Leslie performance.';
+};
+$('replay').onclick=()=>run(()=>new Promise((resolve,reject)=>google.script.run.withSuccessHandler(resolve).withFailureHandler(e=>reject(Error(e.message))).gdb_testReplayStored({...credentials,sessionId:$('sid').value.trim()})));
 </script></body></html>
