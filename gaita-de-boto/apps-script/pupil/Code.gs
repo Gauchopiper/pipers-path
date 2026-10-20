@@ -73,6 +73,11 @@ function gdbPRecordingState_(ss,id,sid){
  return Object.assign(base,{state:started?'attention':'absent',retrySafe:!started});
 }
 function doGet(e){
+ if(e && e.parameter && e.parameter.checks==='1'){
+  gdbTestOwner_();
+  return HtmlService.createHtmlOutputFromFile('OwnerChecks').setTitle('Gaita Owner verification').addMetaTag('viewport','width=device-width,initial-scale=1');
+ }
+
  if(e && e.parameter && e.parameter.bridge==='1'){
   gdbTestOwner_();
   const origin=gdbPProp_('GDB_TEST_FRONTEND_ORIGIN');
@@ -128,7 +133,7 @@ function gdbPPath_(ss,id){
   return {sessionId:String(r[7]),date:String(r[1]),startTime:String(r[2]),
    endTime:String(r[3]),durationMinutes:Number(r[4])||0,
    qualifying:String(r[5]).toLowerCase()==='yes',
-   driveFileLink:String(r[6]),targetId:String(meta[2]||'')};
+   driveFileLink:String(r[6]),targetId:String(meta[2]||''),teacherStatus:String(meta[3]||''),teacherNote:String(meta[4]||''),reviewedAt:String(meta[5]||'')};
  }).reverse();
  const targets=gdbPRows_(ss,'TARGETS'),pt=gdbPRows_(ss,'PUPIL TARGETS').filter(r=>String(r[0])===id);
  const targetMap={};for(const r of targets)targetMap[String(r[0])]=r;
@@ -140,11 +145,19 @@ function gdbPPath_(ss,id){
  const mins=l.reduce((a,r)=>a+(Number(r[4])||0),0);
  const qualified=l.filter(r=>String(r[5]).toLowerCase()==='yes');
  const credited=qualified.reduce((a,r)=>a+(Number(r[4])||0),0);
- return {ok:true,summary:{totalSessions:l.length,qualifyingSessions:qualified.length,
+ return {ok:true,comments:gdbPComments_(ss,id),summary:{totalSessions:l.length,qualifyingSessions:qualified.length,
   totalMinutes:mins,creditedQualifyingMinutes:credited},
   sessions,targets:pt.map(r=>{const t=targetMap[String(r[1])]||[];
    return {targetId:String(r[1]),title:String(t[1]||''),status:String(r[2]),badgeId:String(t[4]||'')};
   }),badges:awards,creditedPracticeByDate:[]};
+}
+function gdbPComments_(ss,id){
+ const sh=ss.getSheetByName('TEACHER COMMENTS');
+ if(!sh||sh.getLastRow()<2)return [];
+ const headers=['Comment ID','Pupil ID','Teacher Email','Role','Created UTC','Text','Session ID'];
+ if(JSON.stringify(sh.getRange(1,1,1,7).getValues()[0])!==JSON.stringify(headers))throw Error('Teacher comment schema mismatch.');
+ return sh.getRange(2,1,sh.getLastRow()-1,7).getValues().filter(r=>String(r[1])===id)
+  .map(r=>({id:String(r[0]),teacher:String(r[2]),role:String(r[3]),date:String(r[4]),text:String(r[5]),sessionId:String(r[6]||'')})).reverse().slice(0,30);
 }
 function gdbPGroup_(ss){
  const today=Utilities.formatDate(new Date(),'Europe/Madrid','yyyy-MM-dd');
@@ -177,12 +190,13 @@ function gdbPSetTarget_(ss,id,d){
  }finally{lock.releaseLock();}
 }
 function gdbPUpload_(ss,id,d){
+ if(d.testFixture===true)gdbTestOwner_();
  const sid=gdbPSession_(d.sessionId);
  const start=new Date(String(d.startIso||'')),end=new Date(String(d.endIso||''));
  const seconds=Number(d.durationSeconds);
  const diff=(end.getTime()-start.getTime())/1000;
  if(!Number.isFinite(diff)||!Number.isFinite(seconds)||diff<=0||diff>7200||
-    Math.abs(diff-seconds)>3)throw Error('Recording duration does not match timestamps.');
+    Math.abs(diff-seconds)>0.002)throw Error('Recording duration does not match timestamps.');
  const rule=String(PropertiesService.getScriptProperties().getProperty('GDB_QUALIFY_MINUTES')||'').trim();
  const threshold=rule===''?null:Number(rule);
  if(threshold!==null&&(!Number.isFinite(threshold)||threshold<=0||threshold>120))throw Error('Practice rule invalid.');
@@ -192,23 +206,32 @@ function gdbPUpload_(ss,id,d){
  const b64=String(d.audioBase64||'');
  if(b64.length>14*1024*1024||b64.length<64||!/^[A-Za-z0-9+/]+={0,2}$/.test(b64))
   throw Error('Audio upload invalid.');
+ const bytes=Utilities.base64Decode(b64);
  const lock=LockService.getScriptLock();lock.waitLock(25000);
  try{
   const state=gdbPRecordingState_(ss,id,sid);
   if(state.saved)return {ok:true,fileUrl:state.fileUrl,qualifying:state.qualifying,duplicate:true};
   if(state.state!=='absent')throw Error('Save uncertain: contact teacher; do not re-upload.');
+  const evidence=gdbPMediaSeconds_(bytes,mime);
+  if(Math.abs(evidence.seconds-seconds)>0.002)throw Error('Audio sample duration does not match declared duration; owner reconciliation required.');
   gdbPReceipts_(ss).appendRow([sid,id,new Date(),'STARTED']);SpreadsheetApp.flush();
-  // Do not retry upload after this point without owner reconciliation.
-  const bytes=Utilities.base64Decode(b64);
+  // From this point an uncertain write must be reconciled, never blindly retried.
   const blob=Utilities.newBlob(bytes,mime,sid+'.'+extensions[mime]);
   const file=DriveApp.getFolderById(gdbPProp_('GDB_PUPIL_RECORDINGS_FOLDER_ID')).createFile(blob);
   const url=file.getUrl();
-  const mins=Math.round(diff/60*100)/100,qualifying=threshold===null?'Pending rule':diff>=threshold*60?'Yes':'No';
+  const mins=Math.round(evidence.seconds/60*100)/100,qualifying=threshold===null?'Pending rule':evidence.seconds>=threshold*60?'Yes':'No';
   const row=[id,Utilities.formatDate(end,'Europe/Madrid','yyyy-MM-dd'),
-    start.toISOString(),end.toISOString(),mins,qualifying,url,sid];
+    start.toISOString(),new Date(start.getTime()+evidence.seconds*1000).toISOString(),mins,qualifying,url,sid];
   gdbPTab_(ss,'PRACTICE LOG').appendRow(row);
   gdbPEnsureMeta_(ss,row);
-  return {ok:true,fileUrl:url,qualifying,sessionId:sid};
+  if(d.testFixture===true){
+   gdbTestOwner_();
+   const meta=gdbPTab_(ss,'SESSION META'),rows=meta.getDataRange().getValues();
+   const ix=rows.findIndex((r,i)=>i>0&&String(r[1])===id&&String(r[6])===sid);
+   if(ix>0)meta.getRange(ix+1,5).setValue('CONTROLLED OWNER AUDIO FIXTURE — not a recording performed by Leslie.');
+   SpreadsheetApp.flush();
+  }
+  return {ok:true,fileUrl:url,qualifying,sessionId:sid,durationSeconds:evidence.seconds,durationEvidence:evidence.method};
  }finally{lock.releaseLock();}
 }
 
