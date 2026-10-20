@@ -972,7 +972,7 @@ return false;
 });
 });
 
-  let pendingBlob=null, pendingMime=null, saving=false;
+  let pendingBlob=null, pendingMime=null, saving=false, recordingConfirmed=false;
   let mediaRecorder = null;
   let stream = null;
   let chunks = [];
@@ -989,6 +989,9 @@ return false;
   const timerEl = document.getElementById('timer');
   const playbackWrap = document.getElementById('playbackWrap');
   const playback = document.getElementById('playback');
+  if(!pupilId||!accessKey){recordButton.disabled=true;statusEl.textContent=t.testModeNoPupilLink;}
+  window.addEventListener('beforeunload',event=>{if(pendingBlob&&!recordingConfirmed){event.preventDefault();event.returnValue='';}});
+
 
   function formatTime(totalSeconds) {
     const minutes = Math.floor(totalSeconds / 60);
@@ -1010,7 +1013,7 @@ return false;
 
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      chunks = []; pendingBlob=null;
+      chunks = []; pendingBlob=null; recordingConfirmed=false;
       document.getElementById('saveRecording').disabled=true;
 
       let options = {};
@@ -1130,98 +1133,48 @@ startRecording();
     try { await uploadRecording(pendingBlob,pendingMime); }
     finally { saving=false; recordButton.disabled=false; }
   };
-  async function uploadRecording(blob, mimeType) {
-  try {
-    if (!pupilId || !accessKey) {
-      statusEl.textContent =
-  t.recordingNoPupilLink;
-      return;
-    }
-
-    const base64 = await blobToBase64(blob);
-
-    const endTime = new Date(recordingEndedAt);
-    const context = new (window.AudioContext || window.webkitAudioContext)();
-    let decoded;
-    try { decoded = await context.decodeAudioData(await blob.arrayBuffer()); }
-    finally { await context.close(); }
-    const actualSeconds = decoded.duration;
-    const reportedSeconds = (recordingEndedAt-startedAt)/1000;
-    document.getElementById('durationEvidence').textContent = 'Decoded audio: '+actualSeconds.toFixed(2)+' s · timer: '+reportedSeconds.toFixed(2)+' s';
-    if(Math.abs(actualSeconds-reportedSeconds)>1.5) throw Error('Audio and timer disagree; recording retained for playback.');
-    const durationSeconds = Math.floor(actualSeconds);
-    const durationEnd = new Date(startedAt + durationSeconds*1000);
-
-    const payload = {
-      pupilId: pupilId,
-      accessKey: accessKey,
-      audioBase64: base64,
-      mimeType: mimeType,
-      startIso: new Date(startedAt).toISOString(),
-      endIso: durationEnd.toISOString(),
-      durationSeconds: durationSeconds,
-      sessionId: recordingSessionId
-    };
-
-    const response = await fetch(gaitaBackendUrl_(), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain;charset=utf-8'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json();
-
-    if (result.ok) {
-      statusEl.textContent =
-  result.qualifying === 'Yes'
-    ? t.practiceSaved
-    : t.recordingSaved;
-      const selectedTargetId = recordingTargetId;
-
-await tagSavedRecording(result.fileUrl, selectedTargetId);
-      
-    } else {
-      statusEl.textContent =
-  t.couldNotSave + result.error;
-      document.getElementById('saveRecording').disabled=false;
-    }
-
-} catch (err) {
-  console.error(err);
-
-  // Do NOT upload again here.
-  // The recording may already have been saved even though
-  // Google's response could not be read.
-
-let recoveredSession = null;
-
-try {
-  const data = await getPathWithRetry();
-
-  recoveredSession = (data.sessions || []).find(session =>
-    String(session.sessionId || '').trim() === recordingSessionId &&
-    session.driveFileLink
-  );
-
-} catch (checkError) {
-  console.warn('Recording confirmation failed:', checkError);
+  async function recordingState(){
+ const response=await fetch(gaitaBackendUrl_(),{method:'POST',body:JSON.stringify({action:'getRecordingState',pupilId,accessKey,sessionId:recordingSessionId})});
+ const result=await response.json();
+ if(!result.ok||result.sessionId!==recordingSessionId)throw Error(result.error||'Recording state is not confirmed.');
+ return result;
 }
-  if (recoveredSession) {
-    statusEl.textContent = t.recordingSaved;
-
-    tagSavedRecording(
-      recoveredSession.driveFileLink,
-      recordingTargetId
-    );
-
-  } else {
-   statusEl.textContent =
-  t.uploadUnconfirmed;
-   document.getElementById('saveRecording').disabled=false;
-  }
+async function confirmSaved(state){
+ if(!state.saved||!state.fileUrl)throw Error('Missing server save confirmation.');
+ recordingConfirmed=true;
+ statusEl.textContent=state.qualifying==='Yes'?t.practiceSaved:t.recordingSaved;
+ document.getElementById('saveRecording').disabled=true;
+ await tagSavedRecording(state.fileUrl,recordingTargetId);
 }
+async function uploadRecording(blob,mimeType){
+ if(!pupilId||!accessKey){statusEl.textContent=t.recordingNoPupilLink;return;}
+ try{
+  // Every initial upload AND retry is gated by authoritative server state.
+  const prior=await recordingState();
+  if(prior.saved){await confirmSaved(prior);return;}
+  if(prior.state!=='absent'||!prior.retrySafe){statusEl.textContent='Save needs Owner reconciliation. Do not re-upload; download your local copy.';return;}
+  const context=new (window.AudioContext||window.webkitAudioContext)();let decoded;
+  try{decoded=await context.decodeAudioData(await blob.arrayBuffer());}finally{await context.close();}
+  const actualSeconds=decoded.duration, timerSeconds=(recordingEndedAt-startedAt)/1000;
+  document.getElementById('durationEvidence').textContent='Decoded audio: '+actualSeconds.toFixed(3)+' s · timer: '+timerSeconds.toFixed(3)+' s';
+  if(!Number.isFinite(actualSeconds)||actualSeconds<=0||Math.abs(actualSeconds-timerSeconds)>1.5)throw Error('Audio and timer disagree. Keep your local audio.');
+  const payload={pupilId,accessKey,audioBase64:await blobToBase64(blob),mimeType,
+   startIso:new Date(startedAt).toISOString(),endIso:new Date(startedAt+actualSeconds*1000).toISOString(),
+   durationSeconds:actualSeconds,sessionId:recordingSessionId};
+  const response=await fetch(gaitaBackendUrl_(),{method:'POST',body:JSON.stringify(payload)});
+  const result=await response.json();
+  if(!result.ok)throw Error(result.error||'Save response was rejected.');
+  if(result.sessionId&&result.sessionId!==recordingSessionId)throw Error('Save reference mismatch.');
+  await confirmSaved({...result,saved:true});
+ }catch(error){
+  console.warn('Recording save needs confirmation:',error.message);
+  try{
+   const state=await recordingState();
+   if(state.saved){await confirmSaved(state);return;}
+   if(state.state==='absent'&&state.retrySafe){statusEl.textContent='Not saved: '+error.message+' Local audio remains in this tab. Download a copy or retry Save.';document.getElementById('saveRecording').disabled=false;}
+   else{statusEl.textContent='Save uncertain — Owner reconciliation required. Do not upload again. Download your local copy.';}
+  }catch(checkError){statusEl.textContent='Save unconfirmed. Keep this page open and download the audio. Retry Save will check the Session ID first.';document.getElementById('saveRecording').disabled=false;}
+ }
 }
 
 function blobToBase64(blob) {
@@ -1239,6 +1192,14 @@ function blobToBase64(blob) {
     reader.readAsDataURL(blob);
   });
 }
+function escapeText(value){return String(value||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function renderTeacherComments(comments){
+ let section=document.getElementById('teacherComments');
+ if(!section){section=document.createElement('section');section.id='teacherComments';document.getElementById('pathView').appendChild(section);}
+ section.replaceChildren();const heading=document.createElement('h3');heading.textContent=uiLanguage==='ES'?'Comentarios del profesor':'Teacher comments';section.appendChild(heading);
+ if(!comments.length){const empty=document.createElement('p');empty.textContent=uiLanguage==='ES'?'No hay comentarios todavía.':'No Teacher comments yet.';section.appendChild(empty);}
+ for(const comment of comments){const item=document.createElement('article'),body=document.createElement('p'),by=document.createElement('small');body.textContent=comment.text;by.textContent=comment.teacher+' · '+comment.role+' · '+comment.date;item.append(body,by);section.appendChild(item);}
+}
   async function loadPath() {
   const pathStatus = document.getElementById('pathStatus');
   const pathSummary = document.getElementById('pathSummary');
@@ -1250,6 +1211,7 @@ function blobToBase64(blob) {
 
   try {
  const data = await getPathWithRetry();
+ renderTeacherComments(data.comments||[]);
 
     document.getElementById('pathTotalSessions').textContent =
       data.summary.totalSessions;
@@ -1417,6 +1379,7 @@ pathSessions.innerHTML =
           ">
             ${when}<br>
             ${duration} min${qualifying}
+            ${session.teacherStatus ? `<p><strong>${uiLanguage==='ES'?'Revisión':'Session review'}: ${escapeText(session.teacherStatus)}</strong><br>${escapeText(session.teacherNote)}</p>` : ''}
           </div>
         `;
       }).join('');
