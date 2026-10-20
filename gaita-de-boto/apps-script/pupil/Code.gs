@@ -72,7 +72,13 @@ function gdbPRecordingState_(ss,id,sid){
  const started=journal.some(r=>String(r[0])===sid&&String(r[1])===id);
  return Object.assign(base,{state:started?'attention':'absent',retrySafe:!started});
 }
-function doGet(){
+function doGet(e){
+ if(e && e.parameter && e.parameter.test==='1'){
+  gdbTestOwner_();
+  const page=HtmlService.createTemplateFromFile('PupilTest');
+  page.boot={params:e.parameter,pupilEndpoint:ScriptApp.getService().getUrl(),feedbackUrl:String(PropertiesService.getScriptProperties().getProperty('GDB_TEST_FEEDBACK_URL')||'')};
+  return page.evaluate().setTitle('Gaita de Boto — Owner pupil test').addMetaTag('viewport','width=device-width,initial-scale=1');
+ }
  return ContentService.createTextOutput("Piper's Path — Gaita de Boto pupil backend (no public data).")
   .setMimeType(ContentService.MimeType.TEXT);
 }
@@ -193,4 +199,15 @@ function gdbPUpload_(ss,id,d){
   gdbPEnsureMeta_(ss,row);
   return {ok:true,fileUrl:url,qualifying,sessionId:sid};
  }finally{lock.releaseLock();}
+}
+
+// Controlled test bridge: Google identity plus pupil capability; no public access.
+function gdbTestOwner_(){
+ const actual=String(Session.getActiveUser().getEmail()||'').toLowerCase();
+ const owner=String(Session.getEffectiveUser().getEmail()||'').toLowerCase();
+ if(!actual||actual!==owner)throw Error('Owner-only test.');
+}
+function gdb_testRequest(data){
+ gdbTestOwner_();
+ return JSON.parse(doPost({postData:{contents:JSON.stringify(data)}}).getContent());
 }
