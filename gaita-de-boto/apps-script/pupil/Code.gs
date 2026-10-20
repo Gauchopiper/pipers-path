@@ -245,6 +245,19 @@ function gdb_testRequest(data){
  gdbTestOwner_();
  return JSON.parse(doPost({postData:{contents:JSON.stringify(data)}}).getContent());
 }
+// Owner-only idempotency check: replay bytes of a selected existing Gaita session.
+function gdb_testReplayStored(d){
+ gdbTestOwner_();
+ const ss=gdbPBook_(),id=String(d.pupilId||'');gdbPRequirePupil_(ss,id,String(d.accessKey||''));
+ const sid=gdbPSession_(d.sessionId),row=gdbPRows_(ss,'PRACTICE LOG').find(r=>String(r[0])===id&&String(r[7])===sid);
+ if(!row)throw Error('Selected Gaita session not found.');
+ const match=String(row[6]).match(/\/file\/d\/([A-Za-z0-9_-]+)/);if(!match)throw Error('Recording link invalid.');
+ const file=DriveApp.getFileById(match[1]),parents=file.getParents();let sameFolder=false;
+ while(parents.hasNext())if(parents.next().getId()===gdbPProp_('GDB_PUPIL_RECORDINGS_FOLDER_ID'))sameFolder=true;
+ if(!sameFolder)throw Error('Recording is outside Gaita folder.');
+ const blob=file.getBlob();
+ return gdb_testRequest({pupilId:id,accessKey:String(d.accessKey),sessionId:sid,mimeType:blob.getContentType(),audioBase64:Utilities.base64Encode(blob.getBytes()),startIso:String(row[2]),endIso:String(row[3]),durationSeconds:(new Date(row[3]).getTime()-new Date(row[2]).getTime())/1000});
+}
 
 // Owner-run readiness check. Does not write organisation data.
 function gdb_authorizeAndCheck(){
