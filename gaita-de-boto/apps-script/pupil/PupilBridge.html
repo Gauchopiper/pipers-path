@@ -1,0 +1,23 @@
+<!doctype html><html><head><base target="_top"></head><body>
+<p id="state">Owner connection waiting for the approved recorder.</p>
+<script>
+'use strict';
+const CONFIG = <?!= JSON.stringify(bridge).replace(/</g,'\\u003c') ?>;
+const protocol='gdb-owner-bridge-v1';
+const seen=new Set();
+let busy=false;
+function send(message){window.top.postMessage(Object.assign({protocol,channel:CONFIG.channel},message),CONFIG.origin);}
+window.addEventListener('message',event=>{
+ const m=event.data;
+ if(event.origin!==CONFIG.origin || event.source!==window.top || !m || m.protocol!==protocol || m.channel!==CONFIG.channel || m.type!=='request')return;
+ if(!/^[0-9a-f-]{36}$/.test(String(m.id)) || seen.has(m.id))return;
+ if(busy){send({type:'response',id:m.id,error:'A Google request is still running. Wait for its confirmation.'});return;}
+ if(!m.payload || typeof m.payload!=='object' || Array.isArray(m.payload))return;
+ seen.add(m.id);busy=true;
+ google.script.run.withSuccessHandler(result=>{busy=false;send({type:'response',id:m.id,result});})
+ .withFailureHandler(()=>{busy=false;send({type:'response',id:m.id,error:'Google Owner request failed. Save is unconfirmed; check history before retrying.'});})
+ .gdb_testRequest(m.payload);
+});
+if(window.top!==window.self){send({type:'ready'});document.getElementById('state').textContent='Google Owner connection available.';}
+else document.getElementById('state').textContent='Open the approved standalone recorder to connect.';
+</script></body></html>
