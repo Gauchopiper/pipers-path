@@ -412,7 +412,7 @@ yourRecording: 'Your recording',
     recordButton: 'RECORD',
 stopButton: 'STOP',
     pauseButton:'PAUSE',resumeButton:'RESUME',finishAndSave:'FINISH & SAVE',
-    savingState:'SAVING…',savedState:'SAVED ✓',safeRetry:'SAFE ON DEVICE\\nRETRY SAVE',
+    savingState:'SAVING…',savedState:'SAVED ✓',safeRetry:'SAFE ON DEVICE\nRETRY SAVE',
     unsafeRetry:'RETRY ONLINE SAVE',uncertainSave:'SAVE UNCERTAIN',
     pausedNow:'Recording paused.',
     localFailure:'Local protection failed. Keep this tab open and download a copy before closing. Saving online is still available.',
@@ -475,7 +475,7 @@ yourRecording: 'Tu grabación',
     recordButton: 'GRABAR',
 stopButton: 'PARAR',
     pauseButton:'PAUSA',resumeButton:'CONTINUAR',finishAndSave:'FINALIZAR Y GUARDAR',
-    savingState:'GUARDANDO…',savedState:'GUARDADO ✓',safeRetry:'A SALVO EN DISPOSITIVO\\nREINTENTAR GUARDAR',
+    savingState:'GUARDANDO…',savedState:'GUARDADO ✓',safeRetry:'A SALVO EN DISPOSITIVO\nREINTENTAR GUARDAR',
     unsafeRetry:'REINTENTAR GUARDADO ONLINE',uncertainSave:'GUARDADO SIN CONFIRMAR',
     pausedNow:'Grabación en pausa.',
     localFailure:'Fallo al proteger la grabación. Mantén la página abierta y descarga una copia antes de cerrarla.',
@@ -1005,7 +1005,7 @@ return false;
   let stream = null;
   let chunks = [];
   let recording=false,recordingPaused=false,starting=false,needsReconciliation=false;
-  let activeDurationMs=null,activeSegmentStartMs=null,savedResetTimer=null;
+  let activeDurationMs=null,activeSegmentStartMs=null,savedResetTimer=null,lastPauseToggleMs=-Infinity;
   let startedAt = null;
   let recordingEndedAt = null;
   let timerHandle = null;
@@ -1152,7 +1152,12 @@ return false;
     finally{releaseMicrophone()}
   }
   recordButton.addEventListener('click',()=>{if(recorderUiState==='ready')startRecording()});
-  pauseButton.addEventListener('click',()=>{if(recordingPaused)resumeRecording();else pauseRecording()});
+  pauseButton.addEventListener('click',()=>{
+    const now=performance.now();
+    if(now-lastPauseToggleMs<350)return;
+    lastPauseToggleMs=now;
+    if(recordingPaused)resumeRecording();else pauseRecording();
+  });
   finishButton.addEventListener('click',stopRecording);
   async function savePendingRecording(){
     if(!pendingBlob||saving||preparing||recordingConfirmed)return;
