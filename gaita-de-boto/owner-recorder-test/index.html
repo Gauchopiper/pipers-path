@@ -1085,142 +1085,92 @@ return false;
     return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
   }
 
-  function updateTimer() {
-    if (!startedAt) return;
-    const seconds = Math.floor((Date.now() - startedAt) / 1000);
-    timerEl.textContent = formatTime(seconds);
-  }
-
-  async function startRecording() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      statusEl.textContent = 'This browser does not support microphone recording.';
-      return;
-    }
-
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      chunks = []; pendingBlob=null; recordingConfirmed=false;
-      document.getElementById('saveRecording').disabled=true;
-
-      let options = {};
-      const preferred = [
-        'audio/webm;codecs=opus',
-        'audio/webm',
-        'audio/mp4'
-      ];
-
-      for (const type of preferred) {
-        if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(type)) {
-          options = { mimeType: type };
-          break;
-        }
-      }
-
-      mediaRecorder = new MediaRecorder(stream, options);
-
-      mediaRecorder.addEventListener('dataavailable', e => {
-        if (e.data && e.data.size > 0) chunks.push(e.data);
+  function activeMillis(){return (activeDurationMs||0)+(recording&&!recordingPaused&&activeSegmentStartMs!==null?Math.max(0,performance.now()-activeSegmentStartMs):0);}
+  function updateTimer(){timerEl.textContent=formatTime(Math.floor(activeMillis()/1000));}
+  function releaseMicrophone(){if(stream){stream.getTracks().forEach(track=>track.stop());stream=null;}}
+  async function startRecording(){
+    if(starting||recording||preparing||saving||recoveryBlocked)return;
+    if(pendingBlob&&!recordingConfirmed){statusEl.textContent='Save or delete the pending recording before starting another.';return;}
+    if(locallyProtected){statusEl.textContent='An earlier protected recording needs reconciliation before starting again.';return;}
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){statusEl.textContent='Microphone recording is not supported.';return;}
+    starting=true;recordButton.disabled=true;
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({ audio: true });
+      chunks=[];pendingBlob=null;pendingMime=null;recordingConfirmed=false;needsReconciliation=false;
+      if(savedResetTimer){clearTimeout(savedResetTimer);savedResetTimer=null;}
+      const formats=['audio/webm;codecs=opus','audio/webm','audio/mp4'];let options={};
+      for(const type of formats)if(window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(type)){options={mimeType:type};break;}
+      mediaRecorder=new MediaRecorder(stream,options);
+      mediaRecorder.addEventListener('dataavailable',e=>{if(e.data&&e.data.size>0)chunks.push(e.data)});
+      mediaRecorder.addEventListener('stop',async()=>{
+        const type=mediaRecorder.mimeType||'audio/webm';
+        pendingBlob=new Blob(chunks,{type});pendingMime=type;
+        try{
+          if(!pendingBlob.size)throw Error('No audio was captured.');
+          displayPending();saveButton.disabled=true;statusEl.textContent='Protecting recording on this device…';
+          await protectPending();preparing=false;
+          statusEl.textContent=locallyProtected?'Protected locally. Saving online…':'Local protection failed. Trying online save; download a backup.';
+          await savePendingRecording();
+        }catch(e){
+          statusEl.textContent='Recording preparation failed: '+e.message;
+          if(pendingBlob&&pendingBlob.size){displayPending();setRecorderState(locallyProtected?'retry':'unsafe')}
+          else setRecorderState('ready');
+        }finally{preparing=false;releaseMicrophone();}
       });
-
-      mediaRecorder.addEventListener('stop', async () => {
-        preparing=true;recordButton.disabled=true;
-        const type = mediaRecorder.mimeType || 'audio/webm';
-        const blob = new Blob(chunks, { type });
-
-        pendingBlob=blob;pendingMime=type;displayPending();saveButton.disabled=true;
-        statusEl.textContent='Protecting your recording on this device…';
-        await protectPending();
-        preparing=false;recordButton.disabled=false;saveButton.disabled=false;
-        statusEl.textContent='Recording ready to save. Listen, then press SAVE.';
-
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-          stream = null;
-        }
-      });
-
+      mediaRecorder.addEventListener('error',()=>{statusEl.textContent='Microphone error. Finish and download available audio.'});
       mediaRecorder.start();
-      recording = true;
-      startedAt = Date.now();
-      recordingEndedAt = null;
-      playbackWrap.style.display = 'none';
-      timerEl.textContent = '00:00';
-      recordButton.textContent = t.stopButton;
-      recordButton.classList.add('recording');
-      statusEl.textContent = t.recordingNow;
-      updateTimer();
-      timerHandle = setInterval(updateTimer, 500);
-
-    } catch (err) {
-      console.error(err);
-      if (err && err.name === 'NotAllowedError') {
-        statusEl.textContent = t.microphoneDenied;
-      } else if (err && err.name === 'NotFoundError') {
-        statusEl.textContent = t.microphoneNotFound;
-      } else {
-        statusEl.textContent = t.microphoneStartFailed;
-      }
-    }
+      startedAt=Date.now();activeDurationMs=0;activeSegmentStartMs=performance.now();
+      recordingEndedAt=null;recordingPaused=false;recording=true;
+      recordingTargetId=practiceTarget.value;recordingSessionId=newId();targetStatus.textContent='';
+      playbackWrap.style.display='none';timerEl.textContent='00:00';
+      setRecorderState('recording');statusEl.textContent=t.recordingNow;
+      timerHandle=setInterval(updateTimer,500);
+    }catch(e){
+      releaseMicrophone();
+      statusEl.textContent=e&&e.name==='NotAllowedError'?t.microphoneDenied:e&&e.name==='NotFoundError'?t.microphoneNotFound:t.microphoneStartFailed;
+    }finally{starting=false;if(!recording)setRecorderState('ready')}
   }
-
-function stopRecording() {
-
-  if (!recording) return;
-
-  recording = false;
-  preparing=true;recordButton.disabled=true;
-
-  const stoppedAt = Date.now();
-  recordingEndedAt = stoppedAt;
-
-  if (timerHandle) {
-    clearInterval(timerHandle);
-    timerHandle = null;
+  function pauseRecording(){
+    if(!recording||recordingPaused||preparing||!mediaRecorder||mediaRecorder.state!=='recording')return;
+    try{mediaRecorder.pause();activeDurationMs+=Math.max(0,performance.now()-activeSegmentStartMs);
+      activeSegmentStartMs=null;recordingPaused=true;updateTimer();setRecorderState('paused');statusEl.textContent=t.pausedNow;
+    }catch(e){statusEl.textContent='Could not pause; still recording.'}
   }
-
-  const elapsedSeconds =
-    Math.floor((stoppedAt - startedAt) / 1000);
-
-  timerEl.textContent = formatTime(elapsedSeconds);
-
-  recordButton.textContent = t.recordButton;
-  recordButton.classList.remove('recording');
-
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    mediaRecorder.stop();
+  function resumeRecording(){
+    if(!recording||!recordingPaused||preparing||!mediaRecorder||mediaRecorder.state!=='paused')return;
+    try{mediaRecorder.resume();activeSegmentStartMs=performance.now();recordingPaused=false;setRecorderState('recording');statusEl.textContent=t.recordingNow;
+    }catch(e){statusEl.textContent='Could not resume.'}
   }
-
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
-    stream = null;
+  function stopRecording(){
+    if(!recording||preparing)return;
+    if(!recordingPaused&&activeSegmentStartMs!==null)activeDurationMs+=Math.max(0,performance.now()-activeSegmentStartMs);
+    activeSegmentStartMs=null;recording=false;recordingPaused=false;preparing=true;recordingEndedAt=Date.now();
+    if(timerHandle){clearInterval(timerHandle);timerHandle=null;}
+    timerEl.textContent=formatTime(Math.floor(activeDurationMs/1000));setRecorderState('saving');statusEl.textContent='Preparing recording…';
+    try{if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();else throw Error('Recorder inactive')}
+    catch(e){preparing=false;statusEl.textContent='Could not finish recording: '+e.message;setRecorderState('unsafe')}
+    finally{releaseMicrophone()}
   }
-}
-
-recordButton.addEventListener('click', () => {
-  if (recording) {
-    stopRecording();
-  } else {
-if(preparing||recoveryBlocked)return;
-if(pendingBlob&&!recordingConfirmed){statusEl.textContent='Save or deliberately delete the pending recording before starting another.';return;}
-recordingTargetId = practiceTarget.value;
-recordingSessionId = newId();
-targetStatus.textContent = '';
-startRecording();
-  }
-});
-
-  document.getElementById('saveRecording').onclick=async()=>{
+  recordButton.addEventListener('click',()=>{if(recorderUiState==='ready')startRecording()});
+  pauseButton.addEventListener('click',()=>{if(recordingPaused)resumeRecording();else pauseRecording()});
+  finishButton.addEventListener('click',stopRecording);
+  async function savePendingRecording(){
     if(!pendingBlob||saving||preparing||recordingConfirmed)return;
-    saving=true; recordButton.disabled=true;
-    document.getElementById('saveRecording').disabled=true;
-    statusEl.textContent='Saving — confirmation pending';
-    try {
-      const run=async()=>{if(!locallyProtected)await protectPending();await uploadRecording(pendingBlob,pendingMime);};
-      if(navigator.locks&&localStore)await navigator.locks.request('gaita-save-'+localStore.slot,{ifAvailable:true},async lock=>{if(!lock){statusEl.textContent='This recording is being saved in another tab. Try again after it finishes.';saveButton.disabled=false;return;}await run();});
-      else await run();
+    saving=true;needsReconciliation=false;setRecorderState('saving');statusEl.textContent='Saving — confirmation pending';
+    try{
+      const run=async()=>{if(!locallyProtected)await protectPending();await uploadRecording(pendingBlob,pendingMime)};
+      if(navigator.locks&&localStore)await navigator.locks.request('gaita-save-'+localStore.slot,{ifAvailable:true},async lock=>{
+        if(!lock){statusEl.textContent='Recording being saved in another tab. Check later.';return}
+        await run();
+      });else await run();
+    }catch(e){statusEl.textContent=locallyProtected?'Online save unavailable; protected locally.':'Save unavailable; download backup.'}
+    finally{
+      saving=false;
+      if(recordingConfirmed){setRecorderState('saved');if(!locallyProtected)savedResetTimer=setTimeout(()=>{if(recordingConfirmed&&!locallyProtected&&!recording&&!saving)setRecorderState('ready')},5000)}
+      else setRecorderState(needsReconciliation?'attention':locallyProtected?'retry':'unsafe');
     }
-    finally { saving=false; recordButton.disabled=false; }
-  };
+  }
+  saveButton.onclick=savePendingRecording;
   async function recordingState(){
  const response=await fetch(gaitaBackendUrl_(),{method:'POST',body:JSON.stringify({action:'getRecordingState',pupilId,accessKey,sessionId:recordingSessionId})});
  const result=await response.json();
@@ -1242,10 +1192,10 @@ async function uploadRecording(blob,mimeType){
   // Every initial upload AND retry is gated by authoritative server state.
   const prior=await recordingState();
   if(prior.saved){await confirmSaved(prior);return;}
-  if(prior.state!=='absent'||!prior.retrySafe){statusEl.textContent='Save needs Owner reconciliation. Do not re-upload; download your local copy.';return;}
+  if(prior.state!=='absent'||!prior.retrySafe){needsReconciliation=true;statusEl.textContent='Save needs Owner reconciliation. Do not re-upload; download your local copy.';return;}
   const context=new (window.AudioContext||window.webkitAudioContext)();let decoded;
   try{decoded=await context.decodeAudioData(await blob.arrayBuffer());}finally{await context.close();}
-  const actualSeconds=decoded.duration, timerSeconds=(recordingEndedAt-startedAt)/1000;
+  const actualSeconds=decoded.duration, timerSeconds=(typeof activeDurationMs==='number'&&Number.isFinite(activeDurationMs)?activeDurationMs:(recordingEndedAt-startedAt))/1000;
   document.getElementById('durationEvidence').textContent='Decoded audio: '+actualSeconds.toFixed(3)+' s · timer: '+timerSeconds.toFixed(3)+' s';
   if(!Number.isFinite(actualSeconds)||actualSeconds<=0||Math.abs(actualSeconds-timerSeconds)>1.5)throw Error('Audio and timer disagree. Keep your local audio.');
   const payload={pupilId,accessKey,audioBase64:await blobToBase64(blob),mimeType,
@@ -1262,7 +1212,7 @@ async function uploadRecording(blob,mimeType){
    const state=await recordingState();
    if(state.saved){await confirmSaved(state);return;}
    if(state.state==='absent'&&state.retrySafe){statusEl.textContent=(locallyProtected?'Your recording has been kept on this device. You can try saving it again when your connection returns.':'Save unconfirmed. Local protection is unavailable: keep this tab open and download a copy.');document.getElementById('saveRecording').disabled=false;}
-   else{statusEl.textContent='Save uncertain — Owner reconciliation required. Do not upload again. Download your local copy.';}
+   else{needsReconciliation=true;statusEl.textContent='Save uncertain — Owner reconciliation required. Do not upload again. Download your local copy.';}
   }catch(checkError){statusEl.textContent=(locallyProtected?'Your recording has been kept on this device. You can try saving it again when your connection returns.':'Save unconfirmed. Keep this tab open and download the audio; local protection is unavailable.');document.getElementById('saveRecording').disabled=false;}
  }
 }
