@@ -7,22 +7,19 @@ const end=html.indexOf('function blobToBase64',begin);
 assert(begin>=0&&end>begin,'actual frontend controller must be found');
 const controller=new Function('h','with(h){'+html.slice(begin,end)+
   '\nreturn {ready:recoveryReady,ui:()=>recorderUiState,sid:()=>recordingSessionId,duration:()=>activeDurationMs,confirmed:()=>recordingConfirmed,startRecording,stopRecording,pauseRecording,resumeRecording,savePendingRecording};}');
-const translations={
-  recordingNow:'Recording',pausedNow:'Paused',resumeButton:'RESUME',
-  pauseButton:'PAUSE',finishAndSave:'FINISH & SAVE',
-  safeRetry:'SAFE ON DEVICE\\nRETRY SAVE',unsafeRetry:'RETRY ONLINE',
-  savedState:'SAVED ✓',savingState:'SAVING',uncertainSave:'UNCERTAIN',
-  restoredRecording:'Recovered',testModeNoPupilLink:'No pupil',
-  localFailure:'Local protection failed',recordingNoPupilLink:'No key',
-  practiceSaved:'Saved',recordingSaved:'Saved'
-};
-async function scenario({steps=[],activeMs,offline=false,reopen=false,lost=false,finishPaused=false}){
+const dictionaries=new Function(html.slice(html.indexOf('  const TEXT = {'),html.indexOf('const t = TEXT[uiLanguage];'))+';return TEXT;')();
+assert.deepEqual(Object.keys(dictionaries.EN).sort(),Object.keys(dictionaries.ES).sort());
+const authError=require('./ui-test-helpers.cjs').isAuthorizationError;
+for(const message of ['Pupil link is not authorised.','Owner-only test.','Permission denied'])assert(authError(Error(message)));
+assert(!authError(Error('network unavailable')));
+assert.match(dictionaries.ES.authorizationError,/Acceso denegado/);
+async function scenario({steps=[],activeMs,offline=false,reopen=false,lost=false,finishPaused=false,language="EN"}){
   let clock=0,online=true,row=null,uploads=0,queries=0,saved=false,loseNext=lost;
   const elements=new Map();
   function element(id){
     if(!elements.has(id))elements.set(id,{
       textContent:'',hidden:false,disabled:false,style:{},
-      addEventListener(type,fn){this[type]=fn;},pause(){},removeAttribute(){}
+      focus(){h.document.activeElement=this;},addEventListener(type,fn){this[type]=fn;},pause(){},removeAttribute(){}
     });
     return elements.get(id);
   }
@@ -45,7 +42,7 @@ async function scenario({steps=[],activeMs,offline=false,reopen=false,lost=false
     async remove(sid){assert.equal(row.sessionId,sid);row=null;}
   };
   const h={
-    pupilId:'dummy',accessKey:'test-only-not-a-secret',t:translations,
+    isAuthorizationError:require('./ui-test-helpers.cjs').isAuthorizationError,pupilId:'dummy',accessKey:'test-only-not-a-secret',t:dictionaries[language],
     document:{getElementById:element},
     window:{addEventListener(){},MediaRecorder:FakeRecorder,AudioContext:class{
       async decodeAudioData(){return {duration:activeMs/1000};}
@@ -59,7 +56,7 @@ async function scenario({steps=[],activeMs,offline=false,reopen=false,lost=false
     practiceTarget:{value:''},targetStatus:{textContent:''},newId:()=> 'test-session-id',
     setInterval:()=>123,clearInterval(){},setTimeout:()=>123,clearTimeout(){},
     confirm:()=>false,gaitaBackendUrl_:()=> 'backend',blobToBase64:async()=> 'audio-fixture',
-    tagSavedRecording:async()=>{},console:{warn(){}},
+    tagSavedRecording:async()=>{assert.equal(page.ui(),'saved','confirmation must immediately leave SAVING before target read');},console:{warn(){}},
     fetch:async(_,options)=>{
       const p=JSON.parse(options.body);
       if(p.action==='getRecordingState'){
@@ -75,18 +72,29 @@ async function scenario({steps=[],activeMs,offline=false,reopen=false,lost=false
   };
   let page=controller(h);await page.ready;
   assert.equal(page.ui(),'ready');
+  element('localProtection').textContent=dictionaries[language].confirmedCleanup;
+  element('durationEvidence').textContent='old duration';
+  element('recordButton').focus();
   await page.startRecording();assert.equal(page.ui(),'recording');
+  assert.equal(element('localProtection').textContent,dictionaries[language].newRecordingProtection);
+  assert.equal(element('durationEvidence').textContent,'');
+  assert.equal(element('timer').textContent,'00:00');
+  assert.equal(h.document.activeElement,element('pauseButton'));
+  assert.equal(element('pauseButton').textContent,dictionaries[language].pauseButton);
   const sid=page.sid();let elapsed=0;
   for(const [recordMs,pausedMs] of steps){
     clock+=recordMs;elapsed+=recordMs;
     element('pauseButton').click();assert.equal(page.ui(),'paused');
+    assert.equal(element('pauseButton').textContent,dictionaries[language].resumeButton);
     const before=page.duration();element('pauseButton').click();assert.equal(page.duration(),before,'double tap must not resume');
     clock+=pausedMs;assert.equal(page.duration(),before,'pause excluded');
     if(!finishPaused){element('pauseButton').click();assert.equal(page.ui(),'recording');}
   }
   if(!finishPaused)clock+=activeMs-elapsed;
   if(offline)online=false;
+  element('finishButton').focus();
   element('finishButton').click();element('finishButton').click();
+  assert.equal(h.document.activeElement,element('savingIndicator'));
   for(let i=0;i<30;i++)await Promise.resolve();
   assert.equal(page.sid(),sid);
   assert.equal(page.duration(),activeMs);
@@ -95,8 +103,10 @@ async function scenario({steps=[],activeMs,offline=false,reopen=false,lost=false
     assert(row&&row.sessionId===sid);
     assert.equal(uploads,0);
     if(reopen){
-      online=true;page=controller(h);await page.ready;
+      online=true;h.t=dictionaries[language==='EN'?'ES':'EN'];page=controller(h);await page.ready;
       assert.equal(page.ui(),'retry');assert.equal(page.sid(),sid);
+      const protectedBefore=row;await page.startRecording();assert.equal(row,protectedBefore);assert.equal(page.sid(),sid);
+      assert.equal(element('localProtection').textContent,h.t.restoredProtection);
       await page.savePendingRecording();
     }
   }
@@ -114,5 +124,5 @@ async function scenario({steps=[],activeMs,offline=false,reopen=false,lost=false
   {steps:[[10000,3000]],activeMs:24000,offline:true,reopen:true},
   {steps:[[3500,3000]],activeMs:8000,lost:true}
  ];
- for(const testCase of cases)console.log('PASS simulated unified recorder',await scenario(testCase));
+ for(const language of ['EN','ES'])for(const testCase of cases)console.log('PASS simulated unified recorder '+language,await scenario({...testCase,language}));
 })().catch(err=>{console.error(err);process.exitCode=1;});

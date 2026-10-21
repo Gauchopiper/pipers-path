@@ -62,11 +62,11 @@
     .circleHalf {flex:1;width:100%;border:0;padding:12px 20px;font:800 21px/1.15 Arial,Helvetica,sans-serif;cursor:pointer;touch-action:manipulation}
     #pauseButton {background:#f2c84b;color:#1c1c1c;border-bottom:3px solid #fff}
     #finishButton {background:#315f96;color:#fff}
-    #saveRecording {background:#b65d18;color:#fff;font-size:19px}
+    #saveRecording {background:#974610;color:#fff;font-size:19px}
     #savingIndicator {background:#455a64;color:#fff}
     #savedIndicator {background:#237a3b;color:#fff}
     #attentionIndicator {background:#755119;color:#fff;font-size:19px}
-    #recordCircle button:focus-visible {outline:5px solid #111;outline-offset:-7px}
+    #recordCircle :focus-visible {outline:5px solid #111;outline-offset:-7px}
     #recordCircle button:disabled {cursor:default;opacity:1}
     @media (max-width:340px){#recordCircle{width:190px;height:190px}}
 
@@ -142,7 +142,7 @@
 
     .small {
       font-size: 13px;
-      color: #777;
+      color: #595959;
       margin-top: 8px;
       word-break: break-all;
     }
@@ -162,12 +162,12 @@
 <body>
 <header>
   <h1>Piper's Path — Gaita de Boto</h1>
-  <div id="identity"></div><p>Owner-only controlled test · Gaita de Boto</p>
+  <div id="identity"></div><p id="ownerTest">Owner-only controlled test · Gaita de Boto</p>
 <section id="connectionPanel" style="max-width:540px;margin:16px auto;text-align:left">
-<p id="connectionStatus" role="status">Google connection has not been verified.</p>
+<p id="connectionStatus" role="status" aria-atomic="true">Google connection has not been verified.</p>
 <a id="googleConnection" target="_blank" rel="noopener noreferrer">Open Google Owner connection</a>
 <button id="connectOwner" type="button">Connect</button>
-<p>Use this standalone page for microphone access. Keep it open until the save is confirmed.</p>
+<p id="standaloneHelp">Use this standalone page for microphone access. Keep it open until the save is confirmed.</p>
 </section><p id="durationEvidence"></p>
 </header>
 
@@ -203,12 +203,12 @@
         <button id="finishButton" class="circleHalf" type="button">FINISH &amp; SAVE</button>
       </div>
       <button id="saveRecording" class="circleFull" type="button" hidden disabled>SAFE ON DEVICE</button>
-      <div id="savingIndicator" class="circleFull" role="status" hidden>SAVING…</div>
-      <div id="savedIndicator" class="circleFull" role="status" hidden>SAVED ✓</div>
-      <div id="attentionIndicator" class="circleFull" role="status" hidden>SAVE UNCERTAIN</div>
+      <div id="savingIndicator" tabindex="-1" class="circleFull" role="status" aria-atomic="true" hidden>SAVING…</div>
+      <div id="savedIndicator" tabindex="-1" class="circleFull" role="status" aria-atomic="true" hidden>SAVED ✓</div>
+      <div id="attentionIndicator" tabindex="-1" class="circleFull" role="status" aria-atomic="true" hidden>SAVE UNCERTAIN</div>
     </div>
-    <div id="status" role="status">Tap RECORD to begin</div>
-<p id="localProtection" class="small" role="status"></p><p class="small">Pending recordings stay on this browser until saved or deleted. Private browsing, clearing site data or browser storage eviction can remove them. Download a copy for extra protection. Stop recording and wait for local protection before closing.</p>
+    <div id="status" role="status" aria-atomic="true">Tap RECORD to begin</div>
+<p id="localProtection" class="small" role="status" aria-atomic="true"></p><p id="storageHelp" class="small">Pending recordings stay on this browser until saved or deleted. Private browsing, clearing site data or browser storage eviction can remove them. Download a copy for extra protection. Stop recording and wait for local protection before closing.</p>
 <div id="playbackWrap">
   <p><strong id="yourRecordingLabel">Your recording</strong></p>
   <audio id="playback" controls></audio>
@@ -309,8 +309,8 @@ window.addEventListener('message',event=>{
   if(m.type==='ready' && !bridgeWindow){
     bridgeWindow=event.source;
     clearTimeout(connectionTimer);
-    document.getElementById('connectOwner').textContent='Reconnect';
-    document.getElementById('connectionStatus').textContent='Google Owner connection ready';
+    document.getElementById('connectOwner').textContent=t.reconnect;
+    document.getElementById('connectionStatus').textContent=t.connectionReady;
     bridgeResolve();
   }
   if(event.source!==bridgeWindow || m.type!=='response') return;
@@ -319,38 +319,35 @@ window.addEventListener('message',event=>{
   if(m.error) w.reject(Error(m.error)); else w.resolve({json:async()=>m.result});
 });
 function fetch(url,options){
- if(url!==BACKEND_URL) return Promise.reject(Error('Unapproved destination'));
- return Promise.race([bridgeReady,new Promise((_,reject)=>setTimeout(()=>reject(Error('Google Owner connection is not ready. Open the Google connection, then reconnect.')),15000))]).then(()=>new Promise((resolve,reject)=>{
+ if(url!==BACKEND_URL) return Promise.reject(Error(t.destinationDenied));
+ return Promise.race([bridgeReady,new Promise((_,reject)=>setTimeout(()=>reject(Error(t.connectionNotReady)),15000))]).then(()=>new Promise((resolve,reject)=>{
   const id=newId();
-  const timer=setTimeout(()=>{waiting.delete(id);reject(Error('Save response not confirmed. Keep this page open; check history before retrying.'));},120000);
+  const timer=setTimeout(()=>{waiting.delete(id);reject(Error(t.responseUnconfirmed));},120000);
   waiting.set(id,{resolve,reject,timer});
   bridgeWindow.postMessage({protocol:'gdb-owner-bridge-v1',type:'request',channel,id,payload:JSON.parse(options.body)},GOOGLE_BRIDGE_ORIGIN);
  }));
 }
 function connectOwner(){
  const status=document.getElementById('connectionStatus');
- if(waiting.size){status.textContent='A Google request is still running. Wait for its result before reconnecting.';return;}
+ if(waiting.size){status.textContent=t.requestRunning;return;}
  clearTimeout(connectionTimer);
  const previous=document.getElementById('ownerBridge');
  if(previous)previous.remove();
  bridgeWindow=null;
  bridgeReady=new Promise(resolve=>bridgeResolve=resolve);
- status.textContent='Connecting to Google Owner…';
- document.getElementById('connectOwner').textContent='Try connection again';
- const frame=document.createElement('iframe'); frame.id='ownerBridge'; frame.title='Google Owner connection';
+ status.textContent=t.connecting;
+ document.getElementById('connectOwner').textContent=t.tryConnection;
+ const frame=document.createElement('iframe'); frame.id='ownerBridge'; frame.title=t.connectionTitle;
  frame.src=BACKEND_URL+'?bridge=1&channel='+encodeURIComponent(channel);
  frame.style.cssText='width:100%;height:85px;border:1px solid #ddd;border-radius:8px';
  document.getElementById('connectionPanel').appendChild(frame);
- frame.addEventListener('error',()=>{status.textContent='Google connection could not load. Open Google Owner connection in a separate tab and check its message, then try again.';});
+ frame.addEventListener('error',()=>{status.textContent=t.connectionFailed;});
  connectionTimer=setTimeout(()=>{
-  if(!bridgeWindow)status.textContent='No connection response from Google after 20 seconds. Check the Google panel below for a sign-in or blocked-page message. Open Google Owner connection in a separate tab, then try again. Recording has not been saved.';
+  if(!bridgeWindow)status.textContent=t.connectionTimeout;
  },20000);
 }
 document.getElementById('googleConnection').href=BACKEND_URL;
 document.getElementById('connectOwner').onclick=connectOwner;
-if(params.get('p') && params.get('key')) connectOwner();
-else document.getElementById('connectionStatus').textContent='Open your private dummy-pupil link from the Gaita workbook. No pupil key is stored in this page.';
-if(window.top!==window.self){document.body.replaceChildren(document.createTextNode('Open this recorder as a standalone page.'));throw Error('Standalone page required');}
   function gaitaBackendUrl_() {
     if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(BACKEND_URL)) {
       throw new Error('Gaita de Boto pupil backend is not configured.');
@@ -373,6 +370,81 @@ document.documentElement.lang =
 
   const TEXT = {
   EN: {
+    bagpipeParts: ["", "Blowpipe", "Bag", "Bass drone — lower section", "Middle tenor — lower section", "Outer tenor — lower section", "Bass drone — middle section", "Middle tenor — upper section", "Outer tenor — upper section", "Bass drone — upper section", "Group practice complete"],
+    groupStage: "Group practice — stage",
+    ofTen: "of 10",
+    reviewed: "REVIEWED",
+    needsWork: "NEEDS WORK",
+
+    reconnect: "Reconnect",
+    connectionReady: "Google Owner connection ready",
+    destinationDenied: "Unapproved destination",
+    connectionNotReady: "Google Owner connection is not ready. Open the Google connection, then reconnect.",
+    responseUnconfirmed: "Save response not confirmed. Keep this page open; check history before retrying.",
+    requestRunning: "A Google request is still running. Wait for its result before reconnecting.",
+    connecting: "Connecting to Google Owner…",
+    tryConnection: "Try connection again",
+    connectionTitle: "Google Owner connection",
+    connectionFailed: "Google connection could not load. Open Google Owner connection in a separate tab and check its message, then try again.",
+    connectionTimeout: "No connection response from Google after 20 seconds. Check the Google panel below for a sign-in or blocked-page message. Open Google Owner connection in a separate tab, then try again. Recording has not been saved.",
+    privateLinkRequired: "Open your private dummy-pupil link from the Gaita workbook. No pupil key is stored in this page.",
+    standaloneRequired: "Open this recorder as a standalone page.",
+    protectedPending: "Recording kept on this device until saving is confirmed.",
+    restoredProtection: "Your pending recording is kept on this device. It has not been deleted.",
+    protectionReady: "Local recording protection is ready.",
+    recoveryBlocked: "Cannot check earlier pending recordings. Reopen this page before starting another recording.",
+    deleteConfirmation: "Delete this local recording? If it has not reached Google, this cannot be undone. Download a copy first if needed.",
+    deleted: "Local recording deleted. You can record again.",
+    pendingFirst: "Save or delete the pending recording before starting another.",
+    reconcileFirst: "An earlier protected recording needs reconciliation before starting again.",
+    unsupportedMic: "Microphone recording is not supported.",
+    noAudio: "No audio was captured.",
+    protecting: "Protecting recording on this device…",
+    protectedSaving: "Protected locally. Saving online…",
+    unprotectedSaving: "Local protection failed. Trying online save; download a backup.",
+    preparationFailed: "Recording preparation failed: ",
+    micError: "Microphone error. Finish and download available audio.",
+    pauseFailed: "Could not pause; still recording.",
+    resumeFailed: "Could not resume.",
+    preparing: "Preparing recording…",
+    finishFailed: "Could not finish recording: ",
+    savingPending: "Saving — confirmation pending",
+    otherTabSaving: "Recording being saved in another tab. Check later.",
+    offlineProtected: "Online save unavailable; protected locally.",
+    saveUnavailable: "Save unavailable; download backup.",
+    safelySaved: "Recording safely saved",
+    confirmedCleanup: "Confirmed by Google. Pending local copy removed.",
+    cleanupFailed: "Saved by Google, but local cleanup failed. Reopening will check the same recording before any upload.",
+    offlineRetry: "Your recording has been kept on this device. You can try saving it again when your connection returns.",
+    offlineUnsafe: "No connection. Keep this tab open and download a copy; local protection is unavailable.",
+    reconcile: "Save needs Owner reconciliation. Do not re-upload; download your local copy.",
+    uncertainUnsafe: "Save unconfirmed. Local protection is unavailable: keep this tab open and download a copy.",
+    uncertainOwner: "Save uncertain — Owner reconciliation required. Do not upload again. Download your local copy.",
+    uncertainDownload: "Save unconfirmed. Keep this tab open and download the audio; local protection is unavailable.",
+    decodedAudio: "Decoded audio: ",
+    timerEvidence: " s · timer: ",
+    feedback: "Send test feedback",
+    ownerTest: "Owner-only controlled test · Gaita de Boto",
+    notConnected: "Google connection has not been verified.",
+    openConnection: "Open Google Owner connection",
+    connect: "Connect",
+    standaloneHelp: "Use this standalone page for microphone access. Keep it open until the save is confirmed.",
+    storageHelp: "Pending recordings stay on this browser until saved or deleted. Private browsing, clearing site data or browser storage eviction can remove them. Download a copy for extra protection. Stop recording and wait for local protection before closing.",
+    downloadCopy: "Download a local copy",
+    deleteLocal: "Delete this local recording",
+    recordControl: "Recording control",
+    recordActions: "Recording actions",
+    timerLabel: "Active recording time",
+    newRecordingProtection: "Recording in progress. Local protection begins when you finish.",
+    loggedSeconds: "s logged",
+    teacherComments: "Teacher comments",
+    noComments: "No Teacher comments yet.",
+    qualifying: "Qualifying ✓",
+    notQualifying: "Not qualifying",
+    sessionReview: "Session review",
+    sessionNote: "Session note",
+    authorizationError: "Access denied. Check that you are signed in with the authorised account and using your private pupil link.",
+
     record: 'RECORD',
     path: 'PATH',
     group: 'GROUP',
@@ -436,6 +508,81 @@ targetsUnavailableGeneralPractice:
   },
 
   ES: {
+    bagpipeParts: ["", "Soplete", "Fuelle", "Bordón bajo — parte inferior", "Tenor central — parte inferior", "Tenor exterior — parte inferior", "Bordón bajo — parte media", "Tenor central — parte superior", "Tenor exterior — parte superior", "Bordón bajo — parte superior", "Práctica del grupo completada"],
+    groupStage: "Práctica del grupo — etapa",
+    ofTen: "de 10",
+    reviewed: "REVISADO",
+    needsWork: "NECESITA TRABAJO",
+
+    reconnect: "Volver a conectar",
+    connectionReady: "Conexión de propietario con Google lista",
+    destinationDenied: "Destino no autorizado",
+    connectionNotReady: "La conexión de propietario con Google no está lista. Abre la conexión con Google y vuelve a conectar.",
+    responseUnconfirmed: "No se ha confirmado el guardado. Mantén esta página abierta y comprueba el historial antes de reintentar.",
+    requestRunning: "Hay una solicitud a Google en curso. Espera el resultado antes de volver a conectar.",
+    connecting: "Conectando con Google como propietario…",
+    tryConnection: "Reintentar conexión",
+    connectionTitle: "Conexión de propietario con Google",
+    connectionFailed: "No se pudo cargar la conexión con Google. Ábrela en otra pestaña, comprueba el mensaje y vuelve a intentarlo.",
+    connectionTimeout: "Google no ha respondido en 20 segundos. Comprueba si el panel inferior pide iniciar sesión o indica un bloqueo. Abre la conexión con Google en otra pestaña y reintenta. La grabación no se ha guardado.",
+    privateLinkRequired: "Abre el enlace privado del alumno de prueba desde la hoja de Gaita. Esta página no contiene ninguna clave de alumno.",
+    standaloneRequired: "Abre esta grabadora en una página independiente.",
+    protectedPending: "Grabación protegida en este dispositivo hasta que se confirme el guardado.",
+    restoredProtection: "Tu grabación pendiente sigue protegida en este dispositivo. No se ha borrado.",
+    protectionReady: "La protección local de grabaciones está lista.",
+    recoveryBlocked: "No se pueden comprobar las grabaciones pendientes. Vuelve a abrir esta página antes de iniciar otra grabación.",
+    deleteConfirmation: "¿Borrar esta grabación local? Si no ha llegado a Google, no podrás recuperarla. Descarga una copia antes si la necesitas.",
+    deleted: "Grabación local borrada. Ya puedes volver a grabar.",
+    pendingFirst: "Guarda o borra la grabación pendiente antes de iniciar otra.",
+    reconcileFirst: "Hay que comprobar el guardado de una grabación protegida anterior antes de volver a grabar.",
+    unsupportedMic: "Este navegador no permite grabar con el micrófono.",
+    noAudio: "No se capturó audio.",
+    protecting: "Protegiendo la grabación en este dispositivo…",
+    protectedSaving: "Protegida en el dispositivo. Guardando en línea…",
+    unprotectedSaving: "Falló la protección local. Intentando guardar en línea; descarga una copia.",
+    preparationFailed: "No se pudo preparar la grabación. Mantén la página abierta y descarga el audio disponible. ",
+    micError: "Error del micrófono. Finaliza y descarga el audio disponible.",
+    pauseFailed: "No se pudo pausar; la grabación continúa.",
+    resumeFailed: "No se pudo reanudar la grabación.",
+    preparing: "Preparando la grabación…",
+    finishFailed: "No se pudo finalizar la grabación. Mantén la página abierta. ",
+    savingPending: "Guardando — pendiente de confirmación",
+    otherTabSaving: "La grabación se está guardando en otra pestaña. Compruébalo más tarde.",
+    offlineProtected: "No se puede guardar en línea; la grabación está protegida en el dispositivo.",
+    saveUnavailable: "No se puede guardar; descarga una copia.",
+    safelySaved: "Grabación guardada y confirmada",
+    confirmedCleanup: "Google ha confirmado el guardado. Se ha eliminado la copia local pendiente.",
+    cleanupFailed: "Google ha guardado la grabación, pero no se pudo eliminar la copia local. Al reabrir se comprobará la misma grabación antes de subirla.",
+    offlineRetry: "Tu grabación está protegida en este dispositivo. Puedes reintentar el guardado cuando vuelva la conexión.",
+    offlineUnsafe: "Sin conexión. Mantén esta pestaña abierta y descarga una copia; la protección local no está disponible.",
+    reconcile: "El propietario debe comprobar el guardado. No vuelvas a subir la grabación; descarga tu copia local.",
+    uncertainUnsafe: "Guardado sin confirmar. No hay protección local: mantén esta pestaña abierta y descarga una copia.",
+    uncertainOwner: "Guardado sin confirmar: el propietario debe comprobarlo. No vuelvas a subir la grabación. Descarga tu copia local.",
+    uncertainDownload: "Guardado sin confirmar. Mantén esta pestaña abierta y descarga el audio; no hay protección local.",
+    decodedAudio: "Audio decodificado: ",
+    timerEvidence: " s · cronómetro: ",
+    feedback: "Enviar comentarios de prueba",
+    ownerTest: "Prueba privada del propietario · Gaita de Boto",
+    notConnected: "No se ha verificado la conexión con Google.",
+    openConnection: "Abrir conexión de propietario con Google",
+    connect: "Conectar",
+    standaloneHelp: "Usa esta página independiente para acceder al micrófono. Mantenla abierta hasta que se confirme el guardado.",
+    storageHelp: "Las grabaciones pendientes permanecen en este navegador hasta guardarlas o borrarlas. La navegación privada, borrar los datos del sitio o la limpieza de almacenamiento del navegador pueden eliminarlas. Descarga una copia para mayor protección. Finaliza la grabación y espera a que se proteja antes de cerrar.",
+    downloadCopy: "Descargar una copia local",
+    deleteLocal: "Borrar esta grabación local",
+    recordControl: "Control de grabación",
+    recordActions: "Acciones de grabación",
+    timerLabel: "Tiempo de grabación activa",
+    newRecordingProtection: "Grabación en curso. La protección local comienza al finalizar.",
+    loggedSeconds: "s registrados",
+    teacherComments: "Comentarios del profesor",
+    noComments: "Todavía no hay comentarios del profesor.",
+    qualifying: "Válida para crédito ✓",
+    notQualifying: "Sin crédito",
+    sessionReview: "Revisión",
+    sessionNote: "Nota de sesión",
+    authorizationError: "Acceso denegado. Comprueba que has iniciado sesión con la cuenta autorizada y que usas tu enlace privado de alumno.",
+
     record: 'GRABAR',
     path: 'CAMINO',
     group: 'GRUPO',
@@ -500,6 +647,27 @@ targetsUnavailableGeneralPractice:
 };
 
 const t = TEXT[uiLanguage];
+function isAuthorizationError(error){return /authori[sz]|permission|access denied|owner-only|not allowed/i.test(String(error&&error.message||error||''));}
+function userError(error,fallback){return isAuthorizationError(error)?t.authorizationError:fallback;}
+document.getElementById('ownerTest').textContent=t.ownerTest;
+document.getElementById('standaloneHelp').textContent=t.standaloneHelp;
+document.getElementById('storageHelp').textContent=t.storageHelp;
+document.getElementById('googleConnection').textContent=t.openConnection;
+document.getElementById('connectOwner').textContent=t.connect;
+document.getElementById('downloadRecording').textContent=t.downloadCopy;
+document.getElementById('deletePending').textContent=t.deleteLocal;
+document.getElementById('pathStatus').textContent=t.loadingPath;
+document.getElementById('groupStatus').textContent=t.loadingGroup;
+document.getElementById('recordCircle').setAttribute('aria-label',t.recordControl);
+document.getElementById('recordSplit').setAttribute('aria-label',t.recordActions);
+document.getElementById('timer').setAttribute('aria-label',t.timerLabel);
+document.getElementById('playback').setAttribute('aria-label',t.yourRecording);
+document.getElementById('communityBagpipeImage').alt=t.communityBagpipe;
+
+if(params.get('p') && params.get('key')) connectOwner();
+else document.getElementById('connectionStatus').textContent=t.privateLinkRequired;
+if(window.top!==window.self){document.body.replaceChildren(document.createTextNode(t.standaloneRequired));throw Error('Standalone page required');}
+
 
   document.getElementById('practiceForLabel').textContent =
   t.practiceFor;
@@ -522,6 +690,8 @@ document.getElementById('status').textContent =
   if (value === 'IN PROGRESS') return t.statusInProgress;
   if (value === 'READY FOR REVIEW') return t.statusReadyForReview;
   if (value === 'ACHIEVED') return t.statusAchieved;
+  if (value === 'REVIEWED') return t.reviewed;
+  if (value === 'NEEDS WORK') return t.needsWork;
 
   return status || '';
 }
@@ -713,27 +883,13 @@ const bagpipeImage =
 const partNameEl =
   document.getElementById('groupPartName');
 
-const bagpipePartNames = [
-  '',
-  'Blow Pipe',
-  'Bag',
-  'Bass Drone — parte inferior',
-  'Middle Tenor — parte inferior',
-  'Outer Tenor — parte inferior',
-  'Bass Drone — parte media',
-  'Middle Tenor — parte superior',
-  'Outer Tenor — parte superior',
-  'Bass Drone — parte superior',
-  'Group practice complete'
-];
+const bagpipePartNames = t.bagpipeParts;
     
 bagpipeImage.src =
   'group-progress.svg#' + bagpipeParts;
 
 bagpipeImage.alt =
-  'Gaita group practice — stage ' +
-  bagpipeParts +
-  ' of 10';
+  t.groupStage + ' ' + bagpipeParts + ' ' + t.ofTen;
 
 if (bagpipeParts === 0) {
   partNameEl.textContent = t.waitingFirstPiper;
@@ -759,7 +915,7 @@ if (bagpipeParts === 0) {
   } catch (error) {
     console.warn('GROUP load failed:', error);
 
-    status.textContent = t.groupUnavailable;
+    status.textContent = userError(error,t.groupUnavailable);
     content.style.display = 'none';
   }
 }
@@ -850,7 +1006,7 @@ if (status) {
     const status = document.getElementById('targetStatus');
     if (status) {
       status.textContent =
-  t.targetsUnavailableGeneralPractice;
+  userError(error,t.targetsUnavailableGeneralPractice);
     }
   }
 }
@@ -1031,6 +1187,8 @@ return false;
   const attentionIndicator=document.getElementById('attentionIndicator');
   let recorderUiState='ready';
   function setRecorderState(state){
+    const focus=document.activeElement;
+    const ownsFocus=[recordButton,pauseButton,finishButton,saveButton,savingIndicator,savedIndicator,attentionIndicator].includes(focus);
     recorderUiState=state;
     recordButton.hidden=state!=='ready';recordSplit.hidden=state!=='recording'&&state!=='paused';
     saveButton.hidden=state!=='retry'&&state!=='unsafe';
@@ -1043,6 +1201,10 @@ return false;
     attentionIndicator.textContent=t.uncertainSave;
     saveButton.disabled=state!=='retry'&&state!=='unsafe';
     recordButton.disabled=state!=='ready'||recoveryBlocked||!pupilId||!accessKey||starting;
+    if(ownsFocus){
+      const next=state==='recording'||state==='paused'?(focus===finishButton?finishButton:pauseButton):state==='saving'?savingIndicator:state==='saved'?savedIndicator:state==='attention'?attentionIndicator:state==='retry'||state==='unsafe'?saveButton:recordButton;
+      if(next!==focus&&!next.disabled)next.focus();
+    }
   }
   function storageWarning(){protectionEl.textContent=t.localFailure;}
   setRecorderState('ready');
@@ -1057,7 +1219,7 @@ return false;
     try{
       if(!localStore)localStore=await GaitaPendingStore.open(pupilId,accessKey);
       await localStore.put({sessionId:recordingSessionId,mime:pendingMime,startedAt,endedAt:recordingEndedAt,activeDurationMs:typeof activeDurationMs==='number'?activeDurationMs:null,targetId:recordingTargetId,createdAt:startedAt,blob:pendingBlob});
-      locallyProtected=true;protectionEl.textContent='Recording kept on this device until saving is confirmed.';
+      locallyProtected=true;protectionEl.textContent=t.protectedPending;
       if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
     }catch(e){storageWarning();}
   }
@@ -1067,15 +1229,15 @@ return false;
     try{
       localStore=await GaitaPendingStore.open(pupilId,accessKey);
       const item=await localStore.read();
-      if(item){pendingBlob=item.blob;pendingMime=item.mime;recordingSessionId=item.sessionId;startedAt=item.startedAt;recordingEndedAt=item.endedAt;activeDurationMs=Number.isFinite(item.activeDurationMs)?item.activeDurationMs:null;recordingTargetId=item.targetId;locallyProtected=true;displayPending();setRecorderState('retry');statusEl.textContent=t.restoredRecording;protectionEl.textContent='Your pending recording is kept on this device. It has not been deleted.';timerEl.textContent=formatTime(Math.floor((activeDurationMs===null?recordingEndedAt-startedAt:activeDurationMs)/1000));}
-      else protectionEl.textContent='Local recording protection is ready.';
-    }catch(e){recoveryBlocked=true;storageWarning();statusEl.textContent='Cannot check earlier pending recordings. Reopen this page before starting another recording.';}
+      if(item){pendingBlob=item.blob;pendingMime=item.mime;recordingSessionId=item.sessionId;startedAt=item.startedAt;recordingEndedAt=item.endedAt;activeDurationMs=Number.isFinite(item.activeDurationMs)?item.activeDurationMs:null;recordingTargetId=item.targetId;locallyProtected=true;displayPending();setRecorderState('retry');statusEl.textContent=t.restoredRecording;protectionEl.textContent=t.restoredProtection;timerEl.textContent=formatTime(Math.floor((activeDurationMs===null?recordingEndedAt-startedAt:activeDurationMs)/1000));}
+      else protectionEl.textContent=t.protectionReady;
+    }catch(e){recoveryBlocked=true;storageWarning();statusEl.textContent=t.recoveryBlocked;}
     finally{recordButton.disabled=recoveryBlocked;}
   }
   const recoveryReady=restorePending();
   document.getElementById('deletePending').onclick=async()=>{
-    if(saving||preparing||!pendingBlob||!confirm('Delete this local recording? If it has not reached Google, this cannot be undone. Download a copy first if needed.'))return;
-    try{if(localStore)await localStore.remove(recordingSessionId);pendingBlob=null;locallyProtected=false;playback.pause();playback.removeAttribute('src');playbackWrap.style.display='none';URL.revokeObjectURL(lastObjectUrl);statusEl.textContent='Local recording deleted. You can record again.';protectionEl.textContent='';recordingConfirmed=false;recordingSessionId='';activeDurationMs=null;setRecorderState('ready');}catch(e){storageWarning();}
+    if(saving||preparing||!pendingBlob||!confirm(t.deleteConfirmation))return;
+    try{if(localStore)await localStore.remove(recordingSessionId);pendingBlob=null;locallyProtected=false;playback.pause();playback.removeAttribute('src');playbackWrap.style.display='none';URL.revokeObjectURL(lastObjectUrl);statusEl.textContent=t.deleted;protectionEl.textContent='';recordingConfirmed=false;recordingSessionId='';activeDurationMs=null;setRecorderState('ready');}catch(e){storageWarning();}
   };
 
 
@@ -1090,9 +1252,9 @@ return false;
   function releaseMicrophone(){if(stream){stream.getTracks().forEach(track=>track.stop());stream=null;}}
   async function startRecording(){
     if(starting||recording||preparing||saving||recoveryBlocked)return;
-    if(pendingBlob&&!recordingConfirmed){statusEl.textContent='Save or delete the pending recording before starting another.';return;}
-    if(locallyProtected){statusEl.textContent='An earlier protected recording needs reconciliation before starting again.';return;}
-    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){statusEl.textContent='Microphone recording is not supported.';return;}
+    if(pendingBlob&&!recordingConfirmed){statusEl.textContent=t.pendingFirst;return;}
+    if(locallyProtected){statusEl.textContent=t.reconcileFirst;return;}
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){statusEl.textContent=t.unsupportedMic;return;}
     starting=true;recordButton.disabled=true;
     try{
       stream=await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -1106,23 +1268,25 @@ return false;
         const type=mediaRecorder.mimeType||'audio/webm';
         pendingBlob=new Blob(chunks,{type});pendingMime=type;
         try{
-          if(!pendingBlob.size)throw Error('No audio was captured.');
-          displayPending();saveButton.disabled=true;statusEl.textContent='Protecting recording on this device…';
+          if(!pendingBlob.size)throw Error(t.noAudio);
+          displayPending();saveButton.disabled=true;statusEl.textContent=t.protecting;
           await protectPending();preparing=false;
-          statusEl.textContent=locallyProtected?'Protected locally. Saving online…':'Local protection failed. Trying online save; download a backup.';
+          statusEl.textContent=locallyProtected?t.protectedSaving:t.unprotectedSaving;
           await savePendingRecording();
         }catch(e){
-          statusEl.textContent='Recording preparation failed: '+e.message;
+          statusEl.textContent=t.preparationFailed;
           if(pendingBlob&&pendingBlob.size){displayPending();setRecorderState(locallyProtected?'retry':'unsafe')}
           else setRecorderState('ready');
         }finally{preparing=false;releaseMicrophone();}
       });
-      mediaRecorder.addEventListener('error',()=>{statusEl.textContent='Microphone error. Finish and download available audio.'});
+      mediaRecorder.addEventListener('error',()=>{statusEl.textContent=t.micError});
       mediaRecorder.start();
       startedAt=Date.now();activeDurationMs=0;activeSegmentStartMs=performance.now();
       recordingEndedAt=null;recordingPaused=false;recording=true;
       recordingTargetId=practiceTarget.value;recordingSessionId=newId();targetStatus.textContent='';
       playbackWrap.style.display='none';timerEl.textContent='00:00';
+      protectionEl.textContent=t.newRecordingProtection;
+      document.getElementById('durationEvidence').textContent='';
       setRecorderState('recording');statusEl.textContent=t.recordingNow;
       timerHandle=setInterval(updateTimer,500);
     }catch(e){
@@ -1134,21 +1298,21 @@ return false;
     if(!recording||recordingPaused||preparing||!mediaRecorder||mediaRecorder.state!=='recording')return;
     try{mediaRecorder.pause();activeDurationMs+=Math.max(0,performance.now()-activeSegmentStartMs);
       activeSegmentStartMs=null;recordingPaused=true;updateTimer();setRecorderState('paused');statusEl.textContent=t.pausedNow;
-    }catch(e){statusEl.textContent='Could not pause; still recording.'}
+    }catch(e){statusEl.textContent=t.pauseFailed}
   }
   function resumeRecording(){
     if(!recording||!recordingPaused||preparing||!mediaRecorder||mediaRecorder.state!=='paused')return;
     try{mediaRecorder.resume();activeSegmentStartMs=performance.now();recordingPaused=false;setRecorderState('recording');statusEl.textContent=t.recordingNow;
-    }catch(e){statusEl.textContent='Could not resume.'}
+    }catch(e){statusEl.textContent=t.resumeFailed}
   }
   function stopRecording(){
     if(!recording||preparing)return;
     if(!recordingPaused&&activeSegmentStartMs!==null)activeDurationMs+=Math.max(0,performance.now()-activeSegmentStartMs);
     activeSegmentStartMs=null;recording=false;recordingPaused=false;preparing=true;recordingEndedAt=Date.now();
     if(timerHandle){clearInterval(timerHandle);timerHandle=null;}
-    timerEl.textContent=formatTime(Math.floor(activeDurationMs/1000));setRecorderState('saving');statusEl.textContent='Preparing recording…';
+    timerEl.textContent=formatTime(Math.floor(activeDurationMs/1000));setRecorderState('saving');statusEl.textContent=t.preparing;
     try{if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();else throw Error('Recorder inactive')}
-    catch(e){preparing=false;statusEl.textContent='Could not finish recording: '+e.message;setRecorderState('unsafe')}
+    catch(e){preparing=false;statusEl.textContent=t.finishFailed;setRecorderState('unsafe')}
     finally{releaseMicrophone()}
   }
   recordButton.addEventListener('click',()=>{if(recorderUiState==='ready')startRecording()});
@@ -1161,14 +1325,14 @@ return false;
   finishButton.addEventListener('click',stopRecording);
   async function savePendingRecording(){
     if(!pendingBlob||saving||preparing||recordingConfirmed)return;
-    saving=true;needsReconciliation=false;setRecorderState('saving');statusEl.textContent='Saving — confirmation pending';
+    saving=true;needsReconciliation=false;setRecorderState('saving');statusEl.textContent=t.savingPending;
     try{
       const run=async()=>{if(!locallyProtected)await protectPending();await uploadRecording(pendingBlob,pendingMime)};
       if(navigator.locks&&localStore)await navigator.locks.request('gaita-save-'+localStore.slot,{ifAvailable:true},async lock=>{
-        if(!lock){statusEl.textContent='Recording being saved in another tab. Check later.';return}
+        if(!lock){statusEl.textContent=t.otherTabSaving;return}
         await run();
       });else await run();
-    }catch(e){statusEl.textContent=locallyProtected?'Online save unavailable; protected locally.':'Save unavailable; download backup.'}
+    }catch(e){statusEl.textContent=locallyProtected?t.offlineProtected:t.saveUnavailable}
     finally{
       saving=false;
       if(recordingConfirmed){setRecorderState('saved');if(!locallyProtected)savedResetTimer=setTimeout(()=>{if(recordingConfirmed&&!locallyProtected&&!recording&&!saving)setRecorderState('ready')},5000)}
@@ -1185,23 +1349,24 @@ return false;
 async function confirmSaved(state){
  if(!state.saved||!state.fileUrl)throw Error('Missing server save confirmation.');
  recordingConfirmed=true;
- statusEl.textContent='Recording safely saved';
- try{if(localStore)await localStore.remove(recordingSessionId);locallyProtected=false;protectionEl.textContent='Confirmed by Google. Pending local copy removed.';}catch(e){protectionEl.textContent='Saved by Google, but local cleanup failed. Reopening will check the same recording before any upload.';}
+ setRecorderState('saved');
+ statusEl.textContent=t.safelySaved;
+ try{if(localStore)await localStore.remove(recordingSessionId);locallyProtected=false;protectionEl.textContent=t.confirmedCleanup;}catch(e){protectionEl.textContent=t.cleanupFailed;}
  document.getElementById('saveRecording').disabled=true;
  await tagSavedRecording(state.fileUrl,recordingTargetId);
 }
 async function uploadRecording(blob,mimeType){
  if(!pupilId||!accessKey){statusEl.textContent=t.recordingNoPupilLink;return;}
- if(navigator.onLine===false){statusEl.textContent=locallyProtected?'Your recording has been kept on this device. You can try saving it again when your connection returns.':'No connection. Keep this tab open and download a copy; local protection is unavailable.';saveButton.disabled=false;return;}
+ if(navigator.onLine===false){statusEl.textContent=locallyProtected?t.offlineRetry:t.offlineUnsafe;saveButton.disabled=false;return;}
  try{
   // Every initial upload AND retry is gated by authoritative server state.
   const prior=await recordingState();
   if(prior.saved){await confirmSaved(prior);return;}
-  if(prior.state!=='absent'||!prior.retrySafe){needsReconciliation=true;statusEl.textContent='Save needs Owner reconciliation. Do not re-upload; download your local copy.';return;}
+  if(prior.state!=='absent'||!prior.retrySafe){needsReconciliation=true;statusEl.textContent=t.reconcile;return;}
   const context=new (window.AudioContext||window.webkitAudioContext)();let decoded;
   try{decoded=await context.decodeAudioData(await blob.arrayBuffer());}finally{await context.close();}
   const actualSeconds=decoded.duration, timerSeconds=(typeof activeDurationMs==='number'&&Number.isFinite(activeDurationMs)?activeDurationMs:(recordingEndedAt-startedAt))/1000;
-  document.getElementById('durationEvidence').textContent='Decoded audio: '+actualSeconds.toFixed(3)+' s · timer: '+timerSeconds.toFixed(3)+' s';
+  document.getElementById('durationEvidence').textContent=t.decodedAudio+actualSeconds.toFixed(3)+t.timerEvidence+timerSeconds.toFixed(3)+' s';
   if(!Number.isFinite(actualSeconds)||actualSeconds<=0||Math.abs(actualSeconds-timerSeconds)>1.5)throw Error('Audio and timer disagree. Keep your local audio.');
   const payload={pupilId,accessKey,audioBase64:await blobToBase64(blob),mimeType,
    startIso:new Date(startedAt).toISOString(),endIso:new Date(startedAt+actualSeconds*1000).toISOString(),
@@ -1216,9 +1381,10 @@ async function uploadRecording(blob,mimeType){
   try{
    const state=await recordingState();
    if(state.saved){await confirmSaved(state);return;}
-   if(state.state==='absent'&&state.retrySafe){statusEl.textContent=(locallyProtected?'Your recording has been kept on this device. You can try saving it again when your connection returns.':'Save unconfirmed. Local protection is unavailable: keep this tab open and download a copy.');document.getElementById('saveRecording').disabled=false;}
-   else{needsReconciliation=true;statusEl.textContent='Save uncertain — Owner reconciliation required. Do not upload again. Download your local copy.';}
-  }catch(checkError){statusEl.textContent=(locallyProtected?'Your recording has been kept on this device. You can try saving it again when your connection returns.':'Save unconfirmed. Keep this tab open and download the audio; local protection is unavailable.');document.getElementById('saveRecording').disabled=false;}
+   if(state.state==='absent'&&state.retrySafe){statusEl.textContent=(locallyProtected?t.offlineRetry:t.uncertainUnsafe);document.getElementById('saveRecording').disabled=false;}
+   else{needsReconciliation=true;statusEl.textContent=t.uncertainOwner;}
+  }catch(checkError){statusEl.textContent=(locallyProtected?t.offlineRetry:t.uncertainDownload);document.getElementById('saveRecording').disabled=false;}
+  if(isAuthorizationError(error))statusEl.textContent=t.authorizationError+' '+statusEl.textContent;
  }
 }
 
@@ -1241,8 +1407,8 @@ function escapeText(value){return String(value||'').replace(/[&<>"']/g,c=>({'&':
 function renderTeacherComments(comments){
  let section=document.getElementById('teacherComments');
  if(!section){section=document.createElement('section');section.id='teacherComments';document.getElementById('pathView').appendChild(section);}
- section.replaceChildren();const heading=document.createElement('h3');heading.textContent=uiLanguage==='ES'?'Comentarios del profesor':'Teacher comments';section.appendChild(heading);
- if(!comments.length){const empty=document.createElement('p');empty.textContent=uiLanguage==='ES'?'No hay comentarios todavía.':'No Teacher comments yet.';section.appendChild(empty);}
+ section.replaceChildren();const heading=document.createElement('h3');heading.textContent=t.teacherComments;section.appendChild(heading);
+ if(!comments.length){const empty=document.createElement('p');empty.textContent=t.noComments;section.appendChild(empty);}
  for(const comment of comments){const item=document.createElement('article'),body=document.createElement('p'),by=document.createElement('small');body.textContent=comment.text;by.textContent=comment.teacher+' · '+comment.role+' · '+comment.date;item.append(body,by);section.appendChild(item);}
 }
   async function loadPath() {
@@ -1415,8 +1581,8 @@ pathSessions.innerHTML =
           Number(session.durationMinutes || 0).toFixed(2);
 
         const loggedSeconds=(Date.parse(session.endTime)-Date.parse(session.startTime))/1000;
-        const precision=Number.isFinite(loggedSeconds)?' · '+loggedSeconds.toFixed(3)+' s logged':'';
-        const qualifying=session.qualifying?' · '+(uiLanguage==='ES'?'Válida para crédito ✓':'Qualifying ✓'):' · '+(uiLanguage==='ES'?'Sin crédito':'Not qualifying');
+        const precision=Number.isFinite(loggedSeconds)?' · '+loggedSeconds.toFixed(3)+' '+t.loggedSeconds:'';
+        const qualifying=session.qualifying?' · '+(t.qualifying):' · '+(t.notQualifying);
 
         return `
           <div style="
@@ -1425,20 +1591,20 @@ pathSessions.innerHTML =
           ">
             ${when}<br>
             ${duration} min${precision}${qualifying}
-            ${(session.teacherStatus||session.teacherNote) ? `<p><strong>${session.teacherStatus?(uiLanguage==='ES'?'Revisión':'Session review')+': '+escapeText(session.teacherStatus):(uiLanguage==='ES'?'Nota de sesión':'Session note')}</strong><br>${escapeText(session.teacherNote)}</p>` : ''}
+            ${(session.teacherStatus||session.teacherNote) ? `<p><strong>${session.teacherStatus?(t.sessionReview)+': '+escapeText(translatedTargetStatus(session.teacherStatus)):(t.sessionNote)}</strong><br>${escapeText(session.teacherNote)}</p>` : ''}
           </div>
         `;
       }).join('');
 
   } catch(error) {
   console.error('PATH load error:', error);
-  pathStatus.textContent = t.pathLoadError;
+  pathStatus.textContent = userError(error,t.pathLoadError);
 }
 }
 </script>
 
 <script>
-const feedbackLink=document.createElement('a');feedbackLink.textContent='Send test feedback';feedbackLink.target='_blank';feedbackLink.rel='noopener noreferrer';
+const feedbackLink=document.createElement('a');feedbackLink.textContent=t.feedback;feedbackLink.target='_blank';feedbackLink.rel='noopener noreferrer';
 feedbackLink.href=TEST_BOOT.feedbackUrl+'#'+new URLSearchParams({p:pupilId,key:accessKey,page:'record'});
 if(TEST_BOOT.feedbackUrl) document.querySelector('main').appendChild(feedbackLink);
 </script>
