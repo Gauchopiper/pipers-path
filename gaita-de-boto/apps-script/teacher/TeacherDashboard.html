@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Piper's Path – Gaita de Boto – Teacher</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color:#1f2937;background:#f4f6fa}
+body{max-width:1050px;margin:auto;padding:16px}
+header{background:#173653;color:white;padding:20px;border-radius:14px}
+h1{font-size:1.5rem;margin:0}h2{font-size:1.15rem}
+small,.muted{color:#64748b}.panel{padding:18px;background:white;border-radius:14px;margin-top:14px;box-shadow:0 1px 4px #0001}
+.grid{display:grid;grid-template-columns:1fr 1.5fr;gap:16px}
+@media(max-width:750px){.grid{display:block}}
+input,select,textarea,button{font:inherit;border-radius:8px;border:1px solid #cbd5e1;padding:10px;margin:5px 3px}
+textarea{width:min(98%,600px);min-height:70px}
+button{background:#173653;color:white;cursor:pointer}button:hover{background:#275a85}
+button.secondary{background:white;color:#173653}
+button:disabled{opacity:.5}
+.pupil{display:block;width:100%;text-align:left;margin:7px 0}
+#status{min-height:24px;padding:8px;font-weight:600}
+.session{border-bottom:1px solid #eee;padding:12px 0}
+code{overflow-wrap:anywhere}
+a{color:#1a5490}
+</style></head><body>
+<header><h1>Piper's Path · Gaita de Boto</h1><div>Teacher Dashboard</div>
+<strong id="role">Checking signed-in Google account…</strong></header>
+<div role="status" aria-live="polite" id="status"></div>
+<div class="grid"><div>
+<section class="panel"><h2>Pupils</h2><div id="pupils"></div></section>
+<section class="panel" id="ownerPanel" hidden><h2>Owner — Create inactive pupil record</h2>
+<form id="create"><label>Name <input id="name" required maxlength="120"></label>
+<label>Language <select id="lang"><option>ES</option><option>EN</option></select></label>
+<button id="createPupil">Create inactive pupil record</button></form>
+<p class="muted">New records cannot access the pupil application. Personal links and activation require separate approval.</p>
+<h3>New target</h3>
+<form id="createTarget"><input id="targetTitle" placeholder="Target title" required maxlength="160">
+<textarea id="targetInstructions" placeholder="Instructions" maxlength="1000"></textarea>
+<select id="targetBadge"><option value="">No badge</option></select><button>Add target</button></form>
+<h3>New badge</h3>
+<form id="createBadge"><input id="badgeTitle" placeholder="Badge name" required maxlength="160">
+<textarea id="badgeDescription" placeholder="Description" maxlength="1000"></textarea>
+<button>Add badge</button></form>
+</section></div>
+<div><section class="panel"><h2 id="selectedTitle">Select a pupil</h2>
+<div id="detail"></div></section></div></div>
+<script>
+'use strict';
+const state={role:'',pupils:[],targets:[],badges:[],selected:''};
+const el=id=>document.getElementById(id);
+function status(t){el('status').textContent=String(t||'');}
+function rpc(name,...args){
+ return new Promise((resolve,reject)=>{
+  google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[name](...args);
+ });
+}
+function node(tag,text,container,attrs){
+ const e=document.createElement(tag);
+ if(text!==undefined && text!==null)e.textContent=String(text);
+ for(const [key,v] of Object.entries(attrs||{}))e.setAttribute(key,v);
+ if(container)container.appendChild(e);
+ return e;
+}
+function safeLink(url){
+ try{const u=new URL(url);return u.protocol==='https:'&&u.hostname==='gauchopiper.github.io' ? u.href : '';}catch(_){return ''}
+}
+function renderPupils(){
+ const box=el('pupils');box.replaceChildren();
+ for(const p of state.pupils){
+  const btn=node('button',p.name+' · '+p.summary.sessions+' sessions',box,{class:'pupil secondary'});
+  btn.onclick=()=>selectPupil(p.id);
+  node('small',p.active==='Yes'?' Active':' Inactive',btn);
+ }
+ if(!state.pupils.length)node('p','No pupils yet.',box);
+}
+async function refresh(){
+ status('Loading teacher data…');
+ try{
+  const data=await rpc('gdb_dashboard');
+  state.role=data.role;state.pupils=data.pupils||[];state.targets=data.targets||[];state.badges=data.badges||[];
+  el('role').textContent=data.role+' · '+data.actor;
+  el('ownerPanel').hidden=state.role!=='OWNER';
+  renderPupils();
+  const cb=el('targetBadge');cb.replaceChildren();node('option','No badge',cb,{value:''});
+  for(const b of state.badges)node('option',b.name,cb,{value:b.id});
+  status('Connected to Gaita de Boto teacher service.');
+  if(state.selected&&state.pupils.some(p=>p.id===state.selected)) await selectPupil(state.selected);
+ }catch(err){
+  el('role').textContent='Not authorised';
+  status(err&&err.message||'Google account could not be verified.');
+ }
+}
+function choice(items,empty){
+ const s=node('select');
+ node('option',empty||'Choose…',s,{value:''});
+ for(const i of items)node('option',i.title||i.name,s,{value:i.id});
+ return s;
+}
+async function selectPupil(id){
+ state.selected=id;
+ const p=state.pupils.find(x=>x.id===id);if(!p)return;
+ el('selectedTitle').textContent=p.name;
+ const box=el('detail');box.replaceChildren();
+ node('p',p.summary.sessions+' sessions · '+Number(p.summary.minutes).toFixed(1)+' minutes · '+p.summary.qualifying+' qualifying',box);
+ if(state.role==='OWNER'){
+  const link=safeLink(p.link);
+  if(link){
+    const a=node('a','Private pupil application link',box,{href:link,target:'_blank',rel:'noopener noreferrer'});
+    a.style.display='block';
+  }
+  if(p.accessPending)node('p','External access not enabled. Personal link pending approval.',box);
+  const active=node('button',p.active==='Yes'?'Set inactive':'Reactivate',box,{class:'secondary'});
+  active.disabled=p.active!=='Yes'&&p.accessPending;
+  active.onclick=()=>mutate('gdb_setActive',id,p.active!=='Yes');
+  const area=node('div',null,box);
+  const target=choice(state.targets,'Assign target');area.appendChild(target);
+  const assign=node('button','Assign',area);
+  assign.onclick=()=>target.value&&mutate('gdb_assignTarget',id,target.value);
+  const badge=choice(state.badges,'Award badge');area.appendChild(badge);
+  const award=node('button','Award',area);
+  award.onclick=()=>badge.value&&mutate('gdb_awardBadge',id,badge.value);
+ }
+ status('Loading sessions…');
+ try{
+  const detail=await rpc('gdb_detail',id);
+  if(state.selected!==id)return;
+  node('h3','Teacher comments',box);
+  const commentInput=node('textarea',null,box,{placeholder:'Comment for this pupil; no central sharing'});
+  const sendComment=node('button','Send teacher comment',box);
+  let op=crypto.randomUUID();
+  sendComment.onclick=async()=>{
+   if(!commentInput.value.trim())return;
+   sendComment.disabled=true;status('Saving teacher comment…');
+   try{
+    const result=await rpc('gdb_comment',id,commentInput.value,op);
+    if(!result||result.ok!==true||result.reference!=='C-'+op)throw Error('Comment not confirmed.');
+    commentInput.value='';op=crypto.randomUUID();status('Comment saved ✓');
+    await selectPupil(id);
+   }catch(err){status(err.message||'Comment pending; retry without retyping.');}
+   finally{sendComment.disabled=false;}
+  };
+  for(const c of detail.comments||[])node('p',c.text+' — '+c.role,box);
+  node('h3','Assigned targets',box);
+  if(!detail.targets.length)node('p','None yet.',box);
+  for(const t of detail.targets)node('p',t.id+': '+t.status,box);
+  node('h3','Earned badges',box);
+  node('p',detail.badges.map(b=>b.id).join(', ')||'None yet.',box);
+  node('h3','Recent recordings',box);
+  if(!detail.sessions.length)node('p','No practice recordings yet.',box);
+  for(const s of detail.sessions){
+   const c=node('div',null,box,{class:'session'});
+   node('div',s.date+' · '+s.minutes+' min · '+s.qualifying,c);
+   node('small','Session '+s.id+' · '+(s.review||'Not reviewed'),c);
+   const play=node('button','Listen',c,{class:'secondary'});
+   const aud=node('audio',null,c,{controls:'controls'});aud.hidden=true;
+   play.onclick=async()=>{
+    play.disabled=true;
+    try{
+     status('Loading protected recording…');
+     const record=await rpc('gdb_recordingAudio',id,s.id);
+     aud.src='data:'+record.mime+';base64,'+record.data;
+     aud.hidden=false;status('Audio ready.');
+    }catch(err){status(err.message||'Could not load audio.')}
+    finally{play.disabled=false;}
+   };
+   const statuses=['REVIEWED','NEEDS WORK','ACHIEVED'];
+   const sel=node('select',null,c);
+   for(const v of statuses)node('option',v,sel,{value:v});
+   if(statuses.includes(s.review))sel.value=s.review;
+   const note=node('textarea',null,c,{placeholder:'Teacher review note (local organisation only)'});
+   note.value=s.note||'';
+   const save=node('button','Save review',c);
+   save.onclick=()=>mutate('gdb_review',id,s.id,sel.value,note.value);
+  }
+  status('');
+ }catch(err){status(err.message||'Cannot load pupil.');}
+}
+async function mutate(name,...args){
+ status('Saving…');
+ try{
+  const v=await rpc(name,...args);
+  status('Saved ✓');
+  await refresh();
+  return v;
+ }catch(err){status(err.message||'Not saved.');}
+}
+let creatingPupil=false,creationRequest=null;
+el('create').addEventListener('submit',async ev=>{
+ ev.preventDefault();
+ if(creatingPupil)return;
+ const name=el('name').value.trim().replace(/\s+/g,' '),language=el('lang').value;
+ if(!name)return;
+ creatingPupil=true;el('createPupil').disabled=true;el('name').disabled=true;el('lang').disabled=true;
+ try{
+  // Persist only the operation reference and form values, never credentials.
+  if(!creationRequest){try{creationRequest=JSON.parse(sessionStorage.getItem('gdb-pupil-creation'));}catch(_){}}
+  if(!creationRequest||creationRequest.name!==name||creationRequest.language!==language)
+    creationRequest={name,language,id:crypto.randomUUID()};
+  sessionStorage.setItem('gdb-pupil-creation',JSON.stringify(creationRequest));
+  status('Creating inactive pupil record…');
+  const created=await rpc('gdb_createPupil',name,language,creationRequest.id);
+  if(!created||created.ok!==true||created.id!==creationRequest.id)throw Error('Creation not confirmed. Retry with the same name and language.');
+  sessionStorage.removeItem('gdb-pupil-creation');creationRequest=null;
+  el('name').value='';state.selected=created.id;
+  await refresh();
+  status('Pupil record created. External access remains disabled.');
+ }catch(err){status(err.message||'Creation not confirmed. Retry with the same name and language.');}
+ finally{creatingPupil=false;el('createPupil').disabled=false;el('name').disabled=false;el('lang').disabled=false;el('createPupil').focus();}
+});
+el('createTarget').addEventListener('submit',async ev=>{
+ ev.preventDefault();
+ const result=await mutate('gdb_createTarget',el('targetTitle').value,el('targetInstructions').value,el('targetBadge').value);
+ if(result&&result.ok){el('targetTitle').value='';el('targetInstructions').value='';}
+});
+el('createBadge').addEventListener('submit',async ev=>{
+ ev.preventDefault();
+ const result=await mutate('gdb_createBadge',el('badgeTitle').value,el('badgeDescription').value);
+ if(result&&result.ok){el('badgeTitle').value='';el('badgeDescription').value='';}
+});
+refresh();
+</script></body></html>

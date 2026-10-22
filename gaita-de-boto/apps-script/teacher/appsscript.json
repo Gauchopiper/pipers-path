@@ -1,0 +1,9 @@
+{
+  "timeZone": "Europe/Madrid",
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "webapp": {
+    "access": "MYSELF",
+    "executeAs": "USER_DEPLOYING"
+  }
+}
