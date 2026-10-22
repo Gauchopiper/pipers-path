@@ -81,6 +81,7 @@ function gdb_dashboard() {
     role:actor.role, actor:actor.email,
     pupils:pupils.map(r=>({
       id:String(r[0]),name:String(r[1]),active:String(r[2]),language:String(r[3]),
+      accessPending:!String(r[5]||'').trim()||!String(r[6]||'').trim(),
       summary:totals[String(r[0])] || {sessions:0,minutes:0,qualifying:0},
       // Owner-only access link. Never expose capability links to assistants.
       link:actor.role==='OWNER'?String(r[6]||''):''
@@ -116,33 +117,44 @@ function gdb_detail(pupilId) {
       date:String(r[4]),text:String(r[5])})).reverse().slice(0,30);
   return {pupilId:id,sessions,targets,badges,comments};
 }
-function gdb_createPupil(name,language) {
+// Creation deliberately grants no access. The operation UUID is the pupil ID,
+// so a retry after an uncertain response finds the same complete row.
+function gdb_createPupil(name,language,operationId) {
   gdbOwner_();
-  const displayName = gdbText_(name,120);
-  if (!displayName) throw Error('Pupil name required.');
-  const lang = String(language||'ES').toUpperCase()==='EN'?'EN':'ES';
-  const frontend = gdbProperty_('GDB_PUPIL_FRONTEND_URL');
-  if (!/^https:\/\/gauchopiper\.github\.io\/pipers-path\/gaita-de-boto\/$/.test(frontend))
-    throw Error('Gaita frontend URL not configured.');
+  const rawName=String(name||'').trim().replace(/\s+/g,' ');
+  if(!rawName || rawName.length>120)throw Error('Pupil name required (maximum 120 characters).');
+  const displayName=gdbText_(rawName,120),lang=String(language||'').toUpperCase();
+  if(!['EN','ES'].includes(lang))throw Error('Choose EN or ES.');
+  const id=String(operationId||'').toLowerCase();
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(id))
+    throw Error('Invalid creation reference. Reload the dashboard and retry.');
   const lock=LockService.getScriptLock();lock.waitLock(15000);
   try{
-    const id=Utilities.getUuid(),key=(Utilities.getUuid()+Utilities.getUuid()).replace(/-/g,'');
-    const link=frontend+'?'+
-      'p='+encodeURIComponent(id)+'&key='+encodeURIComponent(key)+
-      '&n='+encodeURIComponent(displayName)+'&lang='+lang;
-    gdbSheet_('PUPILS').appendRow([id,displayName,'Yes',lang,new Date(),key,link,'']);
+    const rows=gdbRows_('PUPILS'),previous=rows.find(r=>String(r[0])===id);
+    if(previous){
+      if(String(previous[1])!==displayName||String(previous[3])!==lang)
+        throw Error('Creation reference conflict. Review the existing pupil.');
+      return {ok:true,id,name:displayName,duplicate:true};
+    }
+    const comparable=v=>String(v).normalize('NFKC').trim().replace(/\s+/g,' ').toLowerCase();
+    if(rows.some(r=>comparable(r[1])===comparable(displayName)))
+      throw Error('A pupil with this name already exists. Review that record before creating another.');
+    gdbSheet_('PUPILS').appendRow([id,displayName,'No',lang,new Date(),'','','']);
     SpreadsheetApp.flush();
-    return {id,name:displayName,link};
+    return {ok:true,id,name:displayName};
   }finally{lock.releaseLock();}
 }
 function gdb_setActive(pupilId,active) {
   gdbOwner_();
   const id=gdbStr_(pupilId,100);
+  if(typeof active!=='boolean')throw Error('Invalid activation request.');
   const lock=LockService.getScriptLock();lock.waitLock(15000);
   try{
     const sh=gdbSheet_('PUPILS'), vals=sh.getDataRange().getValues();
     const index=vals.findIndex((r,i)=>i>0&&String(r[0])===id);
     if(index<0)throw Error('Unknown pupil.');
+    if(active && (!String(vals[index][5]||'').trim() || !String(vals[index][6]||'').trim()))
+      throw Error('External access is not enabled. An independently approved pupil link is required.');
     sh.getRange(index+1,3).setValue(active?'Yes':'No');SpreadsheetApp.flush();
     return {ok:true};
   }finally{lock.releaseLock();}

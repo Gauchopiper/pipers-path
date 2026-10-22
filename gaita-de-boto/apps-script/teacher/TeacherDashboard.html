@@ -21,16 +21,16 @@ button:disabled{opacity:.5}
 code{overflow-wrap:anywhere}
 a{color:#1a5490}
 </style></head><body>
-<header><h1>Piper's Path · Gaita de Boto</h1><div>Teacher Dashboard — staged deployment candidate</div>
+<header><h1>Piper's Path · Gaita de Boto</h1><div>Teacher Dashboard</div>
 <strong id="role">Checking signed-in Google account…</strong></header>
 <div role="status" aria-live="polite" id="status"></div>
 <div class="grid"><div>
 <section class="panel"><h2>Pupils</h2><div id="pupils"></div></section>
-<section class="panel" id="ownerPanel" hidden><h2>Owner — Create pupil</h2>
+<section class="panel" id="ownerPanel" hidden><h2>Owner — Create inactive pupil record</h2>
 <form id="create"><label>Name <input id="name" required maxlength="120"></label>
 <label>Language <select id="lang"><option>ES</option><option>EN</option></select></label>
-<button>Create pupil</button></form>
-<p class="muted">A personal link is a private access key. Send it only to that pupil.</p>
+<button id="createPupil">Create inactive pupil record</button></form>
+<p class="muted">New records cannot access the pupil application. Personal links and activation require separate approval.</p>
 <h3>New target</h3>
 <form id="createTarget"><input id="targetTitle" placeholder="Target title" required maxlength="160">
 <textarea id="targetInstructions" placeholder="Instructions" maxlength="1000"></textarea>
@@ -106,7 +106,9 @@ async function selectPupil(id){
     const a=node('a','Private pupil application link',box,{href:link,target:'_blank',rel:'noopener noreferrer'});
     a.style.display='block';
   }
+  if(p.accessPending)node('p','External access not enabled. Personal link pending approval.',box);
   const active=node('button',p.active==='Yes'?'Set inactive':'Reactivate',box,{class:'secondary'});
+  active.disabled=p.active!=='Yes'&&p.accessPending;
   active.onclick=()=>mutate('gdb_setActive',id,p.active!=='Yes');
   const area=node('div',null,box);
   const target=choice(state.targets,'Assign target');area.appendChild(target);
@@ -180,12 +182,28 @@ async function mutate(name,...args){
   return v;
  }catch(err){status(err.message||'Not saved.');}
 }
+let creatingPupil=false,creationRequest=null;
 el('create').addEventListener('submit',async ev=>{
  ev.preventDefault();
- const name=el('name').value.trim();
+ if(creatingPupil)return;
+ const name=el('name').value.trim().replace(/\s+/g,' '),language=el('lang').value;
  if(!name)return;
- const created=await mutate('gdb_createPupil',name,el('lang').value);
- if(created&&created.id){el('name').value='';await selectPupil(created.id);}
+ creatingPupil=true;el('createPupil').disabled=true;el('name').disabled=true;el('lang').disabled=true;
+ try{
+  // Persist only the operation reference and form values, never credentials.
+  if(!creationRequest){try{creationRequest=JSON.parse(sessionStorage.getItem('gdb-pupil-creation'));}catch(_){}}
+  if(!creationRequest||creationRequest.name!==name||creationRequest.language!==language)
+    creationRequest={name,language,id:crypto.randomUUID()};
+  sessionStorage.setItem('gdb-pupil-creation',JSON.stringify(creationRequest));
+  status('Creating inactive pupil record…');
+  const created=await rpc('gdb_createPupil',name,language,creationRequest.id);
+  if(!created||created.ok!==true||created.id!==creationRequest.id)throw Error('Creation not confirmed. Retry with the same name and language.');
+  sessionStorage.removeItem('gdb-pupil-creation');creationRequest=null;
+  el('name').value='';state.selected=created.id;
+  await refresh();
+  status('Pupil record created. External access remains disabled.');
+ }catch(err){status(err.message||'Creation not confirmed. Retry with the same name and language.');}
+ finally{creatingPupil=false;el('createPupil').disabled=false;el('name').disabled=false;el('lang').disabled=false;el('createPupil').focus();}
 });
 el('createTarget').addEventListener('submit',async ev=>{
  ev.preventDefault();

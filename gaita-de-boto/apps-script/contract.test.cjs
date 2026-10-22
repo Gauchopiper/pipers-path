@@ -53,7 +53,7 @@ const globals={
  Utilities:{
   getUuid:()=>{uuid++;return'00000000-0000-4000-8000-'+String(uuid).padStart(12,'0')},
   formatDate:date=>new Date(date).toISOString().slice(0,10),
-  base64Decode:s=>Array.from({length:Math.floor(s.length*3/4)},()=>8),
+  base64Decode:s=>Array.from(Buffer.from(s,'base64')),
   newBlob:(bytes,mime,name)=>({bytes,mime,name})
  },
  DriveApp:{
@@ -66,19 +66,53 @@ const globals={
  HtmlService:{createHtmlOutputFromFile:()=>({setTitle(){return this},addMetaTag(){return this}})}
 };
 function load(part,names){
- const c=read(part),f=new Function(...Object.keys(globals),c+'\nreturn {'+names.join(',')+'};');
+ const c=read(part)+(part==='pupil'?'\n'+fs.readFileSync(path.join(root,'pupil/MediaDuration.gs'),'utf8'):''),f=new Function(...Object.keys(globals),c+'\nreturn {'+names.join(',')+'};');
  return f(...Object.values(globals));
 }
-const teacher=load('teacher',['gdb_dashboard','gdb_createPupil','gdb_assignTarget','gdb_review','gdb_detail','gdb_awardBadge','gdb_createTarget','gdb_createBadge','gdb_comment']);
+const teacher=load('teacher',['gdb_setActive','gdb_dashboard','gdb_createPupil','gdb_assignTarget','gdb_review','gdb_detail','gdb_awardBadge','gdb_createTarget','gdb_createBadge','gdb_comment']);
 const pupil=load('pupil',['doPost']);
 const feedback=load('feedback',['gdb_submitFeedback']);
 const post=data=>JSON.parse(pupil.doPost({postData:{contents:JSON.stringify(data)}}).body);
 let count=0;
 function check(name,fun){fun();count++;process.stdout.write('PASS '+name+'\n');}
 check('owner dashboard',()=>assert.equal(teacher.gdb_dashboard().role,'OWNER'));
-const created=teacher.gdb_createPupil('Dummy Gaita Student','ES');
-check('new pupil has personal link',()=>assert.ok(created.link.includes('/gaita-de-boto/?')));
-const id=created.id,key=db.PUPILS[1][5],sessionId='4aa5aace-9000-4000-8000-123456789abc';
+delete properties.GDB_PUPIL_FRONTEND_URL;
+const creationId='01234567-89ab-4cde-8abc-0123456789ab';
+const created=teacher.gdb_createPupil('Inactive Fixture','ES',creationId);
+check('creation without frontend makes one complete inactive record',()=>{
+ assert.equal(created.ok,true);assert.equal(created.id,creationId);
+ assert.deepEqual(db.PUPILS[1].slice(2,4),['No','ES']);
+ assert.deepEqual(db.PUPILS[1].slice(5),['','','']);assert.equal(db.PUPILS[1].length,8);
+ assert.equal('link' in created,false);
+});
+check('retry does not duplicate',()=>{assert.equal(teacher.gdb_createPupil('Inactive Fixture','ES',creationId).duplicate,true);assert.equal(db.PUPILS.length,2)});
+check('changed operation content rejected',()=>assert.throws(()=>teacher.gdb_createPupil('Changed','ES',creationId),/conflict/));
+check('same name on another operation rejected',()=>assert.throws(()=>teacher.gdb_createPupil('  INACTIVE   Fixture ','EN','01234567-89ab-4cde-8abc-0123456789ac'),/already exists/));
+check('invalid creation rejected without rows',()=>{
+ for(const args of [['','ES',creationId],['x','FR',creationId],['x','ES','bad']])assert.throws(()=>teacher.gdb_createPupil(...args));
+ assert.equal(db.PUPILS.length,2);
+});
+check('pending record cannot activate',()=>assert.throws(()=>teacher.gdb_setActive(creationId,true),/not enabled/));
+check('inactive pupil denied PATH',()=>assert.equal(post({pupilId:creationId,accessKey:'x'.repeat(64),action:'getPath'}).ok,false));
+check('inactive pupil denied feedback',()=>assert.throws(()=>feedback.gdb_submitFeedback({pupilId:creationId,accessKey:'x'.repeat(64)})));
+check('failure before write leaves no record',()=>{
+ const original=globals.SpreadsheetApp.openById;
+ globals.SpreadsheetApp.openById=()=>{throw Error('unavailable')};
+ assert.throws(()=>teacher.gdb_createPupil('Before write fixture','EN','01234567-89ab-4cde-8abc-0123456789ae'),/unavailable/);
+ globals.SpreadsheetApp.openById=original;assert.equal(db.PUPILS.length,2);
+});
+check('failure after append retries same complete row',()=>{
+ const op='01234567-89ab-4cde-8abc-0123456789ad';
+ globals.SpreadsheetApp.flush=()=>{throw Error('lost response')};
+ assert.throws(()=>teacher.gdb_createPupil('Lost response fixture','EN',op),/lost response/);
+ globals.SpreadsheetApp.flush=()=>{};
+ assert.equal(teacher.gdb_createPupil('Lost response fixture','EN',op).duplicate,true);
+ assert.equal(db.PUPILS.filter(r=>r[0]===op).length,1);
+});
+// Existing approved active pupil fixture: creation no longer issues credentials.
+const id='4aa5aace-9000-4000-8000-123456789aaa',key='a'.repeat(64),sessionId='4aa5aace-9000-4000-8000-123456789abc';
+db.PUPILS.push([id,'Dummy Gaita Student','Yes','ES',new Date(),key,'https://gauchopiper.github.io/pipers-path/gaita-de-boto/?p='+id+'&key='+key,'']);
+check('existing active fixture preserved',()=>{teacher.gdb_setActive(id,false);teacher.gdb_setActive(id,true);assert.equal(db.PUPILS[3][5],key)});
 actor='assistant@example.test';
 check('assistant sees no pupil link',()=>assert.equal(teacher.gdb_dashboard().pupils[0].link,''));
 check('assistant cannot create pupils',()=>assert.throws(()=>teacher.gdb_createPupil('Unauthorized','ES')));
@@ -89,7 +123,8 @@ check('blank Google identity rejected',()=>assert.throws(()=>teacher.gdb_dashboa
 actor='owner@example.test';
 check('valid pupil PATH',()=>assert.equal(post({pupilId:id,accessKey:key,action:'getPath'}).summary.totalSessions,0));
 check('invalid pupil key rejected',()=>assert.equal(post({pupilId:id,accessKey:'wrong',action:'getPath'}).ok,false));
-const request={pupilId:id,accessKey:key,sessionId,mimeType:'audio/webm',audioBase64:'A'.repeat(100),
+function wav(seconds){const count=Math.round(seconds*8000),b=Buffer.alloc(44+count*2);b.write('RIFF');b.writeUInt32LE(b.length-8,4);b.write('WAVEfmt ',8);b.writeUInt32LE(16,16);b.writeUInt16LE(1,20);b.writeUInt16LE(1,22);b.writeUInt32LE(8000,24);b.writeUInt32LE(16000,28);b.writeUInt16LE(2,32);b.writeUInt16LE(16,34);b.write('data',36);b.writeUInt32LE(count*2,40);return b;}
+const request={pupilId:id,accessKey:key,sessionId,mimeType:'audio/wav',audioBase64:wav(60).toString('base64'),
  startIso:'2026-10-19T10:00:00Z',endIso:'2026-10-19T10:01:00Z',durationSeconds:60};
 const saved=post(request);
 check('recording accepted',()=>assert.equal(saved.ok,true));
@@ -132,7 +167,7 @@ check('undecided qualification permits storage without credit',()=>{
 properties.GDB_QUALIFY_MINUTES='5';
 for(const seconds of [299,299.9,300,301]) check('five minute boundary '+seconds,()=>{
  const sid='55555555-2222-4333-8444-'+String(Math.round(seconds*10)).padStart(12,'0');
- const result=post({...request,sessionId:sid,endIso:new Date(Date.parse(request.startIso)+seconds*1000).toISOString(),durationSeconds:seconds});
+ const result=post({...request,audioBase64:wav(seconds).toString('base64'),sessionId:sid,endIso:new Date(Date.parse(request.startIso)+seconds*1000).toISOString(),durationSeconds:seconds});
  assert.equal(result.ok,true);assert.equal(result.qualifying,seconds>=300?'Yes':'No');
 });
 process.stdout.write('Mock contract checks passed: '+count+'\n');
