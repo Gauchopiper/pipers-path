@@ -1404,6 +1404,11 @@ function blobToBase64(blob) {
   });
 }
 function escapeText(value){return String(value||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+// Workbook image URLs are untrusted. Restrict schemes and escape attributes.
+function safeBadgeImageUrl(value){
+ try{const u=new URL(String(value||''));return u.protocol==='https:'&&!u.username&&!u.password?u.href:'';}catch(_){return '';}
+}
+
 function renderTeacherComments(comments){
  let section=document.getElementById('teacherComments');
  if(!section){section=document.createElement('section');section.id='teacherComments';document.getElementById('pathView').appendChild(section);}
@@ -1482,8 +1487,8 @@ if (visibleTargets.length > 0) {
       border-radius:12px;
       margin-bottom:16px;
     ">
-      <strong>🎯 ${target.title}</strong><br>
-      <span>${translatedTargetStatus(target.status)}</span>
+      <strong>🎯 ${escapeText(target.title)}</strong><br>
+      <span>${escapeText(translatedTargetStatus(target.status))}</span>
     </div>
   `).join('');
 } else {
@@ -1501,10 +1506,10 @@ if (data.badges && data.badges.length > 0) {
         border-radius:12px;
         margin-bottom:16px;
       ">
-  ${badge.imageLink ? `
+  ${safeBadgeImageUrl(badge.imageLink) ? `
     <img
-      src="${badge.imageLink}"
-      alt="${badge.badgeName}"
+      src="${escapeText(safeBadgeImageUrl(badge.imageLink))}"
+      alt="${escapeText(badge.badgeName)}"
       style="
         width:60px;
         height:60px;
@@ -1515,8 +1520,8 @@ if (data.badges && data.badges.length > 0) {
     >
   ` : ''}
 
-  <strong>${badge.badgeName}</strong><br>
-  <span>${badge.description}</span>
+  <strong>${escapeText(badge.badgeName)}</strong><br>
+  <span>${escapeText(badge.description)}</span>
       </div>
     `).join('');
 } else {
