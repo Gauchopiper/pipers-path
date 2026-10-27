@@ -7,20 +7,20 @@ let time=1000,count=0;
 const owner={verified:true,scope:'fixture-site',subject:'fixture-owner'};
 const a={verified:true,scope:'fixture-site',subject:'fixture-a'},b={...a,subject:'fixture-b'};
 const pupils=new Set(['pupil-a','pupil-b']);
-const config={organisation:'GAITA-DE-BOTO',ownerSubject:owner.subject,identityScope:owner.scope,origin:'https://fixture.example',externalApproved:true,pupilExists:id=>pupils.has(id),now:()=>time};
+const config={organisation:'GAITA-DE-BOTO',ownerSubject:owner.subject,identityScope:owner.scope,origin:'https://fixture.example',externalApproved:true,pupilExists:id=>pupils.has(id),pupilKind:()=>'adult',now:()=>time};
 let service=openAccess(file,config);
 const op=(pupil,action,expectedRevision,more={})=>({operation:randomUUID(),pupil,action,expectedRevision,...more});
 const check=(name,fn)=>{fn();console.log('PASS '+name);count++;};
 const link=r=>new URL(r.access.link).pathname.split('/').pop();
 try{
  check('unverified and other identities cannot provision',()=>{
-  for(const who of [null,{...owner,verified:false},a,{...owner,scope:'different-site'}])assert.throws(()=>service.change(who,op('pupil-a','provision',0,{subject:a.subject,expires:9000})),/denied/);
+  for(const who of [null,{...owner,verified:false},a,{...owner,scope:'different-site'}])assert.throws(()=>service.change(who,op('pupil-a','provision',0,{subject:a.subject,expires:9000,relation:'adult',evidence:'fixture-owner-approval'})),/denied/);
  });
  check('unknown canonical pupil rejected without creating a row',()=>{
-  assert.throws(()=>service.change(owner,op('missing','provision',0,{subject:a.subject,expires:9000})),/Unknown/);
+  assert.throws(()=>service.change(owner,op('missing','provision',0,{subject:a.subject,expires:9000,relation:'adult',evidence:'fixture-owner-approval'})),/Unknown/);
   assert.equal(service.status(owner,'missing'),null);
  });
- const provision=op('pupil-a','provision',0,{subject:a.subject,expires:9000});
+ const provision=op('pupil-a','provision',0,{subject:a.subject,expires:9000,relation:'adult',evidence:'fixture-owner-approval'});
  check('provision creates inactive membership, without issuing usable link',()=>{
   const r=service.change(owner,provision);assert.equal(r.access.status,'inactive');assert.equal(r.access.link,null);
  });
@@ -29,10 +29,6 @@ try{
  });
  check('operation ID cannot be reused for a different pupil or payload',()=>assert.throws(()=>service.change(owner,{...provision,pupil:'pupil-b'}),/conflict/));
  check('second provisioning cannot duplicate existing pupil',()=>assert.throws(()=>service.change(owner,{...provision,operation:randomUUID(),expectedRevision:1}),/already exists/));
- check('same authenticated identity cannot silently acquire another pupil',()=>{
-  assert.throws(()=>service.change(owner,op('pupil-b','provision',0,{subject:a.subject,expires:9000})),/UNIQUE/);
-  assert.equal(service.status(owner,'pupil-b'),null);
- });
  let active,old;
  check('explicit Owner activation issues a link',()=>{active=service.change(owner,op('pupil-a','activate',1));old=link(active);assert.equal(active.access.status,'active');});
  check('assigned identity can access exactly its canonical pupil',()=>assert.deepEqual(service.authorize(a,old,'GAITA-DE-BOTO'),{organisation:'GAITA-DE-BOTO',pupil:'pupil-a',revision:2}));
@@ -58,7 +54,7 @@ try{
  check('retrying old successful provisioning does not return revoked link',()=>{const r=service.change(owner,provision);assert.equal(r.access.status,'revoked');assert.equal(r.access.link,null);});
  check('transaction failure cannot leave membership or successful operation behind',()=>{
   const raw=new DatabaseSync(file);raw.exec("CREATE TRIGGER fixture_failure BEFORE INSERT ON audit BEGIN SELECT RAISE(ABORT,'fixture interruption'); END");
-  const input=op('pupil-b','provision',0,{subject:b.subject,expires:9000});
+  const input=op('pupil-b','provision',0,{subject:b.subject,expires:9000,relation:'adult',evidence:'fixture-owner-approval'});
   assert.throws(()=>service.change(owner,input),/fixture interruption/);assert.equal(service.status(owner,'pupil-b'),null);
   raw.exec('DROP TRIGGER fixture_failure');raw.close();assert.equal(service.change(owner,input).duplicate,false);
  });

@@ -16,11 +16,14 @@ active state, unexpired membership and a still-existing canonical pupil.
 
 SQLite transactions atomically persist membership, operation receipts and audit.
 Expected revisions prevent stale management writes. Replayed operations return
-current access state, never resurrect a previous link. One identity maps to one
-pupil per organisation/scope in this initial model. Parent/multiple-child accounts
-need an explicit future model, not a bypass of that uniqueness constraint.
+current access state, never resurrect a previous link. Explicit identity-to-pupil grants support multiple children and multiple guardians.
+Every grant requires a relation and private authorisation/consent evidence reference.
+The server canonical adapter must supply adult/child classification. Google sign-in
+does not prove guardianship: the Owner must verify the relationship and evidence.
+Old staging databases with the one-identity uniqueness constraint are rejected
+for explicit reviewed migration; no implicit production data migration is performed.
 
-`node access.test.cjs` runs 24 persistent-database fixture checks, including
+`npm test` runs 23 persistent-database checks plus 17 Google-crypto/guardian/gateway checks, including
 injected transaction interruption and reopen. Identity assertions and canonical
 pupil lookup are test doubles. No production schema or user records are changed.
 
@@ -36,14 +39,26 @@ origin with spoofable headers. Emails/display names are not durable subjects.
 
 The SQLite implementation is a Node staging store, not a Cloudflare/D1 adapter.
 A production adapter must preserve transaction/idempotency semantics and undergo
-integration/failure tests. No HTTP routes, identity enrolment, authenticated
+integration/failure tests. No HTTP routes, identity enrolment, production session/challenge store, authenticated
 backend transport, or durable production store have been implemented here.
+`google-auth.cjs` uses google-auth-library.verifyIdToken, exact audience/issuer/expiry,
+nonce and atomic one-use challenge consumption. Callers must supply browser-bound
+server challenges, never trust a client-provided challenge object.
+`pupil-gateway.cjs` routes all pupil action types through one membership check;
+its authenticate and backend adapters remain contracts, not live integrations.
 
 ## Remaining work before any pilot
 
-1. Confirm pupil sign-in method. Sites offers ChatGPT identity, not the Teacher
-   Dashboard's Google session. Google-only pupil sign-in requires a supported
-   alternative identity/hosting integration; do not invent a Sites OAuth stack.
+1. Google Sign-In is now selected. Proposed deployment: separate HTTPS Node
+   frontend/gateway on Google Cloud Run with durable transactional database
+   (Cloud SQL PostgreSQL adapter to be implemented); never use instance-local
+   SQLite as production Cloud Run storage. Existing private Site remains intact.
+   Configure an Owner-controlled Google Cloud project, web OAuth client, approved
+   domain/origin and consent screen; no project, billing or access grants have
+   been created. Only identity scopes, no pupil Drive/Sheets authorisation.
+   Pilot guardian's own Google account first. GIS button without FedCM is the
+   supervised-account candidate; One Tap/FedCM is not a Family Link fallback.
+   Test actual authorised family/device configurations before claiming support.
 2. Implement verified identity enrolment and Owner controls in the existing
    Teacher workflow. A subject binding must come from a proven sign-in exchange,
    never a pupil-supplied email claim. No Annie activation is authorised.
@@ -72,3 +87,19 @@ backend transport, or durable production store have been implemented here.
 Private recorder v8, Teacher v2, Pupil v5 and Feedback v1 remain unchanged. This
 directory must not be copied into the current static Site archive or treated as
 evidence that external registration is complete.
+
+## Official sources reviewed 27 October 2026
+
+- https://developers.google.com/identity/gsi/web/guides/verify-google-id-token
+- https://developers.google.com/identity/gsi/web/guides/personalized-button
+- https://developers.google.com/identity/gsi/web/guides/offerings
+- https://docs.cloud.google.com/run/docs/container-contract
+
+Google documents Family Link parental approval in the ordinary button flow and
+explicitly says the FedCM button does not currently support Family Link accounts.
+This documentation check is not a genuine Family Link compatibility test.
+
+The Teacher v2 integration and canonical Google Sheets/Drive gateway are still
+pending. Do not point these modules at production or expose an HTTP endpoint
+until session/CSRF/rate-limit, identity enrolment, durable transaction adapters,
+file binding, offline recovery and real account tests have passed.

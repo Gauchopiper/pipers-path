@@ -1,0 +1,16 @@
+{
+  "name": "gaita-secure-access-staging",
+  "version": "1.0.0",
+  "description": "Staged Google authentication and guardian access foundations",
+  "scripts": {
+    "test": "node access.test.cjs && node google-guardian.test.cjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "google-auth-library": "11.3.1"
+  },
+  "private": true
+}
