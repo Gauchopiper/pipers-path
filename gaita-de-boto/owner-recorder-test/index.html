@@ -1404,9 +1404,9 @@ function blobToBase64(blob) {
   });
 }
 function escapeText(value){return String(value||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-// Workbook image URLs are untrusted. Restrict schemes and escape attributes.
+// Only the existing public Piper's Path badge artwork is approved. No arbitrary tracking hosts.
 function safeBadgeImageUrl(value){
- try{const u=new URL(String(value||''));return u.protocol==='https:'&&!u.username&&!u.password?u.href:'';}catch(_){return '';}
+ try{const u=new URL(String(value||''));return u.origin==='https://raw.githubusercontent.com'&&!u.username&&!u.password&&!u.search&&!u.hash&&/^\/Gauchopiper\/pipers-path\/main\/assets\/badges\/[a-zA-Z0-9_-]+\.(svg|png|webp)$/.test(u.pathname)?u.href:'';}catch(_){return '';}
 }
 
 function renderTeacherComments(comments){
@@ -1509,6 +1509,7 @@ if (data.badges && data.badges.length > 0) {
   ${safeBadgeImageUrl(badge.imageLink) ? `
     <img
       src="${escapeText(safeBadgeImageUrl(badge.imageLink))}"
+      referrerpolicy="no-referrer"
       alt="${escapeText(badge.badgeName)}"
       style="
         width:60px;

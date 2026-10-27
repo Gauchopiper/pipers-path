@@ -14,3 +14,13 @@ for(const imageLink of ['javascript:alert(1)','data:image/svg+xml,<svg onload=al
  assert.ok(!badges.innerHTML.includes('" onerror="'));
 }
 console.log('PASS malicious target, status, badge name/description and image URL fixtures escaped or rejected. Actual rendering; simulated data.');
+
+const ctx={URL};vm.createContext(ctx);vm.runInContext(helpers,ctx);
+for(const name of ['first-step','on-the-path','keeping-going','regular-piper']){
+ const url='https://raw.githubusercontent.com/Gauchopiper/pipers-path/main/assets/badges/'+name+'.svg';
+ assert.equal(ctx.safeBadgeImageUrl(url),url);
+ assert.equal(ctx.safeBadgeImageUrl(url+'?track=pupil'),'');
+}
+for(const url of ['https://example.test/track.png','https://raw.githubusercontent.com/Other/repo/main/a.svg','https://raw.githubusercontent.com.evil.test/Gauchopiper/pipers-path/main/assets/badges/a.svg'])assert.equal(ctx.safeBadgeImageUrl(url),'');
+assert.ok(render.includes('referrerpolicy="no-referrer"'));
+console.log('PASS approved four badge URLs retained; arbitrary hosts, foreign repositories and tracking queries rejected.');
