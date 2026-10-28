@@ -1,6 +1,6 @@
 # Secure pupil access — staged domain implementation
 
-27 October 2026. **Not deployed; not an external pupil application.**
+28 October 2026. **Not deployed; not an external pupil application.**
 
 The authoritative implementation history remains the existing Google handover.
 This README describes this module's contract only.
@@ -23,13 +23,14 @@ does not prove guardianship: the Owner must verify the relationship and evidence
 Old staging databases with the one-identity uniqueness constraint are rejected
 for explicit reviewed migration; no implicit production data migration is performed.
 
-`npm test` runs 23 persistent-database checks plus 17 Google-crypto/guardian/gateway checks, including
+`npm test` runs 23 persistent-database checks, 17 Google-crypto/guardian/gateway checks,
+and 14 local HTTP/session integration checks, including
 injected transaction interruption and reopen. Identity assertions and canonical
 pupil lookup are test doubles. No production schema or user records are changed.
 
 ## Mandatory adapter boundary
 
-This is not an HTTP service. `actor.verified` is an internal adapter assertion,
+The core remains separate from the staged HTTP adapter. `actor.verified` is an internal adapter assertion,
 not an authentication protocol. NEVER accept actor, verified, subject or scope
 from request JSON, client headers or URL parameters. A production adapter must
 derive them from its verified server-side identity provider and establish an
@@ -39,13 +40,25 @@ origin with spoofable headers. Emails/display names are not durable subjects.
 
 The SQLite implementation is a Node staging store, not a Cloudflare/D1 adapter.
 A production adapter must preserve transaction/idempotency semantics and undergo
-integration/failure tests. No HTTP routes, identity enrolment, production session/challenge store, authenticated
-backend transport, or durable production store have been implemented here.
+integration/failure tests. `http-app.cjs` now provides staged POST routes for login challenge, Google token
+verification, session retrieval/logout, Owner provisioning/status and pupil actions.
+`sessions.cjs` provides hashed opaque session IDs, one-use challenges, expiry,
+server-side CSRF checks, rate limits and verified-identity enrolment references.
+Sessions are Secure/HttpOnly/SameSite=Strict host cookies. Intended GIS popup
+callback uses same-origin POST; a full-page redirect flow needs separate cookie
+and CSRF review. An enrolment reference is not a pupil grant or proof of guardianship.
+The Owner must independently verify who is presenting it and the child relationship.
+There is no public listen() entrypoint, production session/database store,
+authenticated Google data transport or live Teacher v2 UI integration.
+The HTTP integration tests use a real loopback server, synthetic Google-signed-format
+tokens and fixture keys with the real verification library. Cookie attributes are
+asserted, not exercised by a genuine HTTPS browser. They are not live Google tests.
 `google-auth.cjs` uses google-auth-library.verifyIdToken, exact audience/issuer/expiry,
 nonce and atomic one-use challenge consumption. Callers must supply browser-bound
 server challenges, never trust a client-provided challenge object.
 `pupil-gateway.cjs` routes all pupil action types through one membership check;
-its authenticate and backend adapters remain contracts, not live integrations.
+its authenticate adapter is connected to the staged session store by http-app.cjs;
+the private Google backend adapter is still unimplemented.
 
 ## Remaining work before any pilot
 
@@ -103,3 +116,28 @@ The Teacher v2 integration and canonical Google Sheets/Drive gateway are still
 pending. Do not point these modules at production or expose an HTTP endpoint
 until session/CSRF/rate-limit, identity enrolment, durable transaction adapters,
 file binding, offline recovery and real account tests have passed.
+
+## Production gate and continuation
+
+No Cloud project, OAuth client ID, external origin, billing arrangement, production
+database or service identity has been configured by this work. Do not deploy the
+SQLite store on ephemeral Cloud Run disks. A production database adapter and
+explicitly reviewed configuration are prerequisites, not deployment defaults.
+
+The existing Apps Script recording service must remain the single audio writer:
+its ScriptLock/receipt journal cannot coordinate with an independent Cloud Run
+writer. A private authenticated gateway transport to that writer must be designed
+and tested. Do not publish the present bearer-key doPost endpoint, pass Owner
+cookies to pupils, share the workbook publicly, or write recordings directly from
+a second process. Protect replay, request integrity and pupil/session/file binding
+on both ends, and do not retain any legacy bearer-only external fallback.
+
+Owner HTTP controls are a staging integration, not a change to the existing
+Teacher Dashboard v2. Connect the existing dashboard only after its verified
+Owner identity can be securely transferred/bound to the new gateway. Creating a
+new canonical pupil plus provisioning still needs durable cross-service recovery.
+
+The legacy 41190f5 SQLite database layout is explicitly rejected; no production
+database used it. If a retained staging fixture must be preserved, implement an
+explicit reviewed migration rather than deleting it. Current private recorder
+IndexedDB is unrelated and must never be cleared or migrated implicitly.
