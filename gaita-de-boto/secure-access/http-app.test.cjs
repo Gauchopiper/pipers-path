@@ -7,8 +7,14 @@ const {sessionStore}=require('./sessions.cjs'),{openAccess}=require('./access.cj
  const origin='https://fixture.example',clientId='fixture.apps.googleusercontent.com',scope='google:'+clientId;
  const keys=generateKeyPairSync('rsa',{modulusLength:2048}),client=new OAuth2Client();
  client.getFederatedSignonCertsAsync=async()=>({certs:{fixture:keys.publicKey.export({type:'spki',format:'pem'})},format:'PEM'});
- const sessions=sessionStore(':memory:',{scope});
- const access=openAccess(':memory:',{organisation:'GAITA-DE-BOTO',ownerSubject:'owner',identityScope:scope,origin,externalApproved:true,pupilExists:p=>p==='child',pupilKind:()=> 'child'});
+ let sessions,access,engine;
+ const config={organisation:'GAITA-DE-BOTO',ownerSubject:'owner',identityScope:scope,origin,externalApproved:true,pupilExists:p=>p==='child',pupilKind:()=> 'child'};
+ if(process.env.GDB_TEST_PG==='1'){
+  const {PGlite}=require('@electric-sql/pglite'),{postgresStore,postgresAccess,postgresSessions}=require('./postgres.cjs');
+  engine=new PGlite();const query=async(sql,args)=>{const r=args?.length?await engine.query(sql,args):(await engine.exec(sql)).at(-1);return {rows:r?.rows||[],rowCount:r?.affectedRows||0};};
+  const db=postgresStore({query,connect:async()=>({query,release(){}})});await db.migrate();
+  sessions=postgresSessions(db,{scope});access=postgresAccess(db,config);
+ }else{sessions=sessionStore(':memory:',{scope});access=openAccess(':memory:',config);}
  let backendCalls=0;
  const server=createServer(httpApp({origin,clientId,ownerSubject:'owner',scope,sessions,access,verify:googleVerifier({origin,clientId,client}),backend:async(action,binding,payload)=>{backendCalls++;return {ok:true,action,pupil:binding.pupil,sessionId:payload.sessionId};}}));
  server.listen(0,'127.0.0.1');await once(server,'listening');const base='http://127.0.0.1:'+server.address().port;
@@ -44,5 +50,5 @@ const {sessionStore}=require('./sessions.cjs'),{openAccess}=require('./access.cj
   try{const v=s.create({verified:true,subject:'fixture',scope});time=2000;assert.throws(()=>s.read(v.id,v.csrf),/denied/);s.limit('fixture',1,1000);assert.throws(()=>s.limit('fixture',1,1000),/Too many/);time=3000;s.limit('fixture',1,1000);}finally{s.close();}
  });
  console.log(`${count} local HTTP/session integration checks passed. Fixture Google keys; no live Google, Drive, Family Link or production hosting.`);
- }finally{await new Promise(r=>server.close(r));sessions.close();access.close();}
+ }finally{await new Promise(r=>server.close(r));if(engine)await engine.close();else{sessions.close();access.close();}}
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -9,7 +9,7 @@ function pupilGateway({access,authenticate,backend,origin}){
   const {action,link,organisation,payload={}}=request.body||{};
   if(!actions.has(action)||!payload||typeof payload!=='object'||Array.isArray(payload))throw Error('Invalid pupil operation.');
   if(['pupilId','accessKey','actor','subject','organisation','fileId','fileUrl','driveFileLink'].some(k=>Object.hasOwn(payload,k)))throw Error('Client-selected identity or file forbidden.');
-  const binding=access.authorize(actor,link,organisation);
+  const binding=await access.authorize(actor,link,organisation);
   // Backend resolves sessionId to a logged pupil-owned file; it must not trust raw URLs.
   // No fallback to legacy bearer credentials or raw public Drive URLs is allowed.
   return {headers:{'Cache-Control':'no-store','Referrer-Policy':'no-referrer'},data:await backend(action,binding,payload)};

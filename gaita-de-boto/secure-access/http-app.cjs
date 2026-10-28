@@ -19,7 +19,7 @@ function httpApp({origin,clientId,ownerSubject,scope,sessions,verify,access,back
   const data=JSON.parse(Buffer.concat(parts).toString('utf8'));
   if(!data||typeof data!=='object'||Array.isArray(data))throw Error('Invalid request.');return data;
  }
- function authenticate(req){return sessions.read(req.sessionId,req.csrf).actor;}
+ async function authenticate(req){return (await sessions.read(req.sessionId,req.csrf)).actor;}
  const dispatch=pupilGateway({access,authenticate,backend,origin});
  return async function handler(req,res){
   res.setHeader('Cache-Control','no-store');res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Content-Type-Options','nosniff');
@@ -28,40 +28,40 @@ function httpApp({origin,clientId,ownerSubject,scope,sessions,verify,access,back
   const reply=(code,value,cs)=>{if(cs)res.setHeader('Set-Cookie',cs);res.writeHead(code);res.end(JSON.stringify(value));};
   try{
    // A deployment adapter must supply trusted network rate-limit identity. Never trust X-Forwarded-For blindly.
-   sessions.limit('global',500,60000);sessions.limit('peer:'+req.socket.remoteAddress,60,60000);
+   await sessions.limit('global',500,60000);await sessions.limit('peer:'+req.socket.remoteAddress,60,60000);
    const url=new URL(req.url,origin);if(url.origin!==origin||url.search||url.hash)throw Error('Invalid request.');
    if(req.method!=='POST'||req.headers.origin!==origin)throw Error('Access denied.');
    const c=cookies(req),data=await body(req),sid=c['__Host-gdb-session'],csrf=req.headers['x-gdb-csrf'];
    if(url.pathname==='/auth/challenge'){
-    sessions.limit('login:'+req.socket.remoteAddress,10,60000);
-    const ch=sessions.challenge();return reply(200,{nonce:ch.nonce,csrf:ch.csrf,clientId,expires:ch.expires},[
+    await sessions.limit('login:'+req.socket.remoteAddress,10,60000);
+    const ch=await sessions.challenge();return reply(200,{nonce:ch.nonce,csrf:ch.csrf,clientId,expires:ch.expires},[
      cookie('__Host-gdb-login',ch.id,300),cookie('__Host-gdb-login-csrf',ch.csrf,300)]);
    }
    if(url.pathname==='/auth/google'){
-    sessions.limit('verify:'+req.socket.remoteAddress,10,60000);
-    const challenge=sessions.getChallenge(c['__Host-gdb-login'],data.csrf);
+    await sessions.limit('verify:'+req.socket.remoteAddress,10,60000);
+    const challenge=await sessions.getChallenge(c['__Host-gdb-login'],data.csrf);
     const actor=await verify({credential:data.credential,csrfCookie:c['__Host-gdb-login-csrf'],csrfBody:data.csrf,requestOrigin:req.headers.origin,challenge});
-    const s=sessions.create(actor,sid);
+    const s=await sessions.create(actor,sid);
     return reply(200,{ok:true,csrf:s.csrf,expires:s.expires,enrolment:s.enrolment},[
      cookie('__Host-gdb-session',s.id,3600),cookie('__Host-gdb-login','',0),cookie('__Host-gdb-login-csrf','',0)]);
    }
    if(url.pathname==='/auth/session'){
     // Same-origin POST required, but CSRF token retrieval cannot require the lost token.
-    const s=sessions.read(sid,null,false);return reply(200,{ok:true,csrf:s.csrf,expires:s.expires});
+    const s=await sessions.read(sid,null,false);return reply(200,{ok:true,csrf:s.csrf,expires:s.expires});
    }
    if(url.pathname==='/auth/logout'){
-    sessions.logout(sid,csrf);return reply(200,{ok:true},[cookie('__Host-gdb-session','',0)]);
+    await sessions.logout(sid,csrf);return reply(200,{ok:true},[cookie('__Host-gdb-session','',0)]);
    }
-   const actor=authenticate({sessionId:sid,csrf});
+   const actor=await authenticate({sessionId:sid,csrf});
    if(url.pathname==='/owner/access'){
     if(actor.subject!==ownerSubject||actor.scope!==scope)throw Error('Access denied.');
-    if(data.action==='status')return reply(200,{access:access.status(actor,data.pupil)});
+    if(data.action==='status')return reply(200,{access:await access.status(actor,data.pupil)});
     // Bind only to an identity actually verified at this server. Never accept raw subject.
     if(Object.hasOwn(data,'subject')||Object.hasOwn(data,'actor'))throw Error('Invalid request.');
     const input={...data};
-    if(['provision','grant','revokeGrant'].includes(input.action))input.subject=sessions.resolveEnrolment(input.enrolment);
+    if(['provision','grant','revokeGrant'].includes(input.action))input.subject=await sessions.resolveEnrolment(input.enrolment);
     delete input.enrolment;
-    return reply(200,access.change(actor,input));
+    return reply(200,await access.change(actor,input));
    }
    if(url.pathname==='/api/pupil'){
     const r=await dispatch({method:req.method,origin:req.headers.origin,body:data,sessionId:sid,csrf});return reply(200,r.data);

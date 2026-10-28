@@ -23,8 +23,9 @@ does not prove guardianship: the Owner must verify the relationship and evidence
 Old staging databases with the one-identity uniqueness constraint are rejected
 for explicit reviewed migration; no implicit production data migration is performed.
 
-`npm test` runs 23 persistent-database checks, 17 Google-crypto/guardian/gateway checks,
-and 14 local HTTP/session integration checks, including
+`npm test` runs 23 SQLite access checks, 17 Google-crypto/guardian/gateway checks,
+14 SQLite HTTP/session checks, 17 PostgreSQL-engine checks, the same 14 HTTP checks
+against PostgreSQL, and 5 private-connector contract checks (90 checks total), including
 injected transaction interruption and reopen. Identity assertions and canonical
 pupil lookup are test doubles. No production schema or user records are changed.
 
@@ -38,9 +39,11 @@ Owner binding independent of pupil credentials. Sites identity headers may only
 be trusted behind the documented Sites dispatch boundary, never an exposed
 origin with spoofable headers. Emails/display names are not durable subjects.
 
-The SQLite implementation is a Node staging store, not a Cloudflare/D1 adapter.
-A production adapter must preserve transaction/idempotency semantics and undergo
-integration/failure tests. `http-app.cjs` now provides staged POST routes for login challenge, Google token
+The SQLite implementation remains a reference/test store. postgres.cjs now
+implements durable PostgreSQL access, grants, sessions/challenges, enrolment,
+receipts/audit and rate limits with transactional migrations. HTTP handlers await
+asynchronous stores and have been exercised against the PostgreSQL engine.
+Cloud SQL network/pool/concurrency and infrastructure tests remain required. `http-app.cjs` now provides staged POST routes for login challenge, Google token
 verification, session retrieval/logout, Owner provisioning/status and pupil actions.
 `sessions.cjs` provides hashed opaque session IDs, one-use challenges, expiry,
 server-side CSRF checks, rate limits and verified-identity enrolment references.
@@ -48,8 +51,8 @@ Sessions are Secure/HttpOnly/SameSite=Strict host cookies. Intended GIS popup
 callback uses same-origin POST; a full-page redirect flow needs separate cookie
 and CSRF review. An enrolment reference is not a pupil grant or proof of guardianship.
 The Owner must independently verify who is presenting it and the child relationship.
-There is no public listen() entrypoint, production session/database store,
-authenticated Google data transport or live Teacher v2 UI integration.
+There is no public listen() entrypoint, configured hosted database,
+live authenticated Google data transport or live Teacher v2 UI integration.
 The HTTP integration tests use a real loopback server, synthetic Google-signed-format
 tokens and fixture keys with the real verification library. Cookie attributes are
 asserted, not exercised by a genuine HTTPS browser. They are not live Google tests.
@@ -57,14 +60,15 @@ asserted, not exercised by a genuine HTTPS browser. They are not live Google tes
 nonce and atomic one-use challenge consumption. Callers must supply browser-bound
 server challenges, never trust a client-provided challenge object.
 `pupil-gateway.cjs` routes all pupil action types through one membership check;
-its authenticate adapter is connected to the staged session store by http-app.cjs;
-the private Google backend adapter is still unimplemented.
+its authenticate adapter is connected to either session store by http-app.cjs.
+apps-script-client.cjs is a disabled-by-default private Execution API client;
+its matching Apps Script receiver and live configuration are NOT implemented.
 
 ## Remaining work before any pilot
 
 1. Google Sign-In is now selected. Proposed deployment: separate HTTPS Node
    frontend/gateway on Google Cloud Run with durable transactional database
-   (Cloud SQL PostgreSQL adapter to be implemented); never use instance-local
+   (PostgreSQL adapter implemented; hosted configuration/testing pending); never use instance-local
    SQLite as production Cloud Run storage. Existing private Site remains intact.
    Configure an Owner-controlled Google Cloud project, web OAuth client, approved
    domain/origin and consent screen; no project, billing or access grants have
@@ -121,8 +125,8 @@ file binding, offline recovery and real account tests have passed.
 
 No Cloud project, OAuth client ID, external origin, billing arrangement, production
 database or service identity has been configured by this work. Do not deploy the
-SQLite store on ephemeral Cloud Run disks. A production database adapter and
-explicitly reviewed configuration are prerequisites, not deployment defaults.
+SQLite store on ephemeral Cloud Run disks. The PostgreSQL adapter is implemented, but hosted configuration and genuine
+multi-process tests are prerequisites, not deployment defaults.
 
 The existing Apps Script recording service must remain the single audio writer:
 its ScriptLock/receipt journal cannot coordinate with an independent Cloud Run
@@ -141,3 +145,41 @@ The legacy 41190f5 SQLite database layout is explicitly rejected; no production
 database used it. If a retained staging fixture must be preserved, implement an
 explicit reviewed migration rather than deleting it. Current private recorder
 IndexedDB is unrelated and must never be cleared or migrated implicitly.
+
+## Private writer feasibility — Owner decision before live configuration
+
+The existing Owner-only web-app deployment is not a service-account API. Google
+explicitly does not support service accounts for Apps Script Execution API.
+Supported candidate: add an API-executable deployment to the SAME Apps Script
+project, limited to MYSELF, sharing a standard Cloud project with a separate
+server OAuth client. Use the Owner's explicitly authorised user OAuth grant on
+the server; pupil Google login remains identity-only with no Drive/Sheets scopes.
+
+This would allow the server to exercise the script's Google scopes under Owner
+authority. Its refresh credential must be protected in a managed secret store,
+access-limited to the gateway, revocable and never sent to pupils. Google's API
+requires all scopes used by that script, not just a narrowly selected method.
+This is a material delegation decision, NOT authorised by selecting pupil Google
+Sign-In. No Owner grant, Cloud project reassociation, API deployment or scope
+consent has been created. Confirm this approach before changing the writer.
+
+apps-script-client.cjs only calls the configured API-executable deployment at
+script.googleapis.com with a fixed receiver function, devMode false, bounded
+payload and preserved Session ID. It rejects mismatched response bindings and
+never blindly retries an uncertain upload. Five tests use mock transport.
+The receiver still needs strict Owner enforcement, organisation/pupil binding,
+request freshness/replay protection, safe dispatch to existing writer functions,
+and protected file/folder validation. A returned Drive URL must not become an
+external playback link. Existing feedback backend integration also remains.
+
+If Owner OAuth delegation is declined, retain the current private deployment.
+An alternative is an Owner-run Apps Script worker pulling an authenticated job
+queue, preserving the same writer project, but this needs separate design/tests
+and introduces polling latency. Do not substitute a public bearer endpoint or
+a second Cloud Run audio writer. Neither alternative has passed a live test.
+
+Official feasibility sources reviewed 28 October 2026:
+- https://developers.google.com/apps-script/api/how-tos/execute
+- https://developers.google.com/apps-script/api/reference/rest/v1/scripts/run
+- https://developers.google.com/apps-script/manifest/web-app-api-executable
+- https://node-postgres.com/features/transactions
