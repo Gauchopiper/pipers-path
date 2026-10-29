@@ -234,3 +234,14 @@ existing authoritative Google handover. No Owner OAuth credential is requested.
   exhaustion, expired staging object, revoke-after-enqueue, retry and retention.
 - Restore a database backup, TLS/pool/multiple-instance contention and rollback
   preserving job/operation receipts. No approval implied by local passing checks.
+
+## Fixture-only queue investigation — 29 October 2026
+
+`npm run test:queue` separately runs the upload queue's 30 checks and deterministic
+polling model. It does not rerun the previous 104 access/provisioning executions.
+See queue-fixture/README.md for implemented boundaries, synthetic measurements
+and limitations. No production module imports this fixture. No Google grant,
+worker trigger, external endpoint or provisioning activation is configured.
+Local SQLite is strictly a fixture store, never proposed Cloud Run production
+storage. The existing PostgreSQL adapter is unchanged. Queue production port,
+private writer receiver, protected read path and live tests remain pending.
