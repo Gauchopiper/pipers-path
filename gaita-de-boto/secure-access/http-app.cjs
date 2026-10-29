@@ -2,7 +2,7 @@
 const {pupilGateway}=require('./pupil-gateway.cjs');
 // Staged integration server. All production adapters must be supplied explicitly.
 // No default Google credentials, backend endpoint or public listen() operation.
-function httpApp({origin,clientId,ownerSubject,scope,sessions,verify,access,backend}){
+function httpApp({origin,clientId,ownerSubject,scope,sessions,verify,access,backend,provisioning}){
  if(new URL(origin).origin!==origin||!origin.startsWith('https://')||!ownerSubject||scope!=='google:'+clientId)throw Error('Invalid server configuration.');
  const cookie=(name,value,age)=>`${name}=${value}; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=${age}`;
  function cookies(req){
@@ -53,6 +53,10 @@ function httpApp({origin,clientId,ownerSubject,scope,sessions,verify,access,back
     await sessions.logout(sid,csrf);return reply(200,{ok:true},[cookie('__Host-gdb-session','',0)]);
    }
    const actor=await authenticate({sessionId:sid,csrf});
+   if(url.pathname==='/owner/provisioning'&&provisioning){
+    if(actor.subject!==ownerSubject||actor.scope!==scope)throw Error('Access denied.');
+    return reply(200,data.action==='status'?await provisioning.status(actor,data.operation):await provisioning.run(actor,data));
+   }
    if(url.pathname==='/owner/access'){
     if(actor.subject!==ownerSubject||actor.scope!==scope)throw Error('Access denied.');
     if(data.action==='status')return reply(200,{access:await access.status(actor,data.pupil)});

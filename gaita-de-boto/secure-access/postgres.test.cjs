@@ -13,8 +13,8 @@ const {postgresStore,postgresAccess,postgresSessions}=require('./postgres.cjs');
  const op=(pupil,action,expectedRevision,extra={})=>({pupil,action,expectedRevision,operation:randomUUID(),...extra});
  const provision=op('a','provision',0,{subject:guardian.subject,relation:'guardian',evidence:'fixture-consent-a',expires:Date.now()+3600000});
  try{
- await check('versioned PostgreSQL migration applies and repeats safely',async()=>{await db.migrate();await db.migrate();assert.equal((await db.query('SELECT count(*)::int n FROM gdb_migrations')).rows[0].n,1);});
- await check('unknown migration history fails closed',async()=>{await db.query("UPDATE gdb_migrations SET checksum='tampered'");await assert.rejects(db.migrate(),/mismatch/);await db.query('DELETE FROM gdb_migrations');const sql=require('node:fs').readFileSync(require('node:path').join(__dirname,'migrations/001.sql'),'utf8');const checksum=require('node:crypto').createHash('sha256').update(sql).digest('hex');await db.query('INSERT INTO gdb_migrations VALUES(1,$1,now())',[checksum]);});
+ await check('versioned PostgreSQL migration applies and repeats safely',async()=>{await db.migrate();await db.migrate();assert.equal((await db.query('SELECT count(*)::int n FROM gdb_migrations')).rows[0].n,2);});
+ await check('unknown migration history fails closed',async()=>{const saved=(await db.query('SELECT * FROM gdb_migrations')).rows;await db.query("UPDATE gdb_migrations SET checksum='tampered'");await assert.rejects(db.migrate(),/mismatch/);for(const r of saved)await db.query('UPDATE gdb_migrations SET checksum=$1 WHERE version=$2',[r.checksum,r.version]);});
  await check('guardian provisioning and operation replay are durable SQL writes',async()=>{assert.equal((await access.change(owner,provision)).access.status,'inactive');assert.equal((await access.change(owner,provision)).duplicate,true);assert.equal((await db.query('SELECT count(*)::int n FROM gdb_access')).rows[0].n,1);});
  await check('operation payload reuse is rejected',()=>assert.rejects(access.change(owner,{...provision,pupil:'b'}),/conflict/));
  let link;

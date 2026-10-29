@@ -24,8 +24,9 @@ Old staging databases with the one-identity uniqueness constraint are rejected
 for explicit reviewed migration; no implicit production data migration is performed.
 
 `npm test` runs 23 SQLite access checks, 17 Google-crypto/guardian/gateway checks,
-14 SQLite HTTP/session checks, 17 PostgreSQL-engine checks, the same 14 HTTP checks
-against PostgreSQL, and 5 private-connector contract checks (90 checks total), including
+15 SQLite HTTP/session checks, 17 PostgreSQL-engine checks, the same 15 HTTP checks
+against PostgreSQL, 5 private-connector contract checks and 12 canonical/provisioning checks
+(104 check executions total), including
 injected transaction interruption and reopen. Identity assertions and canonical
 pupil lookup are test doubles. No production schema or user records are changed.
 
@@ -81,7 +82,7 @@ its matching Apps Script receiver and live configuration are NOT implemented.
    never a pupil-supplied email claim. No Annie activation is authorised.
 3. Integrate the canonical workbook: new pupil creation and provisioning need a
    durable operation/saga with explicit inactive pending state across services.
-   This module provisions existing IDs only; it does not create pupil rows.
+   The disabled provisioning module now coordinates the existing Teacher creation contract and access receipts; the authenticated live transport and Teacher UI remain pending.
 4. Implement a server-side pupil gateway. All PATH, audio, save, receipt, GROUP,
    target and feedback operations must derive pupil identity from authorization;
    never forward a client-selected pupil ID or accept an old bearer key as an
@@ -138,8 +139,7 @@ on both ends, and do not retain any legacy bearer-only external fallback.
 
 Owner HTTP controls are a staging integration, not a change to the existing
 Teacher Dashboard v2. Connect the existing dashboard only after its verified
-Owner identity can be securely transferred/bound to the new gateway. Creating a
-new canonical pupil plus provisioning still needs durable cross-service recovery.
+Owner identity can be securely transferred/bound to the new gateway. The provisioning journal now supports recovery across canonical creation and access provisioning. Live Teacher UI, transport and consent metadata integration remain pending.
 
 The legacy 41190f5 SQLite database layout is explicitly rejected; no production
 database used it. If a retained staging fixture must be preserved, implement an
@@ -183,3 +183,54 @@ Official feasibility sources reviewed 28 October 2026:
 - https://developers.google.com/apps-script/api/reference/rest/v1/scripts/run
 - https://developers.google.com/apps-script/manifest/web-app-api-executable
 - https://node-postgres.com/features/transactions
+
+## Canonical pupil / provisioning continuation — 29 October 2026
+
+canonical-pupils.cjs projects the existing eight-column PUPILS schema without
+exporting legacy keys, links or short codes. It rejects duplicate canonical IDs.
+A separate reviewed profile provider must supply adult/child classification and
+its evidence: the workbook currently has no such field. Never infer age from names.
+The injected server transport must select the Gaita workbook; no client workbook
+ID is accepted. No live workbook transport is configured.
+
+provisioning.cjs is disabled by default. Its Owner-only workflow accepts a verified
+session enrolment reference, explicit relationship/evidence and original operation
+UUID. Migration 002 records intent before calling the Teacher creation contract.
+A new row is created inactive through the existing Teacher function; retries use
+that same UUID. Existing pupils are never recreated. Access provisioning has its
+own idempotent receipt. Failure leaves a complete inactive canonical row and a
+pending or record-created journal, not automatic deletion/activation. Retry the
+same operation with the same payload. Changed payload requires manual review;
+do not blindly generate another creation UUID. Journal state is a workflow milestone,
+not a replacement for current active/revoked access status. No personal link is returned.
+
+The optional /owner/provisioning HTTP route uses the same verified Owner session,
+origin and CSRF controls. Its tests include rejection before invoking the adapter.
+Actual Teacher creation code is run in a VM with mocked workbook/Owner/lock APIs;
+this tests canonical row format and deduplication but NOT Google's live identity,
+Spreadsheet flush guarantees or ScriptLock concurrency. Real database concurrency,
+crash restart and cross-service reconciliation need deployment tests.
+
+No Teacher v2 UI, live recording receiver or queue worker was deployed/implemented
+by this continuation. The architecture comparison and decision remain in the
+existing authoritative Google handover. No Owner OAuth credential is requested.
+
+### Required controlled pilot evidence (not yet performed)
+
+- Adult and guardian actual Google logins; wrong audience/nonce/account denied;
+  supervised-child/Family Link separately. Guardian two-child grants remain separate.
+- Existing pupil provisioning does not duplicate rows. Interrupted create/provision
+  with database and workbook unavailable recovers the same UUID. Missing consent
+  blocks activation. Revoke/replace denies existing sessions and old selectors.
+- Writer checks organisation/pupil, expiry and authorisation at execution, not just
+  enqueue. Replay/stale/tampered envelope denied; foreign file/folder denied.
+- Upload with original Session ID, then dropped acknowledgement: receipt query
+  returns the sole canonical log/meta/audio record; uncertain STARTED stops retry.
+- PATH/GROUP/target/feedback and protected audio contain only authorised data;
+  no raw Drive URLs or keys. Test alternate accounts, not only source fixtures.
+- Network loss/reopen preserves encrypted audio and key, including access-link
+  replacement; new origin cannot silently inherit old IndexedDB. No automatic clear.
+- Queue candidate: lease expiry, worker overlap, stale ack, hash mismatch, quota
+  exhaustion, expired staging object, revoke-after-enqueue, retry and retention.
+- Restore a database backup, TLS/pool/multiple-instance contention and rollback
+  preserving job/operation receipts. No approval implied by local passing checks.

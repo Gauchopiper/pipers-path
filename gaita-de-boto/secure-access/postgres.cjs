@@ -25,10 +25,10 @@ function postgresStore(pool){
    // Serialise migrations independently of tables that do not exist yet.
    await c.query('SELECT pg_advisory_xact_lock(724113809)');
    await c.query('CREATE TABLE IF NOT EXISTS gdb_migrations(version integer PRIMARY KEY,checksum text NOT NULL,applied_at timestamptz NOT NULL DEFAULT now())');
-   const sql=readFileSync(join(__dirname,'migrations/001.sql'),'utf8'),checksum=hash(sql);
+   const migrations=[1,2].map(version=>{const sql=readFileSync(join(__dirname,'migrations/'+String(version).padStart(3,'0')+'.sql'),'utf8');return {version,sql,checksum:hash(sql)};});
    const rows=(await c.query('SELECT version,checksum FROM gdb_migrations ORDER BY version')).rows;
-   if(rows.some(r=>r.version!==1||r.checksum!==checksum))throw Error('Migration history mismatch; stop and review.');
-   if(!rows.length){await c.query(sql);await c.query('INSERT INTO gdb_migrations(version,checksum) VALUES(1,$1)',[checksum]);}
+   if(rows.some((r,i)=>r.version!==i+1||!migrations[i]||r.checksum!==migrations[i].checksum))throw Error('Migration history mismatch; stop and review.');
+   for(const m of migrations.slice(rows.length)){await c.query(m.sql);await c.query('INSERT INTO gdb_migrations(version,checksum) VALUES($1,$2)',[m.version,m.checksum]);}
    await c.query('COMMIT');
   }catch(e){await c.query('ROLLBACK');throw e;}finally{c.release();}
  }

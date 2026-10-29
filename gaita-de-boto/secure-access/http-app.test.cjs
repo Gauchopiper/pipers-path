@@ -15,8 +15,8 @@ const {sessionStore}=require('./sessions.cjs'),{openAccess}=require('./access.cj
   const db=postgresStore({query,connect:async()=>({query,release(){}})});await db.migrate();
   sessions=postgresSessions(db,{scope});access=postgresAccess(db,config);
  }else{sessions=sessionStore(':memory:',{scope});access=openAccess(':memory:',config);}
- let backendCalls=0;
- const server=createServer(httpApp({origin,clientId,ownerSubject:'owner',scope,sessions,access,verify:googleVerifier({origin,clientId,client}),backend:async(action,binding,payload)=>{backendCalls++;return {ok:true,action,pupil:binding.pupil,sessionId:payload.sessionId};}}));
+ let backendCalls=0,provisionCalls=0;
+ const server=createServer(httpApp({origin,clientId,ownerSubject:'owner',scope,sessions,access,provisioning:{run:async()=>{provisionCalls++;return {state:'inactive',link:null};},status:async()=>({state:'pending'})},verify:googleVerifier({origin,clientId,client}),backend:async(action,binding,payload)=>{backendCalls++;return {ok:true,action,pupil:binding.pupil,sessionId:payload.sessionId};}}));
  server.listen(0,'127.0.0.1');await once(server,'listening');const base='http://127.0.0.1:'+server.address().port;
  let count=0;async function check(n,f){await f();console.log('PASS '+n);count++;}
  async function post(path,data={},jar={},extra={}){
@@ -34,6 +34,12 @@ const {sessionStore}=require('./sessions.cjs'),{openAccess}=require('./access.cj
  await check('replayed login challenge fails',async()=>assert.equal((await post('/auth/google',guardian.input,guardian.before)).status,403));
  await check('foreign-origin challenge fails',async()=>assert.equal((await post('/auth/challenge',{}, {},{Origin:'https://evil.example'})).status,403));
  await check('anonymous and pupil cannot use Owner provisioning endpoint',async()=>{assert.equal((await post('/owner/access',operation('provision',0))).status,403);assert.equal((await admin(guardian,operation('provision',0))).status,403);});
+ await check('new workflow route enforces Owner and CSRF before adapter',async()=>{
+  assert.equal((await post('/owner/provisioning',{},guardian.jar,{'X-GDB-CSRF':guardian.r.data.csrf})).status,403);
+  assert.equal((await post('/owner/provisioning',{},owner.jar)).status,403);
+  assert.equal(provisionCalls,0);
+  const r=await post('/owner/provisioning',{},owner.jar,{'X-GDB-CSRF':owner.r.data.csrf});assert.equal(r.status,200);assert.equal(r.data.link,null);assert.equal(provisionCalls,1);
+ });
  await check('Owner cannot bind a forged subject or nonexistent enrolment',async()=>{assert.equal((await admin(owner,operation('provision',0,{subject:'guardian'}))).status,403);assert.equal((await admin(owner,operation('provision',0,{enrolment:'fabricated'}))).status,403);});
  await check('verified guardian enrolment creates only inactive child access',async()=>{const r=await admin(owner,operation('provision',0,{enrolment:guardian.r.data.enrolment,relation:'guardian',evidence:'fixture-private-consent',expires:Date.now()+3600000}));assert.equal(r.status,200);assert.equal(r.data.access.status,'inactive');assert.equal(r.data.access.link,null);});
  await check('Owner activation provides identity-bound child selector',async()=>{const r=await admin(owner,operation('activate',1));assert.equal(r.status,200);link=new URL(r.data.access.link).pathname.split('/').pop();});
