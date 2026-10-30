@@ -1,5 +1,8 @@
 # WORK 4 → CHAT 3 — PostgreSQL and integration verification
 
+Next approved preparation: [Dummy-only proposal](../pilot-preparation/PROPOSAL.md),
+with native-test tooling and acceptance runbook. It does not approve live changes.
+
 30 October 2026. Continuation authorised by CHAT 3; fixture checkpoint only.
 No live application, permission, pupil or recording changed.
 
