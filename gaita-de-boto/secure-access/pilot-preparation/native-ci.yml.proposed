@@ -1,0 +1,49 @@
+# DRAFT ONLY: not installed under .github/workflows and not executed.
+# After separate approval: CI-only change on default branch, independently of PR #6.
+name: Gaita native PostgreSQL fixtures
+on:
+  workflow_dispatch:
+    inputs:
+      approval:
+        description: Type DISPOSABLE_FIXTURES_ONLY after Owner approval
+        required: true
+        type: string
+      source_sha:
+        description: Approved full commit SHA on the Gaita staging branch
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: gaita-native-postgres-fixtures
+  cancel-in-progress: false
+jobs:
+  native-fixtures:
+    if: inputs.approval == 'DISPOSABLE_FIXTURES_ONLY'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6 tag resolved 2026-10-30
+        with:
+          ref: ${{ inputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate approved source
+        env:
+          GDB_APPROVED_SHA: ${{ inputs.source_sha }}
+        run: |
+          [[ "$GDB_APPROVED_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "$GDB_APPROVED_SHA" ]]
+          git merge-base --is-ancestor "$GDB_APPROVED_SHA" origin/feature/gaita-de-boto-staging-20261019
+      - uses: actions/setup-node@d23441a48e516b6c34aea4fa41551a30e30af803 # v6 tag resolved 2026-10-30
+        with:
+          node-version: '24'
+      - name: Install locked test dependencies
+        working-directory: gaita-de-boto/secure-access
+        run: npm ci --ignore-scripts
+      - name: Execute disposable native tests
+        env:
+          GDB_NATIVE_APPROVED: DISPOSABLE_FIXTURES_ONLY
+        run: bash gaita-de-boto/secure-access/pilot-preparation/native-run.sh
+# No Google secrets/environment, artifact uploads, dependency caches, public service or paid runner.
+# Action digests were resolved read-only; installation/dispatch still require Owner approval.

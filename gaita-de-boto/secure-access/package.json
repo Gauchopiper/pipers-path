@@ -1,0 +1,25 @@
+{
+  "name": "gaita-secure-access-staging",
+  "version": "1.0.0",
+  "description": "Staged Google authentication and guardian access foundations",
+  "scripts": {
+    "test": "node access.test.cjs && node google-guardian.test.cjs && node http-app.test.cjs && node postgres.test.cjs && GDB_TEST_PG=1 node http-app.test.cjs && node apps-script-client.test.cjs && node provisioning.test.cjs",
+    "test:queue": "node queue-fixture/queue.test.cjs && node queue-fixture/polling.cjs",
+    "test:work4": "node queue-fixture/postgres.test.cjs && node queue-fixture/canonical.test.cjs && node queue-fixture/protected-reads.test.cjs",
+    "test:work4:integration": "node integration-fixture/receipt.test.cjs && node integration-fixture/revisions.test.cjs && node integration-fixture/queue-delivery.test.cjs"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "commonjs",
+  "dependencies": {
+    "google-auth-library": "11.3.1",
+    "pg": "8.23.1"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.13"
+  }
+}
