@@ -1,5 +1,10 @@
 # Private queue architecture fixture — not a deployment
 
+WORK 4 continuation (completed 30 October 2026): see [WORK4-RESULTS.md](WORK4-RESULTS.md).
+`npm run test:work4` runs the separate PostgreSQL-port, unchanged canonical-writer
+source and protected direct/cache read investigations. The original SQLite
+fixture and polling model below are preserved as historical evidence.
+
 The authoritative project history/decision remains the existing Google Doc.
 Run `npm run test:queue` from secure-access. No Google credentials, network
 listener, Apps Script trigger or production resource is configured. This isolated
