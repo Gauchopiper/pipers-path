@@ -1,6 +1,8 @@
 # Private queue architecture fixture — not a deployment
 
 WORK 4 continuation (completed 30 October 2026): see [WORK4-RESULTS.md](WORK4-RESULTS.md).
+The subsequent CHAT 3-approved continuation is documented in
+[integration-fixture/README.md](../integration-fixture/README.md) and its integration specification.
 `npm run test:work4` runs the separate PostgreSQL-port, unchanged canonical-writer
 source and protected direct/cache read investigations. The original SQLite
 fixture and polling model below are preserved as historical evidence.

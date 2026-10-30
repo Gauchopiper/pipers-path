@@ -5,7 +5,8 @@
   "scripts": {
     "test": "node access.test.cjs && node google-guardian.test.cjs && node http-app.test.cjs && node postgres.test.cjs && GDB_TEST_PG=1 node http-app.test.cjs && node apps-script-client.test.cjs && node provisioning.test.cjs",
     "test:queue": "node queue-fixture/queue.test.cjs && node queue-fixture/polling.cjs",
-    "test:work4": "node queue-fixture/postgres.test.cjs && node queue-fixture/canonical.test.cjs && node queue-fixture/protected-reads.test.cjs"
+    "test:work4": "node queue-fixture/postgres.test.cjs && node queue-fixture/canonical.test.cjs && node queue-fixture/protected-reads.test.cjs",
+    "test:work4:integration": "node integration-fixture/receipt.test.cjs && node integration-fixture/revisions.test.cjs && node integration-fixture/queue-delivery.test.cjs"
   },
   "keywords": [],
   "author": "",
