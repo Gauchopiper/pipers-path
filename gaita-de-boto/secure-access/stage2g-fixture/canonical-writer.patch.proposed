@@ -37,3 +37,14 @@
    const url=file.getUrl();
    const mins=Math.round(evidence.seconds/60*100)/100,qualifying=threshold===null?'Pending rule':evidence.seconds>=threshold*60?'Yes':'No';
    const row=[id,Utilities.formatDate(end,'Europe/Madrid','yyyy-MM-dd'),
+@@ -231,8 +234,9 @@
+    if(ix>0)meta.getRange(ix+1,5).setValue('CONTROLLED OWNER AUDIO FIXTURE — not a recording performed by Leslie.');
+    SpreadsheetApp.flush();
+   }
++  if(trusted){SpreadsheetApp.flush();gdbGAfter_(trusted);SpreadsheetApp.flush();gdbGReadback_(trusted);SpreadsheetApp.flush();}
+   return {ok:true,fileUrl:url,qualifying,sessionId:sid,durationSeconds:evidence.seconds,durationEvidence:evidence.method};
+- }finally{lock.releaseLock();}
++ }finally{try{if(trusted)SpreadsheetApp.flush();}finally{lock.releaseLock();}}
+ }
+ 
+ // Controlled test bridge: Google identity plus pupil capability; no public access.

@@ -21,9 +21,9 @@ function checked(keyring,purpose,ns,signed,now,{historical=false}={}) {
   if (!exact(signed,['wire','signature']) || typeof signed.wire!=='string' || Buffer.byteLength(signed.wire)>8*1024*1024) throw Error('Envelope rejected.');
   let b;try{b=JSON.parse(signed.wire);}catch{throw Error('Invalid JSON.');}
   if (!exact(b,['protocol','purpose','environment','profileDigest','kid','nonce','at','expires','payload']) ||
-      b.protocol!=='gdb-stage2g-v1'||b.purpose!==purpose||b.environment!==ns.environment||b.profileDigest!==ns.profileDigest||
+      typeof b.protocol!=='string'||typeof b.purpose!=='string'||typeof b.environment!=='string'||typeof b.profileDigest!=='string'||!/^[a-f0-9]{64}$/.test(b.profileDigest)||typeof b.kid!=='string'||!/^[A-Za-z0-9_-]{1,100}$/.test(b.kid)||b.protocol!=='gdb-stage2g-v1'||b.purpose!==purpose||b.environment!==ns.environment||b.profileDigest!==ns.profileDigest||
       P.canonical(b)!==signed.wire||!uuid(b.nonce)||!Number.isSafeInteger(b.at)||!Number.isSafeInteger(b.expires)||b.expires-b.at!==30000) throw Error('Envelope binding rejected.');
-  if (historical && !['journal.event','recording.receipt'].includes(purpose)) throw Error('Historical verification purpose denied.');
+  if (historical && !['journal.event','recording.receipt','recording.device.receipt'].includes(purpose)) throw Error('Historical verification purpose denied.');
   const k=keyring[b.kid];
   if (!k || k.status==='revoked' || (!historical&&k.status!=='active') || b.at<k.notBefore || b.at>=k.notAfter ||
       (!historical&&(b.at>now+2000||b.expires<=now))||!P.verifyRsa(signed.wire,signed.signature,k.jwk)) throw Error('Signature/key/expiry rejected.');

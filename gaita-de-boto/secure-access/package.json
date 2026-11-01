@@ -5,6 +5,7 @@
   "scripts": {
     "test": "node access.test.cjs && node google-guardian.test.cjs && node http-app.test.cjs && node postgres.test.cjs && GDB_TEST_PG=1 node http-app.test.cjs && node apps-script-client.test.cjs && node provisioning.test.cjs",
     "test:queue": "node queue-fixture/queue.test.cjs && node queue-fixture/polling.cjs",
+    "test:stage2i": "node --disable-warning=ExperimentalWarning stage2g-fixture/run-tests.cjs --stage2i",
     "test:stage2g": "node --disable-warning=ExperimentalWarning stage2g-fixture/run-tests.cjs",
     "test:option-c": "node --disable-warning=ExperimentalWarning option-c-fixture/option-c.test.cjs",
     "test:owner-transport": "node --disable-warning=ExperimentalWarning owner-transport-fixture/transport.test.cjs",

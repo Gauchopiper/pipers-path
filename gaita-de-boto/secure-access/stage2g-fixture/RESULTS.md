@@ -1,5 +1,7 @@
 # Stage 2G — offline execution evidence
 
+> Historical Stage 2G checkpoint: c96a4cc. Stage 2I subsequently corrects the inactive prototypes. See ../stage2i-fixture/README.md for the current status; the historical execution evidence below is preserved.
+
 Verified 1 November 2026. Baseline/rollback:
 `44ff37abb9a733518c5882a4eabb6e5a27cb7dac`.
 

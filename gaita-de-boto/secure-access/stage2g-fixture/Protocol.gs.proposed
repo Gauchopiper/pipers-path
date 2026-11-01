@@ -16,26 +16,32 @@ var GdbGProtocol = (function () {
     }
     return s;
   }
+  var LIMITS = Object.freeze({bytes:8*1024*1024,depth:40,nodes:10000,signature:512});
   function canonical(x) {
-    if (x === null) return 'null';
-    if (typeof x === 'string') return JSON.stringify(scalar(x));
-    if (typeof x === 'boolean') return x ? 'true' : 'false';
-    if (typeof x === 'number') { if (!Number.isFinite(x)) fail('Non-finite JSON.'); return JSON.stringify(x); }
-    if (!x || typeof x !== 'object' || Object.getOwnPropertySymbols(x).length) fail('Unsupported JSON.');
-    if (Array.isArray(x)) {
-      if (Object.keys(x).length !== x.length || !Array.from({length:x.length},function(_,i){return Object.prototype.hasOwnProperty.call(x,i);}).every(Boolean)) fail('Sparse or decorated array.');
-      return '[' + x.map(canonical).join(',') + ']';
+    var nodes=0,characters=0;
+    function visit(v,depth) {
+      if(++nodes>LIMITS.nodes||depth>LIMITS.depth)fail('JSON workload limit.');
+      if(v===null)return 'null';
+      if(typeof v==='string'){characters+=v.length;if(characters>LIMITS.bytes)fail('JSON size limit.');return JSON.stringify(scalar(v));}
+      if(typeof v==='boolean')return v?'true':'false';
+      if(typeof v==='number'){if(!Number.isFinite(v))fail('Non-finite JSON.');return JSON.stringify(v);}
+      if(!v||typeof v!=='object'||Object.getOwnPropertySymbols(v).length)fail('Unsupported JSON.');
+      var descriptors=Object.getOwnPropertyDescriptors(v),names=Object.getOwnPropertyNames(v);
+      names.forEach(function(k){var d=descriptors[k];if(!Object.prototype.hasOwnProperty.call(d,'value'))fail('Accessor JSON object.');});
+      if(Array.isArray(v)){
+        var length=descriptors.length.value;
+        if(length>LIMITS.nodes)fail('JSON workload limit.');if(names.length!==length+1)fail('Sparse or decorated array.');
+        var out=[];for(var i=0;i<length;i++){if(!Object.prototype.hasOwnProperty.call(descriptors,String(i)))fail('Sparse array.');out.push(visit(descriptors[String(i)].value,depth+1));}
+        return '['+out.join(',')+']';
+      }
+      var proto=Object.getPrototypeOf(v);
+      if(proto){var constructor=Object.getOwnPropertyDescriptor(proto,'constructor');if(Object.getPrototypeOf(proto)!==null||!constructor||typeof constructor.value!=='function'||constructor.value.name!=='Object')fail('Non-JSON object.');}
+      return '{'+names.sort().map(function(k){var d=descriptors[k];if(!d.enumerable||['__proto__','constructor','prototype'].indexOf(k)>=0)fail('Decorated or reserved JSON key.');characters+=k.length;if(characters>LIMITS.bytes)fail('JSON size limit.');return JSON.stringify(scalar(k))+':'+visit(d.value,depth+1);}).join(',')+'}';
     }
-    if (Object.prototype.toString.call(x) !== '[object Object]' ||
-        (Object.getPrototypeOf(x) && Object.getPrototypeOf(x).constructor.name !== 'Object')) fail('Non-JSON object.');
-    var keys = Object.keys(x).sort();
-    return '{' + keys.map(function (k) {
-      if (['__proto__', 'constructor', 'prototype'].indexOf(k) >= 0) fail('Reserved JSON key.');
-      return JSON.stringify(scalar(k)) + ':' + canonical(x[k]);
-    }).join(',') + '}';
+    var wire=visit(x,0);if(utf8(wire).length>LIMITS.bytes)fail('JSON byte limit.');return wire;
   }
   function utf8(s) {
-    scalar(s); var out = [];
+    if(typeof s!=='string'||s.length>LIMITS.bytes)fail('UTF8 size/type limit.');scalar(s); var out = [];
     for (var i = 0; i < s.length; i++) {
       var n = s.charCodeAt(i);
       if (n >= 0xd800 && n <= 0xdbff) n = 0x10000 + ((n - 0xd800) << 10) + s.charCodeAt(++i) - 0xdc00;
@@ -44,9 +50,9 @@ var GdbGProtocol = (function () {
       else if (n < 65536) out.push(224 | (n >> 12), 128 | ((n >> 6) & 63), 128 | (n & 63));
       else out.push(240 | (n >> 18), 128 | ((n >> 12) & 63), 128 | ((n >> 6) & 63), 128 | (n & 63));
     }
-    return out;
+    if(out.length>LIMITS.bytes)fail('UTF8 byte limit.');return out;
   }
-  function octets(input) { return Array.from(input, function (x) {
+  function octets(input) { if(!input||!Number.isSafeInteger(input.length)||input.length>LIMITS.bytes)fail('Byte workload limit.');return Array.from(input, function (x) {
     if (!Number.isInteger(x) || x < -128 || x > 255) fail('Invalid byte.'); return x & 255;
   }); }
   var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -60,7 +66,7 @@ var GdbGProtocol = (function () {
     return s;
   }
   function unbase64(s) {
-    if (typeof s !== 'string' || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(s)) fail('Invalid Base64.');
+    if (typeof s !== 'string' || s.length>Math.ceil(LIMITS.bytes/3)*4 || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(s)) fail('Invalid Base64.');
     var a = [];
     for (var i = 0; i < s.length; i += 4) {
       var n = (alphabet.indexOf(s[i]) << 18) | (alphabet.indexOf(s[i + 1]) << 12) |
@@ -107,6 +113,7 @@ var GdbGProtocol = (function () {
   function verifyRsa(wire, signature, jwk) {
     try {
       if (!jwk || jwk.kty !== 'RSA' || jwk.e !== 'AQAB') return false;
+      if(typeof signature!=='string'||signature.length>LIMITS.signature||typeof jwk.n!=='string'||jwk.n.length>512)return false;
       var n = unurl(jwk.n), sig = unbase64(signature);
       if ([256,384].indexOf(n.length) < 0 || !(n[0] & 128) || !(n[n.length-1] & 1) || sig.length !== n.length) return false;
       var modulus = big(n), representative = big(sig); if (representative >= modulus) return false;
@@ -121,5 +128,5 @@ var GdbGProtocol = (function () {
     if (!pem) fail('Signing key unavailable.'); var wire = canonical(body);
     return {wire:wire,signature:base64(Utilities.computeRsaSha256Signature(wire,pem,Utilities.Charset.UTF_8))};
   }
-  return {canonical:canonical,utf8:utf8,base64:base64,unbase64:unbase64,sha256:sha256,hex:hex,hash:hash,verifyRsa:verifyRsa,sign:sign};
+  return {limits:LIMITS,canonical:canonical,utf8:utf8,base64:base64,unbase64:unbase64,sha256:sha256,hex:hex,hash:hash,verifyRsa:verifyRsa,sign:sign};
 })();

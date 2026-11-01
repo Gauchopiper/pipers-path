@@ -12,6 +12,9 @@ function gdbPWriteCore_(ss,id,d,trusted){
     ["try{\n  const state=gdbPRecordingState_(ss,id,sid);","try{\n  if(trusted)gdbGBefore_(trusted);\n  const state=gdbPRecordingState_(ss,id,sid);"],
     ["DriveApp.getFolderById(gdbPProp_('GDB_PUPIL_RECORDINGS_FOLDER_ID')).createFile(blob)",
      "DriveApp.getFolderById(trusted?trusted.folder:gdbPProp_('GDB_PUPIL_RECORDINGS_FOLDER_ID')).createFile(blob)"]
+    , ["return {ok:true,fileUrl:url,qualifying,sessionId:sid,durationSeconds:evidence.seconds,durationEvidence:evidence.method};",
+       "if(trusted){SpreadsheetApp.flush();gdbGAfter_(trusted);SpreadsheetApp.flush();gdbGReadback_(trusted);SpreadsheetApp.flush();}\n  return {ok:true,fileUrl:url,qualifying,sessionId:sid,durationSeconds:evidence.seconds,durationEvidence:evidence.method};"],
+    [" }finally{lock.releaseLock();}\n}\n\n// Controlled test bridge", " }finally{try{if(trusted)SpreadsheetApp.flush();}finally{lock.releaseLock();}}\n}\n\n// Controlled test bridge"]
   ];
   let result=original;for(const [a,b]of edits){if(result.split(a).length!==2)throw Error('Canonical patch anchor changed.');result=result.replace(a,b);}
   return {original,result,edits};

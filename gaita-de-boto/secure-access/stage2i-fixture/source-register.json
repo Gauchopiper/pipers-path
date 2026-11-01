@@ -1,0 +1,110 @@
+[
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/canonical-adapter.cjs",
+    "sha256": "10c79e43ce247410bfac89850335627813c693bd4eef1fc7d9d2af7cf89c868a"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/crypto-profile.test.cjs",
+    "sha256": "18da767f34cd94d61327a967453b8672305d902e3c86d7417bc499a38f20de20"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/device-confirmation.cjs",
+    "sha256": "04cdbb5bea72396200e16081b65fb817ef551a7c7a7b78b0337412b21b9cfc01"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/journal.cjs",
+    "sha256": "cbf5342df1bc8b92d108f7c9082f0bc3ef2512daa9e0c17e3f74b07b997ed3a0"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/pg-offline-pool.cjs",
+    "sha256": "023fb48425c928a4a4b0bcd9f7c054e45ad233f9860b0cdc9fd5db0cef55e5fa"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/postgres-adapter.cjs",
+    "sha256": "97935a77940b1c04a8d94da873f6ad1e113bf2f0ff9d43609f1a4e2e564e9612"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/postgres.test.cjs",
+    "sha256": "6c1b3f6a1d4e0a45f0d40950f871d2930f06dd3423e70202c044f70a5392467e"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/profile.cjs",
+    "sha256": "37e930aaa8ac73b8ef1c2d79c5deac11d909e3e6526b1e58c91d52cb476f5983"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/projection.cjs",
+    "sha256": "78c0da2101dc6668049d348bf2e6009ef1f39c63154b3fa06b9f8d3aaac58dd7"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/protocol.cjs",
+    "sha256": "d5a58245a32bdeadc030c9616403f329a23944e8db3c0e4eb0e101e7c9303199"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/reads.test.cjs",
+    "sha256": "3a33940c9550aeaf2a4de02b41c23739f5b32139ecb7df8ac2d494326848b70b"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/run-tests.cjs",
+    "sha256": "b8de8adc7e0da43735aa4d5cd1dab1c4d7db3a15aa7ef3ba2c9aa7a04f8f8f3d"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/source.cjs",
+    "sha256": "42acc21977582510047eddc394a3f1bc7ca0183d70cfe3d71768b85b827f8f54"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/source.test.cjs",
+    "sha256": "083ac15773249e95c3faa08c16f5ca54c3e60d455c04f446566cfdd6537694c5"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/test-support.cjs",
+    "sha256": "2854a92490ac475e8f06d0ae3bca1ca1d84d68272e74c24413b3c29786da28df"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/writer-proposal.cjs",
+    "sha256": "a842fb0fc8f5df6f42248841c68bc59a4917f8c50befcfe7ad2c871318a7b148"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/Protocol.gs.proposed",
+    "sha256": "49f7e5cd2ff2289437734fee953b0de739b4dd2f52baf8a0e8b763b10259bc4c"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/canonical-writer.patch.proposed",
+    "sha256": "2430dea1e3f1d61cf98e8822ddd9bc52e49bbc5e77327baae169587a0dc83a2a"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2g-fixture/roles.sql.proposed",
+    "sha256": "d7fd37a3ef85e532bb13252d7a9e5648480acb34a9e0999f62cc8d3701ad1ecd"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2i-fixture/checkpoint.cjs",
+    "sha256": "417527f1e225ef9d92cae57a875819eea24330a30171faac2461cd8946668580"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2i-fixture/confirmation.cjs",
+    "sha256": "bc6afc2eccdbe16d21a179dcfd1e48c1d3600e63ba3175b9a24f293ba1f553c5"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2i-fixture/corrections.test.cjs",
+    "sha256": "eefa1b3513542a20e5e1e4e9cb82d0679c182868991f15b8b62438a22097cb4d"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2i-fixture/dispatch-authority.cjs",
+    "sha256": "5dca3bab13d978a44c33f503383810c0a182578d984c39243b47c51bd3d8eba3"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2i-fixture/media-proposal.cjs",
+    "sha256": "2787ed9277f21870e6bec994cb7d723961c9fae701ca98d58f8674ca2a3468b9"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2i-fixture/security-audit.test.cjs",
+    "sha256": "e47ef449642c60e1bb1ae3bdde3bcd959647634a654f588286f97d4147725b73"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2i-fixture/media-validation.patch.proposed",
+    "sha256": "059dd681f58404fdfdb6636f1d4b01d686c0dc194a44316c08c11790e7b60dfd"
+  },
+  {
+    "file": "gaita-de-boto/secure-access/stage2i-fixture/permissions.sql.proposed",
+    "sha256": "e428722be1328743ae9bb5c0c64cc27d125fe18033df686da46563791f48e102"
+  }
+]

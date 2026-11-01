@@ -3,6 +3,7 @@
 const fs=require('node:fs'),path=require('node:path'),C=require('node:crypto');
 const {P,digest,exact,uuid,envelope,checked}=require('./protocol.cjs');
 const {validBinding,bytes}=require('../queue-fixture/postgres.cjs');
+const {identity,verifyDeviceSource}=require('../stage2i-fixture/confirmation.cjs');
 const {validateProjection}=require('./projection.cjs');
 const hash=x=>C.createHash('sha256').update(x).digest('hex');
 function seal(key,value,aad){if(!Buffer.isBuffer(key)||key.length!==32)throw Error('Encryption key unavailable.');const iv=C.randomBytes(12),c=C.createCipheriv('aes-256-gcm',key,iv);c.setAAD(Buffer.from(aad));return{iv,cipher:Buffer.concat([c.update(value),c.final()]),tag:c.getAuthTag()};}
@@ -11,8 +12,8 @@ const FACETS={'recording.saved':['sessions','totals','availability','group'],'te
  'target.assign':['targets'],'target.change':['targets','catalogue'],'badge.award':['badges'],'badge.change':['badges','catalogue'],'session.target':['sessions','targets'],
  'permission.change':['access','group']};
 async function openAdapter(config){
- const {fixtureOnly,pool,profiles,profile,identities,now,stageKey,readKey,gatewayKey,sourceKeys,serviceKeys,leaseMs=1000}=config;
- if(!fixtureOnly||!pool?.connect||!profiles||!identities||!Buffer.isBuffer(stageKey)||stageKey.length!==32||!Buffer.isBuffer(readKey)||readKey.length!==32)throw Error('Offline adapter opt-in required.');
+ const {fixtureOnly,pool,profiles,profile,identities,now,stageKey,readKey,gatewayKey,sourceKeys,serviceKeys,integrity,dispatchAuthority,leaseMs=1000}=config;
+ if(!fixtureOnly||typeof integrity!=='function'||!dispatchAuthority||!pool?.connect||!profiles||!identities||!Buffer.isBuffer(stageKey)||stageKey.length!==32||!Buffer.isBuffer(readKey)||readKey.length!==32)throw Error('Offline adapter opt-in required.');
  const env=profile.environment,ns={environment:env,profileDigest:profiles.digest(profile)},selection={environment:env,organisation:profile.organisation,pupil:profile.pupil};
  let activeTransactions=0,fault=null;
  async function tx(fn){const c=await pool.connect();let started=false;try{await c.query('BEGIN');started=true;activeTransactions++;const result=await fn(c);if(fault==='rollback'){fault=null;throw Error('Injected transaction rollback.');}await c.query('COMMIT');return result;}catch(e){if(started)await c.query('ROLLBACK');throw e;}finally{if(started)activeTransactions--;c.release();}}
@@ -26,47 +27,48 @@ async function openAdapter(config){
  const revision=async c=>(await c.query('SELECT * FROM gdb_g_revision WHERE environment=$1 FOR UPDATE',[env])).rows[0];
  const version=r=>r.generation+':'+r.number;
  function select(s){if(!exact(s,['environment','organisation','pupil'])||Object.keys(selection).some(k=>s[k]!==selection[k]))throw Error('Foreign environment or resource selector.');}
- async function auth(c,actor,op,s=selection){select(s);profiles.assert(profile,s,now(),op);identities.check(actor,'owner',profile.owner);const a=await admission(c);
+ async function auth(c,actor,op,s=selection){integrity();select(s);profiles.assert(profile,s,now(),op);identities.check(actor,'owner',profile.owner);const a=await admission(c);
   if(a.status!=='active'||Number(a.expires)<=now()||a.subject!==actor.subject||a.pupil!==profile.pupil||!JSON.parse(a.operations).includes(op))throw Error('Admission revoked, expired or denied.');return a;}
  async function bump(c,event,clear=false){const r=await revision(c),facets=JSON.parse(r.facets);for(const k of FACETS[event]||[])facets[k]++;
   await c.query('UPDATE gdb_g_revision SET number=number+1,facets=$2,dirty=$3 WHERE environment=$1',[env,P.canonical(facets),clear?null:r.dirty]);return version({...r,number:r.number+1});}
  async function grant(actor,{status='active',expires=now()+60000,operations=profile.operations,expectedRevision}){identities.check(actor,'owner',profile.owner);
   if(!['active','revoked','inactive'].includes(status)||!Number.isSafeInteger(expires)||!Array.isArray(operations)||operations.some(x=>!profile.operations.includes(x)))throw Error('Invalid admission request.');
-  return tx(async c=>{const a=await admission(c);if(a.revision!==expectedRevision)throw Error('Admission CAS conflict.');await c.query('UPDATE gdb_g_admission SET revision=revision+1,status=$2,expires=$3,operations=$4 WHERE environment=$1',[env,status,expires,P.canonical(operations)]);await bump(c,'permission.change');return a.revision+1;});}
+  const revision=await tx(async c=>{const a=await admission(c);if(a.revision!==expectedRevision)throw Error('Admission CAS conflict.');await c.query('UPDATE gdb_g_admission SET revision=revision+1,status=$2,expires=$3,operations=$4 WHERE environment=$1',[env,status,expires,P.canonical(operations)]);await bump(c,'permission.change');return a.revision+1;});dispatchAuthority.setAdmission({status,revision,expires});return revision;}
  async function submit(actor,s,recording,encoded){return tx(async c=>{const a=await auth(c,actor,'recording.submit',s),r=await revision(c);
   if(!validBinding(recording)||recording.organisation!==profile.organisation||recording.pupil!==profile.pupil||recording.subject!==actor.subject||recording.sessionId!==profile.sessionId)throw Error('Original identity rejected.');
   const audio=bytes(recording,encoded),original={binding:recording,originalActor:{issuer:'https://accounts.google.com',subject:actor.subject,scope:'google:fixture'},profileDigest:ns.profileDigest};
   const old=await job(c,recording.sessionId);if(old){const m=JSON.parse(old.manifest);if(digest({...original})!==digest({binding:m.binding,originalActor:m.originalActor,profileDigest:m.profileDigest}))throw Error('Immutable original conflict.');return publicStatus(old);}
   if(r.dirty)throw Error('DIRTY source.');const manifest={...original,operation:C.randomUUID(),baseVersion:version(r),admissionRevision:a.revision},mHash=digest(manifest),encrypted=seal(stageKey,audio,mHash);
-  await c.query("INSERT INTO gdb_g_job(environment,session,manifest,manifest_hash,phase,iv,cipher,tag) VALUES($1,$2,$3,$4,'queued',$5,$6,$7)",[env,recording.sessionId,P.canonical(manifest),mHash,encrypted.iv,encrypted.cipher,encrypted.tag]);return{saved:false,state:'SAFE ON DEVICE — awaiting confirmation',retainLocalAudio:true,sessionId:recording.sessionId};});}
- function publicStatus(r){const b=JSON.parse(r.manifest).binding;return r.phase==='confirmed'?{saved:true,sessionId:b.sessionId,hash:b.hash,byteLength:b.length,mimeType:b.mimeType,validatedSeconds:b.durationSeconds,retainLocalAudio:false}:
-  {saved:false,sessionId:b.sessionId,state:'SAFE ON DEVICE — awaiting confirmation',retainLocalAudio:true};}
+  await c.query("INSERT INTO gdb_g_job(environment,session,manifest,manifest_hash,phase,iv,cipher,tag) VALUES($1,$2,$3,$4,'queued',$5,$6,$7)",[env,recording.sessionId,P.canonical(manifest),mHash,encrypted.iv,encrypted.cipher,encrypted.tag]);return publicStatus({phase:'queued',manifest:P.canonical(manifest),manifest_hash:mHash});});}
+ function publicStatus(r){const m=JSON.parse(r.manifest),b=m.binding;let sourceConfirmation=null;if(r.phase==='confirmed'){const q=checked(sourceKeys,'recording.receipt',ns,JSON.parse(r.receipt),now(),{historical:true}).payload;sourceConfirmation=q.deviceReceipt;}
+  return{saved:r.phase==='confirmed',sessionId:b.sessionId,...(r.phase==='confirmed'?{hash:b.hash,byteLength:b.length,mimeType:b.mimeType,validatedSeconds:b.durationSeconds}: {state:'SAFE ON DEVICE — awaiting confirmation'}),
+   retainLocalAudio:r.phase!=='confirmed',identity:identity(m,ns),manifest:m,manifestDigest:r.manifest_hash,sourceConfirmation};}
  async function status(actor,s,sid){return tx(async c=>{await auth(c,actor,'recording.status',s);const r=await job(c,sid);if(!r)throw Error('Unknown original.');return publicStatus(r);});}
  async function claim(worker,owner){identities.check(worker,'worker');return tx(async c=>{await auth(c,owner,'recording.submit');const r=await revision(c);if(r.dirty)throw Error('DIRTY source.');
   const j=(await c.query("SELECT * FROM gdb_g_job WHERE environment=$1 AND (phase='queued' OR (phase='leased' AND lease<=$2)) ORDER BY session FOR UPDATE SKIP LOCKED LIMIT 1",[env,now()])).rows[0];if(!j)return null;
   const fence=j.fence+1,lease=now()+leaseMs;await c.query("UPDATE gdb_g_job SET phase='leased',worker=$3,fence=$4,lease=$5 WHERE environment=$1 AND session=$2",[env,j.session,worker.subject,fence,lease]);
   return{sessionId:j.session,worker:worker.subject,fence,lease,manifest:JSON.parse(j.manifest),manifestHash:j.manifest_hash};});}
- async function arm(worker,owner,permit){identities.check(worker,'worker');return tx(async c=>{const a=await auth(c,owner,'recording.submit'),r=await revision(c),j=await job(c,permit.sessionId);
+ async function arm(worker,owner,permit){identities.check(worker,'worker');const result=await tx(async c=>{const a=await auth(c,owner,'recording.submit'),r=await revision(c),j=await job(c,permit.sessionId);
   if(!j||j.phase!=='leased'||j.worker!==worker.subject||permit.worker!==worker.subject||j.fence!==permit.fence||Number(j.lease)!==permit.lease||permit.lease<=now()||j.manifest_hash!==permit.manifestHash||digest(permit.manifest)!==j.manifest_hash||r.dirty)throw Error('Lease/fence/manifest rejected.');
   const m=JSON.parse(j.manifest);if(m.baseVersion!==version(r))throw Error('Original revision changed.');
   const audio=unseal(stageKey,j,j.manifest_hash);bytes(m.binding,audio.toString('base64'));
   await c.query("UPDATE gdb_g_job SET phase='sent' WHERE environment=$1 AND session=$2",[env,j.session]);await c.query('UPDATE gdb_g_revision SET dirty=$2 WHERE environment=$1',[env,m.operation]);
-  return{audio,dispatch:envelope(gatewayKey,'recording.dispatch',ns,{permit,admissionRevision:a.revision},now())};});}
+  return{audio,dispatch:envelope(gatewayKey,'recording.dispatch',ns,{permit,admissionRevision:a.revision},now()),admissionRevision:a.revision};});dispatchAuthority.register(permit,result.admissionRevision);return result;}
  function receiptData(j,signed){const q=checked(sourceKeys,'recording.receipt',ns,signed,now(),{historical:true}).payload,m=JSON.parse(j.manifest),b=m.binding;
-  if(!exact(q,['manifestHash','binding','canonical','qualification','operation','admissionRevision','baseVersion'])||q.manifestHash!==j.manifest_hash||digest(q.binding)!==digest(b)||q.operation!==m.operation||q.baseVersion!==m.baseVersion||q.admissionRevision<m.admissionRevision||
+  if(!exact(q,['manifestHash','binding','canonical','qualification','operation','admissionRevision','baseVersion','deviceReceipt'])||q.manifestHash!==j.manifest_hash||digest(q.binding)!==digest(b)||q.operation!==m.operation||q.baseVersion!==m.baseVersion||q.admissionRevision<m.admissionRevision||
     q.canonical?.organisation!==profile.organisation||q.canonical.pupil!==profile.pupil||q.canonical.sessionId!==b.sessionId||!q.canonical.fileId||q.canonical.folderId!==profile.folder||
     q.canonical.fileHash!==b.hash||q.canonical.byteLength!==b.length||q.canonical.mimeType!==b.mimeType||q.canonical.validatedSeconds!==b.durationSeconds||!q.canonical.log?.identityDigest||!q.canonical.meta?.identityDigest||
     !exact(q.canonical,['organisation','pupil','sessionId','fileId','folderId','fileHash','byteLength','mimeType','validatedSeconds','durationEvidence','validatedStartIso','validatedEndIso','log','meta'])||
     q.canonical.validatedStartIso!==b.startIso||q.canonical.validatedEndIso!==b.endIso||!['pcm-sample-count','opus-packet-sample-count'].includes(q.canonical.durationEvidence)||
     !exact(q.canonical.log,['sheet','identityDigest'])||q.canonical.log.sheet!=='PRACTICE LOG'||!exact(q.canonical.meta,['sheet','identityDigest'])||q.canonical.meta.sheet!=='SESSION META'||
     !/^[a-f0-9]{64}$/.test(q.canonical.log.identityDigest)||!/^[a-f0-9]{64}$/.test(q.canonical.meta.identityDigest)||
-    !exact(q.qualification,['thresholdSeconds','validatedSeconds','qualifying'])||q.qualification.thresholdSeconds!==300||q.qualification.validatedSeconds!==b.durationSeconds||q.qualification.qualifying!==(b.durationSeconds>=300))throw Error('Exact source receipt rejected.');return q;}
- async function complete(worker,permit,signed,{reconcile=false}={}){identities.check(worker,reconcile?'recovery':'worker');if(profiles.current()!==profile)throw Error('Resource profile changed.');return tx(async c=>{await admission(c);const r=await revision(c),j=await job(c,permit.sessionId);if(!j||!['sent','attention','confirmed'].includes(j.phase))throw Error('No original dispatch.');
+    !exact(q.qualification,['thresholdSeconds','validatedSeconds','qualifying'])||q.qualification.thresholdSeconds!==300||q.qualification.validatedSeconds!==b.durationSeconds||q.qualification.qualifying!==(b.durationSeconds>=300))throw Error('Exact source receipt rejected.');const {deviceReceipt,...base}=q;verifyDeviceSource(sourceKeys,ns,deviceReceipt,m,now(),base);return q;}
+ async function complete(worker,permit,signed,{reconcile=false}={}){identities.check(worker,reconcile?'recovery':'worker');integrity();if(profiles.current()!==profile)throw Error('Resource profile changed.');return tx(async c=>{await admission(c);const r=await revision(c),j=await job(c,permit.sessionId);if(!j||!['sent','attention','confirmed'].includes(j.phase))throw Error('No original dispatch.');
   const q=receiptData(j,signed);if(j.phase==='confirmed'){if(digest(receiptData(j,JSON.parse(j.receipt)))!==digest(q))throw Error('Conflicting exact confirmation.');return publicStatus(j);}
   if(!reconcile&&(j.worker!==worker.subject||j.fence!==permit.fence||Number(j.lease)<=now()))throw Error('Stale worker cannot complete.');
   const m=JSON.parse(j.manifest);if(r.dirty!==m.operation)throw Error('DIRTY operation mismatch.');
   await c.query("UPDATE gdb_g_job SET phase='confirmed',receipt=$3 WHERE environment=$1 AND session=$2",[env,j.session,P.canonical(signed)]);await bump(c,'recording.saved',true);
-  return publicStatus({...j,phase:'confirmed'});});}
+  return publicStatus({...j,phase:'confirmed',receipt:P.canonical(signed)});});}
  async function uncertain(worker,sid){identities.check(worker,'worker');return tx(async c=>{const j=await job(c,sid);if(j&&j.phase==='sent')await c.query("UPDATE gdb_g_job SET phase='attention' WHERE environment=$1 AND session=$2",[env,sid]);});}
  async function consume(signed,purpose){const b=checked(serviceKeys,purpose,ns,signed,now());return tx(c=>c.query('INSERT INTO gdb_g_nonce VALUES($1,$2,$3,$4,$5)',[env,b.kid,purpose,b.nonce,digest(b)]));}
  async function beginChange(actor,event,operation,value){if(!Object.hasOwn(FACETS,event)||event==='recording.saved'||!uuid(operation))throw Error('Unknown revision event.');return tx(async c=>{await auth(c,actor,'path.read');const r=await revision(c),h=digest({event,operation,value});

@@ -1,0 +1,34 @@
+--- a/gaita-de-boto/apps-script/pupil/MediaDuration.gs
++++ b/gaita-de-boto/apps-script/pupil/MediaDuration.gs
+@@ -4,15 +4,23 @@
+  const ascii=(p,l)=>String.fromCharCode.apply(null,b.slice(p,p+l));
+  function uint(p,l,little){let v=0;for(let k=0;k<l;k++)v=v*256+b[p+(little?l-1-k:k)];return v;}
+  if(mime==='audio/wav'){
+-  if(n<44||ascii(0,4)!=='RIFF'||ascii(8,4)!=='WAVE')throw Error('Invalid WAV evidence.');
+-  let align=0,rate=0,total=0,format=0;
+-  for(let p=12;p+8<=n;){const id=ascii(p,4),len=uint(p+4,4,true),s=p+8;
+-   if(s+len>n)throw Error('Truncated WAV evidence.');
+-   if(id==='fmt '){if(len<16)throw Error('Invalid WAV format.');format=uint(s,2,true);rate=uint(s+4,4,true);align=uint(s+12,2,true);}
+-   if(id==='data')total+=len;
+-   p=s+len+(len%2);
++  if(n<44||ascii(0,4)!=='RIFF'||ascii(8,4)!=='WAVE'||uint(4,4,true)!==n-8)throw Error('Invalid WAV RIFF boundary.');
++  let align=0,rate=0,total=0,format=0,channels=0,bits=0,byteRate=0,formats=0,datas=0,fact=null,p=12;
++  while(p<n){
++   if(p+8>n)throw Error('Truncated WAV chunk header.');
++   const id=ascii(p,4),len=uint(p+4,4,true),s=p+8,e=s+len,padded=e+(len%2);
++   if(e>n||padded>n)throw Error('Truncated WAV chunk/data/padding.');
++   if(id==='fmt '){
++    if(++formats!==1||datas||![16,18].includes(len)||(len===18&&uint(s+16,2,true)!==0))throw Error('Unsupported WAV format layout.');
++    format=uint(s,2,true);channels=uint(s+2,2,true);rate=uint(s+4,4,true);byteRate=uint(s+8,4,true);align=uint(s+12,2,true);bits=uint(s+14,2,true);
++    if(![1,3].includes(format)||channels<1||channels>8||rate<1||rate>384000||
++       !(format===1?[8,16,24,32]:[32,64]).includes(bits)||align!==channels*bits/8||byteRate!==rate*align)throw Error('Inconsistent WAV encoding/rate/alignment.');
++   }
++   if(id==='data'){if(formats!==1||++datas!==1||!len||len%align)throw Error('Invalid WAV data length.');total=len;}
++   if(id==='fact'){if(fact!==null||len!==4)throw Error('Unsupported WAV fact.');fact=uint(s,4,true);}
++   p=padded;
+   }
+-  if(![1,3].includes(format)||!rate||!align||!total||total%align)throw Error('Unsupported WAV evidence.');
++  if(p!==n||formats!==1||datas!==1||(fact!==null&&fact!==total/align))throw Error('Incomplete or contradictory WAV evidence.');
+   return {seconds:total/align/rate,method:'pcm-sample-count'};
+  }
+  if(mime!=='audio/webm')throw Error('Independent duration check supports Chrome WebM/Opus and PCM WAV. Keep a local copy.');
