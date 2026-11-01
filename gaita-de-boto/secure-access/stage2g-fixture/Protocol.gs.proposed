@@ -1,0 +1,125 @@
+/* INACTIVE OFFLINE CANDIDATE. No Apps Script deployment or external service.
+ * Original implementation; no third-party verification code or runtime import.
+ * RSA verification: strict RSASSA-PKCS1-v1_5 / SHA-256 (RFC 8017, 8.2/9.2).
+ * Signing alone is delegated to Google Utilities; tests inject a local double.
+ */
+var GdbGProtocol = (function () {
+  'use strict';
+  function fail(message) { throw new Error(message); }
+  function scalar(s) {
+    for (var i = 0; i < s.length; i++) {
+      var n = s.charCodeAt(i);
+      if (n >= 0xd800 && n <= 0xdbff) {
+        var next = s.charCodeAt(++i);
+        if (!(next >= 0xdc00 && next <= 0xdfff)) fail('Unpaired Unicode surrogate.');
+      } else if (n >= 0xdc00 && n <= 0xdfff) fail('Unpaired Unicode surrogate.');
+    }
+    return s;
+  }
+  function canonical(x) {
+    if (x === null) return 'null';
+    if (typeof x === 'string') return JSON.stringify(scalar(x));
+    if (typeof x === 'boolean') return x ? 'true' : 'false';
+    if (typeof x === 'number') { if (!Number.isFinite(x)) fail('Non-finite JSON.'); return JSON.stringify(x); }
+    if (!x || typeof x !== 'object' || Object.getOwnPropertySymbols(x).length) fail('Unsupported JSON.');
+    if (Array.isArray(x)) {
+      if (Object.keys(x).length !== x.length || !Array.from({length:x.length},function(_,i){return Object.prototype.hasOwnProperty.call(x,i);}).every(Boolean)) fail('Sparse or decorated array.');
+      return '[' + x.map(canonical).join(',') + ']';
+    }
+    if (Object.prototype.toString.call(x) !== '[object Object]' ||
+        (Object.getPrototypeOf(x) && Object.getPrototypeOf(x).constructor.name !== 'Object')) fail('Non-JSON object.');
+    var keys = Object.keys(x).sort();
+    return '{' + keys.map(function (k) {
+      if (['__proto__', 'constructor', 'prototype'].indexOf(k) >= 0) fail('Reserved JSON key.');
+      return JSON.stringify(scalar(k)) + ':' + canonical(x[k]);
+    }).join(',') + '}';
+  }
+  function utf8(s) {
+    scalar(s); var out = [];
+    for (var i = 0; i < s.length; i++) {
+      var n = s.charCodeAt(i);
+      if (n >= 0xd800 && n <= 0xdbff) n = 0x10000 + ((n - 0xd800) << 10) + s.charCodeAt(++i) - 0xdc00;
+      if (n < 128) out.push(n);
+      else if (n < 2048) out.push(192 | (n >> 6), 128 | (n & 63));
+      else if (n < 65536) out.push(224 | (n >> 12), 128 | ((n >> 6) & 63), 128 | (n & 63));
+      else out.push(240 | (n >> 18), 128 | ((n >> 12) & 63), 128 | ((n >> 6) & 63), 128 | (n & 63));
+    }
+    return out;
+  }
+  function octets(input) { return Array.from(input, function (x) {
+    if (!Number.isInteger(x) || x < -128 || x > 255) fail('Invalid byte.'); return x & 255;
+  }); }
+  var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+  function base64(input) {
+    var a = octets(input), s = '';
+    for (var i = 0; i < a.length; i += 3) {
+      var n = (a[i] << 16) | ((a[i + 1] || 0) << 8) | (a[i + 2] || 0);
+      s += alphabet[(n >>> 18) & 63] + alphabet[(n >>> 12) & 63] +
+        (i + 1 < a.length ? alphabet[(n >>> 6) & 63] : '=') + (i + 2 < a.length ? alphabet[n & 63] : '=');
+    }
+    return s;
+  }
+  function unbase64(s) {
+    if (typeof s !== 'string' || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(s)) fail('Invalid Base64.');
+    var a = [];
+    for (var i = 0; i < s.length; i += 4) {
+      var n = (alphabet.indexOf(s[i]) << 18) | (alphabet.indexOf(s[i + 1]) << 12) |
+        ((s[i + 2] === '=' ? 0 : alphabet.indexOf(s[i + 2])) << 6) | (s[i + 3] === '=' ? 0 : alphabet.indexOf(s[i + 3]));
+      a.push((n >>> 16) & 255); if (s[i + 2] !== '=') a.push((n >>> 8) & 255); if (s[i + 3] !== '=') a.push(n & 255);
+    }
+    if (base64(a) !== s) fail('Noncanonical Base64.'); return a;
+  }
+  function unurl(s) {
+    if (typeof s !== 'string' || !/^[A-Za-z0-9_-]+$/.test(s) || s.length % 4 === 1) fail('Invalid JWK encoding.');
+    var b = s.replace(/-/g, '+').replace(/_/g, '/'); return unbase64(b + '='.repeat((4 - b.length % 4) % 4));
+  }
+  // SHA-256, original straightforward 32-bit implementation; FIPS 180-4 constants.
+  var K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+    0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+    0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+    0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+    0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+    0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+    0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+    0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  function rr(x, n) { return (x >>> n) | (x << (32 - n)); }
+  function sha256(input) {
+    var a = octets(input), length = a.length * 8, h = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+    a.push(128); while (a.length % 64 !== 56) a.push(0);
+    for (var i = 7; i >= 0; i--) a.push(Math.floor(length / Math.pow(256, i)) & 255);
+    for (var offset = 0; offset < a.length; offset += 64) {
+      var w = []; for (i = 0; i < 16; i++) w[i] = (a[offset+i*4]<<24)|(a[offset+i*4+1]<<16)|(a[offset+i*4+2]<<8)|a[offset+i*4+3];
+      for (i = 16; i < 64; i++) w[i] = (w[i-16] + (rr(w[i-15],7)^rr(w[i-15],18)^(w[i-15]>>>3)) + w[i-7] + (rr(w[i-2],17)^rr(w[i-2],19)^(w[i-2]>>>10))) | 0;
+      var v = h.slice();
+      for (i = 0; i < 64; i++) {
+        var t1 = (v[7] + (rr(v[4],6)^rr(v[4],11)^rr(v[4],25)) + ((v[4]&v[5])^(~v[4]&v[6])) + K[i] + w[i]) | 0;
+        var t2 = ((rr(v[0],2)^rr(v[0],13)^rr(v[0],22)) + ((v[0]&v[1])^(v[0]&v[2])^(v[1]&v[2]))) | 0;
+        v = [(t1+t2)|0,v[0],v[1],v[2],(v[3]+t1)|0,v[4],v[5],v[6]];
+      }
+      for (i = 0; i < 8; i++) h[i] = (h[i] + v[i]) | 0;
+    }
+    var out = []; h.forEach(function (v) { out.push((v>>>24)&255,(v>>>16)&255,(v>>>8)&255,v&255); }); return out;
+  }
+  function hex(a) { return octets(a).map(function (n) { return n.toString(16).padStart(2,'0'); }).join(''); }
+  function hash(s) { return hex(sha256(utf8(s))); }
+  function big(a) { return BigInt('0x' + hex(a)); }
+  function modpow(s, e, n) { var out = 1n; while (e) { if (e & 1n) out = out * s % n; s = s * s % n; e >>= 1n; } return out; }
+  function verifyRsa(wire, signature, jwk) {
+    try {
+      if (!jwk || jwk.kty !== 'RSA' || jwk.e !== 'AQAB') return false;
+      var n = unurl(jwk.n), sig = unbase64(signature);
+      if ([256,384].indexOf(n.length) < 0 || !(n[0] & 128) || !(n[n.length-1] & 1) || sig.length !== n.length) return false;
+      var modulus = big(n), representative = big(sig); if (representative >= modulus) return false;
+      var recovered = modpow(representative,65537n,modulus).toString(16).padStart(n.length*2,'0');
+      var digest = '3031300d060960864801650304020105000420' + hash(wire);
+      var expected = '0001' + 'ff'.repeat(n.length - digest.length/2 - 3) + '00' + digest;
+      var diff = 0; for (var i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ recovered.charCodeAt(i);
+      return diff === 0;
+    } catch (_) { return false; }
+  }
+  function sign(body, pem) {
+    if (!pem) fail('Signing key unavailable.'); var wire = canonical(body);
+    return {wire:wire,signature:base64(Utilities.computeRsaSha256Signature(wire,pem,Utilities.Charset.UTF_8))};
+  }
+  return {canonical:canonical,utf8:utf8,base64:base64,unbase64:unbase64,sha256:sha256,hex:hex,hash:hash,verifyRsa:verifyRsa,sign:sign};
+})();

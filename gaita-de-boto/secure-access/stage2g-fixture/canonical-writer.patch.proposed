@@ -1,0 +1,39 @@
+--- a/gaita-de-boto/apps-script/pupil/Code.gs
++++ b/gaita-de-boto/apps-script/pupil/Code.gs
+@@ -189,7 +189,9 @@
+   return {ok:true};
+  }finally{lock.releaseLock();}
+ }
+-function gdbPUpload_(ss,id,d){
++function gdbPUpload_(ss,id,d){return gdbPWriteCore_(ss,id,d,null);}
++function gdbPWriteCore_(ss,id,d,trusted){
++ if(trusted)gdbGTrusted_(trusted,ss,id);
+  if(d.testFixture===true)gdbTestOwner_();
+  const sid=gdbPSession_(d.sessionId);
+  const start=new Date(String(d.startIso||'')),end=new Date(String(d.endIso||''));
+@@ -197,7 +199,7 @@
+  const diff=(end.getTime()-start.getTime())/1000;
+  if(!Number.isFinite(diff)||!Number.isFinite(seconds)||diff<=0||diff>7200||
+     Math.abs(diff-seconds)>0.002)throw Error('Recording duration does not match timestamps.');
+- const rule=String(PropertiesService.getScriptProperties().getProperty('GDB_QUALIFY_MINUTES')||'').trim();
++ const rule=trusted?String(trusted.thresholdSeconds/60):String(PropertiesService.getScriptProperties().getProperty('GDB_QUALIFY_MINUTES')||'').trim();
+  const threshold=rule===''?null:Number(rule);
+  if(threshold!==null&&(!Number.isFinite(threshold)||threshold<=0||threshold>120))throw Error('Practice rule invalid.');
+  const mime=String(d.mimeType||'').split(';')[0];
+@@ -209,6 +211,7 @@
+  const bytes=Utilities.base64Decode(b64);
+  const lock=LockService.getScriptLock();lock.waitLock(25000);
+  try{
++  if(trusted)gdbGBefore_(trusted);
+   const state=gdbPRecordingState_(ss,id,sid);
+   if(state.saved)return {ok:true,fileUrl:state.fileUrl,qualifying:state.qualifying,duplicate:true};
+   if(state.state!=='absent')throw Error('Save uncertain: contact teacher; do not re-upload.');
+@@ -217,7 +220,7 @@
+   gdbPReceipts_(ss).appendRow([sid,id,new Date(),'STARTED']);SpreadsheetApp.flush();
+   // From this point an uncertain write must be reconciled, never blindly retried.
+   const blob=Utilities.newBlob(bytes,mime,sid+'.'+extensions[mime]);
+-  const file=DriveApp.getFolderById(gdbPProp_('GDB_PUPIL_RECORDINGS_FOLDER_ID')).createFile(blob);
++  const file=DriveApp.getFolderById(trusted?trusted.folder:gdbPProp_('GDB_PUPIL_RECORDINGS_FOLDER_ID')).createFile(blob);
+   const url=file.getUrl();
+   const mins=Math.round(evidence.seconds/60*100)/100,qualifying=threshold===null?'Pending rule':evidence.seconds>=threshold*60?'Yes':'No';
+   const row=[id,Utilities.formatDate(end,'Europe/Madrid','yyyy-MM-dd'),
