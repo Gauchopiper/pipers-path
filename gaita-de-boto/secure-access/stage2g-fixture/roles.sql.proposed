@@ -1,0 +1,6 @@
+-- RETIRED Stage 2G permission proposal. DO NOT INSTALL.
+-- It cannot run the adapter safely: SELECT FOR UPDATE needs UPDATE rights,
+-- and table SELECT does not isolate environments.
+-- See ../stage2i-fixture/permissions.sql.proposed and PERMISSIONS.md.
+-- The old three-role SET ROLE denial probe is retained ONLY as
+-- ../stage2i-fixture/legacy-role-probe.sql.fixture, not a deployment design.

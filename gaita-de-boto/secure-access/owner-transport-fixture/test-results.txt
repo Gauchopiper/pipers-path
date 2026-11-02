@@ -1,0 +1,89 @@
+Node v24.22.1; 1 November 2026 Europe/Madrid; local test:owner-transport command
+PASS A01 explicit fixture opt-in and disabled defaults protect both components
+PASS A02 actual one-job pull preserves exact original bytes and authenticated receipt
+PASS A03 accepting the queue or claiming a job never means SAVED
+PASS A04 one invocation cannot claim or write a second recording
+PASS A05 overlapping pull invocations cannot acquire another job while a lease is held
+PASS A06 forged actor, database worker and copied execution contexts are denied
+PASS A07 a different Google effective identity cannot inherit Owner execution
+PASS A08 missing execution capability denies work before claiming or disclosing audio
+PASS A09 Owner execution alone cannot bypass missing or operation-limited Dummy admission
+PASS A10 worker verifies signed original actor independently of effective Owner
+PASS A11 cross-environment or resource-profile offer is rejected before arming
+PASS A12 a valid worker signature cannot introduce client-selected resources
+PASS A13 HTTPS destination, method, query and redirect alternatives are denied locally
+PASS A14 wrong service signing key cannot obtain any queued recording
+PASS A15 signed service replay remains rejected after both stores reopen
+PASS A16 expired service requests are rejected with no source side effects
+PASS A17 gateway response substitution cannot bind an offer to another request
+PASS A18 claim-response replay is durable at the Owner runtime boundary
+PASS A19 admission revocation after claim prevents arming and canonical writing
+PASS A20 admission revision change invalidates the earlier claim
+PASS A21 expired lease is replaced with a higher fence and rejects the old arm
+PASS A22 encrypted pending corruption fails before the canonical writer
+PASS A23 altered signed armed bytes cannot replace the original audio
+PASS A24 a live source call is never made while a database transaction is open
+PASS A25 canonical ScriptLock is balanced, never nested, and remains the original writer boundary
+PASS A26 an attempted outer canonical lock is rejected before gateway or writer work
+PASS A27 gateway unavailable before claim preserves encrypted pending audio
+PASS A28 interruption after arm never permits a destructive redispatch
+PASS A29 lost Google success response reconciles original bytes after reopening
+PASS A30 interruption after canonical completion but before outbox persists requires inspection only
+PASS A31 gateway failure after Google success retains both canonical proof and pending ciphertext
+PASS A32 lost acknowledgement after gateway commit retries only the exact callback
+PASS A33-before-file partial source writes survive reopening without repair or another upload
+PASS A33-after-file partial source writes survive reopening without repair or another upload
+PASS A34 exact five-minute qualification is retained through the new pull path
+PASS A35 configured dispatch cap blocks additional canonical work
+PASS A36 approved window expiry pauses new work but still permits explicit internal reconciliation
+PASS A37 revocation during execution denies pupil access while preserving the exact internal outcome
+PASS A38 execution permission revoked after arming prevents the Google call
+PASS A39 unavailable signing key prevents new source work and never reports SAVED
+PASS A40 callback key loss after source success is recoverable without rewriting
+PASS A41 forged canonical receipt is rejected even inside an authenticated worker result
+PASS A42 callback cannot substitute another claimed delivery identity
+PASS A43 service credential revocation denies fresh claims and protected broker requests
+PASS A44 Google timeout before source work retains ciphertext and forces inspection, never upload retry
+PASS A45 lost arm response cannot cause an automatic second dispatch
+PASS A46 inspecting an already confirmed receipt is idempotent and preserves its revision
+PASS B01 relay carries only opaque handle and acknowledgement; gateway releases playback later
+PASS B02 PATH is available through the separate on-demand broker with no writer call
+PASS B03 a broker acknowledgement is not a data-release authorisation
+PASS B04 another authenticated Owner session cannot consume the original session response
+PASS B05 one-use broker handle cannot be fetched twice, including after reopening
+PASS B06 final release consumes its response exactly once
+PASS B07 foreign actor, pupil, organisation and environment cannot request or release saved audio
+PASS B08 raw file IDs, URLs, workbook and folder selectors never enter the broker
+PASS B09 wrong relay origin and non-Owner Google web context are denied
+PASS B10 revocation after request creation prevents source inspection
+PASS B11 revocation between source read and callback prevents all private release
+PASS B12 revocation after callback still denies final release of staged evidence
+PASS B13 expired admission and renewed admission revisions invalidate old read requests
+PASS B14 read deadline expiry prevents stale-on-error fallback
+PASS B15 a DIRTY source operation blocks request creation and staged response release
+PASS B16 changed target revision during retrieval discards the source response
+PASS B17 independent session revocation denies an otherwise admitted final read
+PASS B18 successful PATH and playback inspection leaves canonical data byte-for-byte unchanged
+PASS B19 missing canonical META is not repaired by protected inspection
+PASS B20 changed canonical audio or folder never yields playback
+PASS B21 signed foreign PATH session is rejected by independent gateway projection checks
+PASS B22 signed wrong playback bytes are rejected even if the broker returned a valid signature
+PASS B23 mismatched authenticated read request digest cannot release a rebound response
+PASS B24 raw Drive URLs inside signed projections are rejected
+PASS B25 duplicate read callback after lost gateway acknowledgement is idempotent and opaque
+PASS B26 broker interruption loses only an opaque acknowledgement; private data stays at gateway
+PASS B27 gateway outage after source inspection preserves canonical data and cannot leak via relay
+PASS B28 read staging key unavailable denies release without consuming original evidence
+PASS B29 tampered encrypted read staging cannot release plaintext or consume the response
+PASS B30 exact read request and encrypted response survive both service reopenings
+PASS B31 recording confirmation invalidates read snapshots and all recording/GROUP facets once
+PASS B32-teacher.comment source revision invalidates an already staged read
+PASS B32-teacher.review source revision invalidates an already staged read
+PASS B32-target.assign source revision invalidates an already staged read
+PASS B32-badge.award source revision invalidates an already staged read
+PASS B32-permission.change source revision invalidates an already staged read
+PASS B33 browser relay refuses even a signed response that contains private data beside the ack
+PASS B34 an unbound historical source session fails closed without being adopted
+PASS B35 no external HTTP, DNS socket or live Google request was attempted
+PASS B36 wrong read-response key cannot reopen transport state or replace pending evidence
+{"suite":"owner-run-transport-and-protected-reads","registered":87,"passed":87,"failed":0,"skipped":0,"unexecuted":0,"externalNetworkCalls":0,"disposableDirectoriesRemoved":87}

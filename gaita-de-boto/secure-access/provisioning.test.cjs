@@ -1,0 +1,40 @@
+'use strict';
+const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs'),{randomUUID}=require('node:crypto');
+const {PGlite}=require('@electric-sql/pglite');
+const {postgresStore,postgresAccess,postgresSessions}=require('./postgres.cjs');
+const {canonicalPupils}=require('./canonical-pupils.cjs'),{provisioning}=require('./provisioning.cjs');
+(async()=>{
+ const engine=new PGlite(),query=async(s,a)=>{const r=a?.length?await engine.query(s,a):(await engine.exec(s)).at(-1);return {rows:r?.rows||[],rowCount:r?.affectedRows||0};};
+ const db=postgresStore({query,connect:async()=>({query,release(){}})});await db.migrate();
+ const rows=[['existing','Fixture Existing','No','ES','date','SECRET','PRIVATE-LINK','CODE']],profiles=new Map([['existing',{kind:'child',evidence:'verified-profile'}]]);
+ const ctx=vm.createContext({LockService:{getScriptLock:()=>({waitLock(){},releaseLock(){}})},SpreadsheetApp:{flush(){}},Date});
+ vm.runInContext(fs.readFileSync(require('node:path').join(__dirname,'../apps-script/teacher/Code.gs'),'utf8'),ctx);
+ ctx.gdbOwner_=()=>({role:'OWNER'});ctx.gdbRows_=()=>rows;ctx.gdbSheet_=()=>({appendRow:r=>rows.push(r)});
+ let loseCanonical=false,loseAccess=false;
+ const canonical=canonicalPupils({organisation:'GAITA-DE-BOTO',readRows:async()=>rows,profile:async id=>profiles.get(id),createInactive:async(...a)=>{const r=ctx.gdb_createPupil(...a);if(loseCanonical){loseCanonical=false;throw Error('lost canonical response');}return r;}});
+ const scope='google:fixture',owner={verified:true,scope,subject:'owner'},sessions=postgresSessions(db,{scope});
+ const enrolled=await sessions.create({verified:true,scope,subject:'guardian'});
+ const access=postgresAccess(db,{organisation:'GAITA-DE-BOTO',identityScope:scope,ownerSubject:'owner',origin:'https://fixture.example',externalApproved:true,pupilExists:canonical.exists,pupilKind:canonical.kind});
+ const config={db,canonical,sessions,ownerSubject:'owner',scope,access:{change:async(...a)=>{const r=await access.change(...a);if(loseAccess){loseAccess=false;throw Error('lost access response');}return r;}}};
+ const workflow=provisioning({...config,enabled:true});let n=0;const check=async(name,fn)=>{await fn();console.log('PASS '+name);n++;};
+ const input=(extra={})=>({operation:randomUUID(),mode:'existing',pupil:'existing',enrolment:enrolled.enrolment,relation:'guardian',evidence:'fixture-authorisation',expires:Date.now()+3600000,...extra});
+ try{
+ await check('disabled gate performs no canonical or database writes',async()=>{await assert.rejects(provisioning(config).run(owner,input()),/disabled/);assert.equal((await query('SELECT * FROM gdb_provisioning')).rows.length,0);});
+ await check('non-Owner and forged subject denied before creation',async()=>{await assert.rejects(workflow.run({...owner,subject:'pupil'},input()),/denied/);await assert.rejects(workflow.run(owner,input({subject:'forged'})),/Invalid/);});
+ await check('canonical projection excludes legacy capabilities',async()=>{const r=await canonical.get('existing');assert.equal(Object.keys(r).length,4);assert(!JSON.stringify(r).includes('SECRET'));});
+ await check('unknown enrolment cannot create pupil',async()=>{await assert.rejects(workflow.run(owner,input({enrolment:'fake'})));assert.equal(rows.length,1);});
+ const existing=input();
+ await check('existing pupil provisioned inactive without duplicate row or link',async()=>{const r=await workflow.run(owner,existing);assert.equal(r.state,'inactive');assert.equal(r.link,null);assert.equal(rows.length,1);});
+ await check('receipt replay stable; altered operation rejected',async()=>{await workflow.run(owner,existing);await assert.rejects(workflow.run(owner,{...existing,evidence:'different'}),/conflict/);assert.equal((await query('SELECT * FROM gdb_grants')).rows.length,1);});
+ const fresh=input({mode:'new',pupil:undefined,name:'Fixture New',language:'EN'});profiles.set(fresh.operation,{kind:'child',evidence:'verified-new-profile'});
+ await check('lost Teacher response leaves recoverable intent and one complete inactive row',async()=>{loseCanonical=true;await assert.rejects(workflow.run(owner,fresh),/lost canonical/);assert.equal((await workflow.status(owner,fresh.operation)).state,'pending');assert.equal(rows.length,2);assert.equal(rows[1][2],'No');assert.deepEqual(Array.from(rows[1].slice(5)),['','','']);});
+ await check('retry with new workflow instance recovers same canonical pupil',async()=>{const r=await provisioning({...config,enabled:true}).run(owner,fresh);assert.equal(r.pupil,fresh.operation);assert.equal(rows.length,2);});
+ await check('actual Teacher creation rejects same name with new operation',async()=>{await assert.rejects(workflow.run(owner,{...fresh,operation:randomUUID()}),/already exists/);assert.equal(rows.length,2);});
+ const lost=input({mode:'new',pupil:undefined,name:'Fixture Lost DB Response',language:'EN'});profiles.set(lost.operation,{kind:'child',evidence:'profile'});
+ await check('lost access response replays receipt without duplicate grant',async()=>{loseAccess=true;await assert.rejects(workflow.run(owner,lost),/lost access/);assert.equal((await workflow.status(owner,lost.operation)).state,'record-created');await workflow.run(owner,lost);assert.equal((await query('SELECT * FROM gdb_operations WHERE operation=$1',[lost.operation])).rows.length,1);});
+ const missing=input({mode:'new',pupil:undefined,name:'Fixture Missing Classification',language:'ES'});
+ await check('missing classification leaves complete inactive row without grant',async()=>{await assert.rejects(workflow.run(owner,missing),/classification/);assert.equal((await workflow.status(owner,missing.operation)).state,'record-created');assert.equal(await access.status(owner,missing.operation),null);});
+ await check('duplicate canonical IDs fail closed',async()=>{rows.push([...rows[0]]);await assert.rejects(canonical.get('existing'),/Duplicate/);rows.pop();});
+ console.log(`${n} canonical/provisioning checks passed. Real Teacher creation code with mocked workbook; PGlite journal. No live pupil operations.`);
+ }finally{await engine.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});

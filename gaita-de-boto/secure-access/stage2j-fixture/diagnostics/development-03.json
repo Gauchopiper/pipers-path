@@ -1,0 +1,1008 @@
+{
+  "summary": {
+    "registered": 196,
+    "executed": 192,
+    "passed": 192,
+    "failed": 0,
+    "skipped": 0,
+    "blocked": 4,
+    "unexecuted": 4,
+    "networkAttempts": 0,
+    "directoriesCreated": 16,
+    "directoriesRemoved": 16,
+    "remainingDirectories": 0,
+    "native": false,
+    "roleMethod": "SET SESSION AUTHORIZATION; not authenticated logins",
+    "node": "v24.22.1",
+    "pglite": "0.5.13"
+  },
+  "results": [
+    {
+      "name": "ACL gateway no administrative flags",
+      "status": "passed"
+    },
+    {
+      "name": "ACL gateway denies ownership and table mutation",
+      "status": "passed"
+    },
+    {
+      "name": "ACL worker no administrative flags",
+      "status": "passed"
+    },
+    {
+      "name": "ACL worker denies ownership and table mutation",
+      "status": "passed"
+    },
+    {
+      "name": "ACL reader no administrative flags",
+      "status": "passed"
+    },
+    {
+      "name": "ACL reader denies ownership and table mutation",
+      "status": "passed"
+    },
+    {
+      "name": "ACL admission no administrative flags",
+      "status": "passed"
+    },
+    {
+      "name": "ACL admission denies ownership and table mutation",
+      "status": "passed"
+    },
+    {
+      "name": "ACL verifier no administrative flags",
+      "status": "passed"
+    },
+    {
+      "name": "ACL verifier denies ownership and table mutation",
+      "status": "passed"
+    },
+    {
+      "name": "ACL recovery no administrative flags",
+      "status": "passed"
+    },
+    {
+      "name": "ACL recovery denies ownership and table mutation",
+      "status": "passed"
+    },
+    {
+      "name": "ACL coordinator no administrative flags",
+      "status": "passed"
+    },
+    {
+      "name": "ACL coordinator denies ownership and table mutation",
+      "status": "passed"
+    },
+    {
+      "name": "ACL backup no administrative flags",
+      "status": "passed"
+    },
+    {
+      "name": "ACL backup denies ownership and table mutation",
+      "status": "passed"
+    },
+    {
+      "name": "ACL migration no administrative flags",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC gateway/submit_original",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC gateway/recording_status",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC gateway/claim_recording",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC gateway/arm_recording",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC gateway/mark_attention",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC gateway/dispatch_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC gateway/create_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC gateway/release_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC gateway/set_admission",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC gateway/verification_context",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC gateway/confirm_source_receipt",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC gateway/stage_verified_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC gateway/finish_revision",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC gateway/request_reconciliation",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC gateway/begin_revision",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC worker/submit_original",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC worker/recording_status",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC worker/claim_recording",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC worker/arm_recording",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC worker/mark_attention",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC worker/dispatch_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC worker/create_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC worker/release_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC worker/set_admission",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC worker/verification_context",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC worker/confirm_source_receipt",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC worker/stage_verified_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC worker/finish_revision",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC worker/request_reconciliation",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC worker/begin_revision",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC reader/submit_original",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC reader/recording_status",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC reader/claim_recording",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC reader/arm_recording",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC reader/mark_attention",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC reader/dispatch_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC reader/create_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC reader/release_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC reader/set_admission",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC reader/verification_context",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC reader/confirm_source_receipt",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC reader/stage_verified_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC reader/finish_revision",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC reader/request_reconciliation",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC reader/begin_revision",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC admission/submit_original",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC admission/recording_status",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC admission/claim_recording",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC admission/arm_recording",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC admission/mark_attention",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC admission/dispatch_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC admission/create_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC admission/release_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC admission/set_admission",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC admission/verification_context",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC admission/confirm_source_receipt",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC admission/stage_verified_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC admission/finish_revision",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC admission/request_reconciliation",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC admission/begin_revision",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC verifier/submit_original",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC verifier/recording_status",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC verifier/claim_recording",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC verifier/arm_recording",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC verifier/mark_attention",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC verifier/dispatch_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC verifier/create_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC verifier/release_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC verifier/set_admission",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC verifier/verification_context",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC verifier/confirm_source_receipt",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC verifier/stage_verified_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC verifier/finish_revision",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC verifier/request_reconciliation",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC verifier/begin_revision",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC recovery/submit_original",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC recovery/recording_status",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC recovery/claim_recording",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC recovery/arm_recording",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC recovery/mark_attention",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC recovery/dispatch_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC recovery/create_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC recovery/release_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC recovery/set_admission",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC recovery/verification_context",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC recovery/confirm_source_receipt",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC recovery/stage_verified_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC recovery/finish_revision",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC recovery/request_reconciliation",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC recovery/begin_revision",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC coordinator/submit_original",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC coordinator/recording_status",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC coordinator/claim_recording",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC coordinator/arm_recording",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC coordinator/mark_attention",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC coordinator/dispatch_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC coordinator/create_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC coordinator/release_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC coordinator/set_admission",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC coordinator/verification_context",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC coordinator/confirm_source_receipt",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC coordinator/stage_verified_read",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC coordinator/finish_revision",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC coordinator/request_reconciliation",
+      "status": "passed"
+    },
+    {
+      "name": "EXEC coordinator/begin_revision",
+      "status": "passed"
+    },
+    {
+      "name": "ACL gateway denies raw reads and schema creation",
+      "status": "passed"
+    },
+    {
+      "name": "ACL worker denies raw reads and schema creation",
+      "status": "passed"
+    },
+    {
+      "name": "ACL reader denies raw reads and schema creation",
+      "status": "passed"
+    },
+    {
+      "name": "ACL admission denies raw reads and schema creation",
+      "status": "passed"
+    },
+    {
+      "name": "ACL verifier denies raw reads and schema creation",
+      "status": "passed"
+    },
+    {
+      "name": "ACL recovery denies raw reads and schema creation",
+      "status": "passed"
+    },
+    {
+      "name": "ACL coordinator denies raw reads and schema creation",
+      "status": "passed"
+    },
+    {
+      "name": "All functions owned by NOLOGIN owner, fixed path, no PUBLIC EXECUTE",
+      "status": "passed"
+    },
+    {
+      "name": "Database TEMP denied and CONNECT limited to explicit roles",
+      "status": "passed"
+    },
+    {
+      "name": "Migration may explicitly assume owner; backup gets SELECT only",
+      "status": "passed"
+    },
+    {
+      "name": "Exact duplicate submission retains one immutable original",
+      "status": "passed"
+    },
+    {
+      "name": "Original rejects changed hash",
+      "status": "passed"
+    },
+    {
+      "name": "Original rejects changed actor",
+      "status": "passed"
+    },
+    {
+      "name": "Original rejects changed pupil",
+      "status": "passed"
+    },
+    {
+      "name": "Original rejects changed environment",
+      "status": "passed"
+    },
+    {
+      "name": "Original rejects changed profile",
+      "status": "passed"
+    },
+    {
+      "name": "Original rejects changed session",
+      "status": "passed"
+    },
+    {
+      "name": "Independent duration and bytes checked before submission",
+      "status": "passed"
+    },
+    {
+      "name": "Encrypted original remains recoverable",
+      "status": "passed"
+    },
+    {
+      "name": "Serialised claim is not duplicated",
+      "status": "passed"
+    },
+    {
+      "name": "Expired lease increments fence and stale fence cannot dispatch",
+      "status": "passed"
+    },
+    {
+      "name": "Expired lease cannot arm",
+      "status": "passed"
+    },
+    {
+      "name": "Revocation during processing prevents dispatch",
+      "status": "passed"
+    },
+    {
+      "name": "Strict fencing types deny strings, null and fractional numbers",
+      "status": "passed"
+    },
+    {
+      "name": "Uncertain sent jobs never requeue",
+      "status": "passed"
+    },
+    {
+      "name": "Rollback returns claim to queued with original intact",
+      "status": "passed"
+    },
+    {
+      "name": "Verified exact duplicate receipts produce one qualifying credit",
+      "status": "passed"
+    },
+    {
+      "name": "Source receipt rejects conflicting manifestHash",
+      "status": "passed"
+    },
+    {
+      "name": "Source receipt rejects conflicting operation",
+      "status": "passed"
+    },
+    {
+      "name": "Source receipt rejects conflicting fileDigest",
+      "status": "passed"
+    },
+    {
+      "name": "Source receipt rejects conflicting logDigest",
+      "status": "passed"
+    },
+    {
+      "name": "Source receipt rejects conflicting threshold",
+      "status": "passed"
+    },
+    {
+      "name": "Source receipt rejects conflicting qualifying",
+      "status": "passed"
+    },
+    {
+      "name": "Source receipt rejects conflicting baseRevision",
+      "status": "passed"
+    },
+    {
+      "name": "Source receipt rejects conflicting admissionRevision",
+      "status": "passed"
+    },
+    {
+      "name": "Forged source signature denied",
+      "status": "passed"
+    },
+    {
+      "name": "Revoked admission allows exact internal reconciliation but no pupil read",
+      "status": "passed"
+    },
+    {
+      "name": "Recovery role requests inspection, cannot confirm/reset/requeue",
+      "status": "passed"
+    },
+    {
+      "name": "Threshold 299.99 seconds",
+      "status": "passed"
+    },
+    {
+      "name": "Threshold 300 seconds",
+      "status": "passed"
+    },
+    {
+      "name": "Protected PATH exact source proof, one use, five minutes, zero badges",
+      "status": "passed"
+    },
+    {
+      "name": "Protected release rejects revoked",
+      "status": "passed"
+    },
+    {
+      "name": "Protected release rejects dirty",
+      "status": "passed"
+    },
+    {
+      "name": "Protected release rejects expired",
+      "status": "passed"
+    },
+    {
+      "name": "Protected release rejects foreign-client",
+      "status": "passed"
+    },
+    {
+      "name": "Protected release rejects version",
+      "status": "passed"
+    },
+    {
+      "name": "Valid source signature with foreign client is denied",
+      "status": "passed"
+    },
+    {
+      "name": "Read handle replay denied",
+      "status": "passed"
+    },
+    {
+      "name": "Source projection with raw Drive locator denied",
+      "status": "passed"
+    },
+    {
+      "name": "Revision only completes with independent source proof; duplicate idempotent",
+      "status": "passed"
+    },
+    {
+      "name": "SQL rejects foreign environment",
+      "status": "passed"
+    },
+    {
+      "name": "SQL rejects foreign profile",
+      "status": "passed"
+    },
+    {
+      "name": "SQL rejects foreign actor",
+      "status": "passed"
+    },
+    {
+      "name": "SQL rejects foreign pupil",
+      "status": "passed"
+    },
+    {
+      "name": "DAL rejects scope override and SQL identifier injection",
+      "status": "passed"
+    },
+    {
+      "name": "Fresh signed witness accepts exact checkpoint",
+      "status": "passed"
+    },
+    {
+      "name": "Witness denies tail-deletion",
+      "status": "passed"
+    },
+    {
+      "name": "Witness denies whole-primary-rollback",
+      "status": "passed"
+    },
+    {
+      "name": "Witness denies nonce-resurrection",
+      "status": "passed"
+    },
+    {
+      "name": "Witness denies conflicting-digest",
+      "status": "passed"
+    },
+    {
+      "name": "Witness denies old-generation",
+      "status": "passed"
+    },
+    {
+      "name": "Witness denies key-revision",
+      "status": "passed"
+    },
+    {
+      "name": "Witness denies outage",
+      "status": "passed"
+    },
+    {
+      "name": "Pending witness blocks release and requires exact recovery",
+      "status": "passed"
+    },
+    {
+      "name": "Lost witness acknowledgement after-reserve",
+      "status": "passed"
+    },
+    {
+      "name": "Lost witness acknowledgement after-commit",
+      "status": "passed"
+    },
+    {
+      "name": "Witness rejects reused nonce/Event ID and nonmonotonic sequence",
+      "status": "passed"
+    },
+    {
+      "name": "Replayed signed freshness challenge rejected",
+      "status": "passed"
+    },
+    {
+      "name": "Tampered retained witness signature rejected",
+      "status": "passed"
+    },
+    {
+      "name": "Witness outage stops SQL dispatch and retains encrypted original",
+      "status": "passed"
+    },
+    {
+      "name": "Independent witness deployment",
+      "status": "blocked",
+      "reason": "Actual off-host immutable retention and independent restore boundary not available."
+    },
+    {
+      "name": "N01 native independent concurrency",
+      "status": "blocked",
+      "reason": "No native PostgreSQL server; serialised PGlite is not concurrency."
+    },
+    {
+      "name": "N02 native crash/restart",
+      "status": "blocked",
+      "reason": "No disposable native server; no installation authorised."
+    },
+    {
+      "name": "N03 authenticated role/other-database isolation",
+      "status": "blocked",
+      "reason": "WASM SET SESSION AUTHORIZATION is not login authentication or cluster isolation."
+    }
+  ],
+  "transcript": [
+    "PASS ACL gateway no administrative flags",
+    "PASS ACL gateway denies ownership and table mutation",
+    "PASS ACL worker no administrative flags",
+    "PASS ACL worker denies ownership and table mutation",
+    "PASS ACL reader no administrative flags",
+    "PASS ACL reader denies ownership and table mutation",
+    "PASS ACL admission no administrative flags",
+    "PASS ACL admission denies ownership and table mutation",
+    "PASS ACL verifier no administrative flags",
+    "PASS ACL verifier denies ownership and table mutation",
+    "PASS ACL recovery no administrative flags",
+    "PASS ACL recovery denies ownership and table mutation",
+    "PASS ACL coordinator no administrative flags",
+    "PASS ACL coordinator denies ownership and table mutation",
+    "PASS ACL backup no administrative flags",
+    "PASS ACL backup denies ownership and table mutation",
+    "PASS ACL migration no administrative flags",
+    "PASS EXEC gateway/submit_original",
+    "PASS EXEC gateway/recording_status",
+    "PASS EXEC gateway/claim_recording",
+    "PASS EXEC gateway/arm_recording",
+    "PASS EXEC gateway/mark_attention",
+    "PASS EXEC gateway/dispatch_read",
+    "PASS EXEC gateway/create_read",
+    "PASS EXEC gateway/release_read",
+    "PASS EXEC gateway/set_admission",
+    "PASS EXEC gateway/verification_context",
+    "PASS EXEC gateway/confirm_source_receipt",
+    "PASS EXEC gateway/stage_verified_read",
+    "PASS EXEC gateway/finish_revision",
+    "PASS EXEC gateway/request_reconciliation",
+    "PASS EXEC gateway/begin_revision",
+    "PASS EXEC worker/submit_original",
+    "PASS EXEC worker/recording_status",
+    "PASS EXEC worker/claim_recording",
+    "PASS EXEC worker/arm_recording",
+    "PASS EXEC worker/mark_attention",
+    "PASS EXEC worker/dispatch_read",
+    "PASS EXEC worker/create_read",
+    "PASS EXEC worker/release_read",
+    "PASS EXEC worker/set_admission",
+    "PASS EXEC worker/verification_context",
+    "PASS EXEC worker/confirm_source_receipt",
+    "PASS EXEC worker/stage_verified_read",
+    "PASS EXEC worker/finish_revision",
+    "PASS EXEC worker/request_reconciliation",
+    "PASS EXEC worker/begin_revision",
+    "PASS EXEC reader/submit_original",
+    "PASS EXEC reader/recording_status",
+    "PASS EXEC reader/claim_recording",
+    "PASS EXEC reader/arm_recording",
+    "PASS EXEC reader/mark_attention",
+    "PASS EXEC reader/dispatch_read",
+    "PASS EXEC reader/create_read",
+    "PASS EXEC reader/release_read",
+    "PASS EXEC reader/set_admission",
+    "PASS EXEC reader/verification_context",
+    "PASS EXEC reader/confirm_source_receipt",
+    "PASS EXEC reader/stage_verified_read",
+    "PASS EXEC reader/finish_revision",
+    "PASS EXEC reader/request_reconciliation",
+    "PASS EXEC reader/begin_revision",
+    "PASS EXEC admission/submit_original",
+    "PASS EXEC admission/recording_status",
+    "PASS EXEC admission/claim_recording",
+    "PASS EXEC admission/arm_recording",
+    "PASS EXEC admission/mark_attention",
+    "PASS EXEC admission/dispatch_read",
+    "PASS EXEC admission/create_read",
+    "PASS EXEC admission/release_read",
+    "PASS EXEC admission/set_admission",
+    "PASS EXEC admission/verification_context",
+    "PASS EXEC admission/confirm_source_receipt",
+    "PASS EXEC admission/stage_verified_read",
+    "PASS EXEC admission/finish_revision",
+    "PASS EXEC admission/request_reconciliation",
+    "PASS EXEC admission/begin_revision",
+    "PASS EXEC verifier/submit_original",
+    "PASS EXEC verifier/recording_status",
+    "PASS EXEC verifier/claim_recording",
+    "PASS EXEC verifier/arm_recording",
+    "PASS EXEC verifier/mark_attention",
+    "PASS EXEC verifier/dispatch_read",
+    "PASS EXEC verifier/create_read",
+    "PASS EXEC verifier/release_read",
+    "PASS EXEC verifier/set_admission",
+    "PASS EXEC verifier/verification_context",
+    "PASS EXEC verifier/confirm_source_receipt",
+    "PASS EXEC verifier/stage_verified_read",
+    "PASS EXEC verifier/finish_revision",
+    "PASS EXEC verifier/request_reconciliation",
+    "PASS EXEC verifier/begin_revision",
+    "PASS EXEC recovery/submit_original",
+    "PASS EXEC recovery/recording_status",
+    "PASS EXEC recovery/claim_recording",
+    "PASS EXEC recovery/arm_recording",
+    "PASS EXEC recovery/mark_attention",
+    "PASS EXEC recovery/dispatch_read",
+    "PASS EXEC recovery/create_read",
+    "PASS EXEC recovery/release_read",
+    "PASS EXEC recovery/set_admission",
+    "PASS EXEC recovery/verification_context",
+    "PASS EXEC recovery/confirm_source_receipt",
+    "PASS EXEC recovery/stage_verified_read",
+    "PASS EXEC recovery/finish_revision",
+    "PASS EXEC recovery/request_reconciliation",
+    "PASS EXEC recovery/begin_revision",
+    "PASS EXEC coordinator/submit_original",
+    "PASS EXEC coordinator/recording_status",
+    "PASS EXEC coordinator/claim_recording",
+    "PASS EXEC coordinator/arm_recording",
+    "PASS EXEC coordinator/mark_attention",
+    "PASS EXEC coordinator/dispatch_read",
+    "PASS EXEC coordinator/create_read",
+    "PASS EXEC coordinator/release_read",
+    "PASS EXEC coordinator/set_admission",
+    "PASS EXEC coordinator/verification_context",
+    "PASS EXEC coordinator/confirm_source_receipt",
+    "PASS EXEC coordinator/stage_verified_read",
+    "PASS EXEC coordinator/finish_revision",
+    "PASS EXEC coordinator/request_reconciliation",
+    "PASS EXEC coordinator/begin_revision",
+    "PASS ACL gateway denies raw reads and schema creation",
+    "PASS ACL worker denies raw reads and schema creation",
+    "PASS ACL reader denies raw reads and schema creation",
+    "PASS ACL admission denies raw reads and schema creation",
+    "PASS ACL verifier denies raw reads and schema creation",
+    "PASS ACL recovery denies raw reads and schema creation",
+    "PASS ACL coordinator denies raw reads and schema creation",
+    "PASS All functions owned by NOLOGIN owner, fixed path, no PUBLIC EXECUTE",
+    "PASS Database TEMP denied and CONNECT limited to explicit roles",
+    "PASS Migration may explicitly assume owner; backup gets SELECT only",
+    "PASS Exact duplicate submission retains one immutable original",
+    "PASS Original rejects changed hash",
+    "PASS Original rejects changed actor",
+    "PASS Original rejects changed pupil",
+    "PASS Original rejects changed environment",
+    "PASS Original rejects changed profile",
+    "PASS Original rejects changed session",
+    "PASS Independent duration and bytes checked before submission",
+    "PASS Encrypted original remains recoverable",
+    "PASS Serialised claim is not duplicated",
+    "PASS Expired lease increments fence and stale fence cannot dispatch",
+    "PASS Expired lease cannot arm",
+    "PASS Revocation during processing prevents dispatch",
+    "PASS Strict fencing types deny strings, null and fractional numbers",
+    "PASS Uncertain sent jobs never requeue",
+    "PASS Rollback returns claim to queued with original intact",
+    "PASS Verified exact duplicate receipts produce one qualifying credit",
+    "PASS Source receipt rejects conflicting manifestHash",
+    "PASS Source receipt rejects conflicting operation",
+    "PASS Source receipt rejects conflicting fileDigest",
+    "PASS Source receipt rejects conflicting logDigest",
+    "PASS Source receipt rejects conflicting threshold",
+    "PASS Source receipt rejects conflicting qualifying",
+    "PASS Source receipt rejects conflicting baseRevision",
+    "PASS Source receipt rejects conflicting admissionRevision",
+    "PASS Forged source signature denied",
+    "PASS Revoked admission allows exact internal reconciliation but no pupil read",
+    "PASS Recovery role requests inspection, cannot confirm/reset/requeue",
+    "PASS Threshold 299.99 seconds",
+    "PASS Threshold 300 seconds",
+    "PASS Protected PATH exact source proof, one use, five minutes, zero badges",
+    "PASS Protected release rejects revoked",
+    "PASS Protected release rejects dirty",
+    "PASS Protected release rejects expired",
+    "PASS Protected release rejects foreign-client",
+    "PASS Protected release rejects version",
+    "PASS Valid source signature with foreign client is denied",
+    "PASS Read handle replay denied",
+    "PASS Source projection with raw Drive locator denied",
+    "PASS Revision only completes with independent source proof; duplicate idempotent",
+    "PASS SQL rejects foreign environment",
+    "PASS SQL rejects foreign profile",
+    "PASS SQL rejects foreign actor",
+    "PASS SQL rejects foreign pupil",
+    "PASS DAL rejects scope override and SQL identifier injection",
+    "PASS Fresh signed witness accepts exact checkpoint",
+    "PASS Witness denies tail-deletion",
+    "PASS Witness denies whole-primary-rollback",
+    "PASS Witness denies nonce-resurrection",
+    "PASS Witness denies conflicting-digest",
+    "PASS Witness denies old-generation",
+    "PASS Witness denies key-revision",
+    "PASS Witness denies outage",
+    "PASS Pending witness blocks release and requires exact recovery",
+    "PASS Lost witness acknowledgement after-reserve",
+    "PASS Lost witness acknowledgement after-commit",
+    "PASS Witness rejects reused nonce/Event ID and nonmonotonic sequence",
+    "PASS Replayed signed freshness challenge rejected",
+    "PASS Tampered retained witness signature rejected",
+    "PASS Witness outage stops SQL dispatch and retains encrypted original",
+    "BLOCKED Independent witness deployment",
+    "BLOCKED N01 native independent concurrency",
+    "BLOCKED N02 native crash/restart",
+    "BLOCKED N03 authenticated role/other-database isolation",
+    "{\"registered\":196,\"executed\":192,\"passed\":192,\"failed\":0,\"skipped\":0,\"blocked\":4,\"unexecuted\":4,\"networkAttempts\":0,\"directoriesCreated\":16,\"directoriesRemoved\":16,\"remainingDirectories\":0,\"native\":false,\"roleMethod\":\"SET SESSION AUTHORIZATION; not authenticated logins\",\"node\":\"v24.22.1\",\"pglite\":\"0.5.13\"}"
+  ]
+}

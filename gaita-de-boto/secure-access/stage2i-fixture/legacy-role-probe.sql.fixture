@@ -1,0 +1,15 @@
+-- OFFLINE ROLE ASSUMPTION PROBE ONLY. Never applied to operational PostgreSQL.
+-- Dedicated database per environment; application predicates are NOT native RLS.
+CREATE ROLE gdb_g_gateway NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+CREATE ROLE gdb_g_worker NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+CREATE ROLE gdb_g_reader NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS;
+REVOKE ALL ON gdb_g_config,gdb_g_admission,gdb_g_revision,gdb_g_job,gdb_g_nonce,gdb_g_operation,gdb_g_read FROM PUBLIC;
+GRANT USAGE ON SCHEMA public TO gdb_g_gateway,gdb_g_worker,gdb_g_reader;
+GRANT SELECT ON gdb_g_config,gdb_g_admission,gdb_g_revision,gdb_g_job,gdb_g_operation,gdb_g_read TO gdb_g_reader;
+GRANT SELECT,INSERT ON gdb_g_job,gdb_g_nonce,gdb_g_read TO gdb_g_gateway;
+GRANT SELECT ON gdb_g_config,gdb_g_admission,gdb_g_revision TO gdb_g_gateway;
+GRANT SELECT,UPDATE ON gdb_g_job,gdb_g_revision,gdb_g_read TO gdb_g_worker;
+GRANT SELECT ON gdb_g_admission,gdb_g_operation,gdb_g_config TO gdb_g_worker;
+GRANT INSERT ON gdb_g_nonce TO gdb_g_worker;
+-- Illustrates narrow grants, not a complete runtime role map: owner-admission,
+-- migrations, operation coordinator, backup and source keys need separate roles.

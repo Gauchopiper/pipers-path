@@ -1,0 +1,82 @@
+Node v24.22.1; local npm run test:option-c; 31 October 2026 UTC
+PASS 01 fixture opt-in and synthetic-only resource configuration fail closed
+PASS 02 Owner has no implicit Dummy admission
+PASS 03 exact Owner admission is bounded and auditable
+PASS 04 forged verified and OWNER flags cannot become an authenticated actor
+PASS 05 other pupil cannot receive the Owner-to-Dummy admission
+PASS 06 another organisation and environment cannot be selected
+PASS 07 another verified actor is denied the Dummy admission
+PASS 08 database worker and Google caller cannot act as Owner
+PASS 09 operation allowlist prevents an admitted reader submitting audio
+PASS 10 expiry is enforced on submissions and reads
+PASS 11 revocation survives reopening and denies queued status
+PASS 12 admission revisions prevent stale grants and retain denial audit
+PASS 13 admission rejects wildcard operations and resource selectors
+PASS 14 immutable manifest binds exact actor, profile, original revision and audio
+PASS 15 protected staging survives reopening without plaintext storage
+PASS 16 separate Node process recovers exact original protected bytes and identity
+PASS 17 key or Owner configuration replacement cannot open the original store
+PASS 18 identical Session-ID submission is idempotent
+PASS 19 changed audio under the original Session ID is a conflict
+PASS 20 changed original times under the same Session ID are a conflict
+PASS 21 hash and size mismatch cannot enter the queue
+PASS 22 declared duration cannot override independently parsed samples
+PASS 23 invalid MIME, Session ID and client-selected folder are denied
+PASS 24 renewing admission preserves the original accepted manifest revision
+PASS 25 queued acknowledgement never says SAVED
+PASS 26 canonical save uses original writer exactly once and yields exact confirmation
+PASS 27 database lease expiry and fencing reject stale workers
+PASS 28 expired dispatch permit is not sent to Google
+PASS 29 Google automation identity is separate from original Owner
+PASS 30 signed envelope replay is rejected across service reopening
+PASS 31 wrong signature and signed purpose cannot dispatch a recording
+PASS 32 signed cross-environment manifest cannot use the isolated Google profile
+PASS 33 Google service rejects substituted original actor despite valid gateway signature
+PASS 34 queue-style success and unsigned receipt cannot complete an original intent
+PASS 35 tampered receipt signature cannot release protected audio
+PASS 36 signed hash, actor, environment and folder mismatches remain unsaved
+PASS 37 signed incomplete canonical log or duration evidence is rejected
+PASS 38 duplicate authenticated confirmation does not increment revisions twice
+PASS 39 lost Google acknowledgement reconciles after both stores reopen without rewriting
+PASS 40 process interruption after dispatch barrier blocks reads and never blindly resends
+PASS 41-before-file interrupted canonical write is retained for attention, not repaired by inspection
+PASS 41-after-file interrupted canonical write is retained for attention, not repaired by inspection
+PASS 41-after-log complete canonical evidence is reconciled without changing Google data
+PASS 41-missing-meta canonical partial evidence is not repaired or reported saved
+PASS 42 pre-existing audio without an original manifest cannot be adopted or read
+PASS 43 absent reconciliation is pure and creates no legacy receipt journal
+PASS 44 revocation between claim and dispatch prevents any Google write
+PASS 45 admission revision change invalidates an earlier dispatch permit
+PASS 46 in-flight revocation preserves canonical outcome but denies pupil status and playback
+PASS 47 pending read response is discarded if revocation occurs during retrieval
+PASS 48 resource-selection injection cannot reach protected PATH or playback
+PASS 49 protected playback returns exact authenticated bytes with no Drive URL
+PASS 50 another original Session ID cannot be used to fetch Dummy playback
+PASS 51 changed canonical bytes or folder fail closed for both PATH and playback
+PASS 52 unbound historical log cannot enter the isolated PATH response
+PASS 53-teacher.comment commits only its declared revision facets after authenticated proof
+PASS 53-teacher.review commits only its declared revision facets after authenticated proof
+PASS 53-target.assign commits only its declared revision facets after authenticated proof
+PASS 53-target.change commits only its declared revision facets after authenticated proof
+PASS 53-badge.award commits only its declared revision facets after authenticated proof
+PASS 53-badge.change commits only its declared revision facets after authenticated proof
+PASS 53-session.target commits only its declared revision facets after authenticated proof
+PASS 53-group.change commits only its declared revision facets after authenticated proof
+PASS 53-permission.change commits only its declared revision facets after authenticated proof
+PASS 54 DIRTY teacher operation blocks reads and recording dispatch until reconciliation
+PASS 55 lost teacher response reconciles from source proof after reopening
+PASS 56 duplicate teacher operation cannot repeat a side effect or revision bump
+PASS 57 stale revision and nested resource-selector operations cannot modify source
+PASS 58 wrong operation source proof cannot clear DIRTY
+PASS 59 read response is discarded when a target revision changes mid-read
+PASS 60 recording confirmation invalidates sessions, totals, availability and GROUP once
+PASS 61 paused/short media cannot qualify through rounded five-minute display totals
+PASS 62 exact five-minute validated media still qualifies
+PASS 63 expired Google service request is rejected before canonical side effects
+PASS 63-other-pupil-and-organisation are denied access to an actually saved Dummy recording
+PASS 63-encrypted-staging-corruption fails authentication without creating Google audio
+PASS 63-revocation-at-transaction-boundary cannot commit a newly admitted recording
+PASS 63-teacher-in-flight-revocation commits internal proof while all public reads remain denied
+PASS 63-rebound-signed-read-proof-is-discarded instead of returning a foreign view
+PASS 64 no HTTP or socket operation occurred in this fixture suite
+{"suite":"option-c-stage-1-local-fixtures","passed":80,"failed":0,"skipped":0,"networkCalls":0,"disposableDirectoriesRemoved":80}

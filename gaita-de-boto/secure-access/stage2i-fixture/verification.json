@@ -1,0 +1,223 @@
+{
+  "runs": [
+    {
+      "run": "stage2i-development-01",
+      "evidenceComplete": false,
+      "suite": "stage2g-offline-adapters",
+      "registered": 143,
+      "passed": 140,
+      "failed": 0,
+      "skipped": 3,
+      "unexecuted": 0,
+      "environment": {
+        "node": "v24.22.1",
+        "pglite": "0.5.13",
+        "postgresWasm": "PostgreSQL 18.6 (PGlite 0.5.13) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.5 (1db513782be24469589d7cb8a1f1834e9a33f271), 32-bit",
+        "nativePostgres": false,
+        "serialisedPool": true
+      },
+      "externalNetworkAttempts": 0,
+      "temporaryDirectoriesCreated": 346,
+      "temporaryDirectoriesRemoved": 346,
+      "remainingTemporaryDirectories": 0,
+      "liveGoogleRecordingTests": 0,
+      "ciRuns": 0,
+      "tracedTextCounts": {
+        "passed": 128,
+        "failed": 0,
+        "skipped": 3,
+        "blocked": 0
+      }
+    },
+    {
+      "run": "stage2i-development-02",
+      "evidenceComplete": false,
+      "suite": "stage2i-security-corrections",
+      "registered": 533,
+      "executed": 525,
+      "passed": 524,
+      "failed": 1,
+      "skipped": 1,
+      "blocked": 7,
+      "unexecuted": 7,
+      "filtered": 0,
+      "environment": {
+        "node": "v24.22.1",
+        "pglite": "0.5.13",
+        "postgresWasm": "PostgreSQL 18.6 (PGlite 0.5.13) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.5 (1db513782be24469589d7cb8a1f1834e9a33f271), 32-bit",
+        "nativePostgres": false,
+        "serialisedPool": true
+      },
+      "externalNetworkAttempts": 0,
+      "temporaryDirectoriesCreated": 638,
+      "temporaryDirectoriesRemoved": 638,
+      "remainingTemporaryDirectories": 0,
+      "liveGoogleRecordingTests": 0,
+      "ciRuns": 0,
+      "tracedTextCounts": {
+        "passed": 512,
+        "failed": 1,
+        "skipped": 1,
+        "blocked": 7
+      }
+    },
+    {
+      "run": "stage2i-verification-03",
+      "evidenceComplete": false,
+      "suite": "stage2i-security-corrections",
+      "registered": 533,
+      "executed": 525,
+      "passed": 524,
+      "failed": 1,
+      "skipped": 1,
+      "blocked": 7,
+      "unexecuted": 7,
+      "filtered": 0,
+      "environment": {
+        "node": "v24.22.1",
+        "pglite": "0.5.13",
+        "postgresWasm": "PostgreSQL 18.6 (PGlite 0.5.13) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.5 (1db513782be24469589d7cb8a1f1834e9a33f271), 32-bit",
+        "nativePostgres": false,
+        "serialisedPool": true
+      },
+      "externalNetworkAttempts": 0,
+      "temporaryDirectoriesCreated": 638,
+      "temporaryDirectoriesRemoved": 638,
+      "remainingTemporaryDirectories": 0,
+      "liveGoogleRecordingTests": 0,
+      "ciRuns": 0,
+      "tracedTextCounts": {
+        "passed": 523,
+        "failed": 1,
+        "skipped": 1,
+        "blocked": 7
+      }
+    },
+    {
+      "run": "stage2i-final-04",
+      "evidenceComplete": false,
+      "suite": "stage2i-security-corrections",
+      "registered": 533,
+      "executed": 525,
+      "passed": 525,
+      "failed": 0,
+      "skipped": 1,
+      "blocked": 7,
+      "unexecuted": 7,
+      "filtered": 0,
+      "environment": {
+        "node": "v24.22.1",
+        "pglite": "0.5.13",
+        "postgresWasm": "PostgreSQL 18.6 (PGlite 0.5.13) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.5 (1db513782be24469589d7cb8a1f1834e9a33f271), 32-bit",
+        "nativePostgres": false,
+        "serialisedPool": true
+      },
+      "externalNetworkAttempts": 0,
+      "temporaryDirectoriesCreated": 638,
+      "temporaryDirectoriesRemoved": 638,
+      "remainingTemporaryDirectories": 0,
+      "liveGoogleRecordingTests": 0,
+      "ciRuns": 0,
+      "tracedTextCounts": {
+        "passed": 513,
+        "failed": 0,
+        "skipped": 1,
+        "blocked": 7
+      }
+    },
+    {
+      "run": "stage2i-final-05",
+      "evidenceComplete": true,
+      "suite": "stage2i-security-corrections",
+      "registered": 533,
+      "executed": 525,
+      "passed": 525,
+      "failed": 0,
+      "skipped": 1,
+      "blocked": 7,
+      "unexecuted": 7,
+      "filtered": 0,
+      "environment": {
+        "node": "v24.22.1",
+        "pglite": "0.5.13",
+        "postgresWasm": "PostgreSQL 18.6 (PGlite 0.5.13) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.5 (1db513782be24469589d7cb8a1f1834e9a33f271), 32-bit",
+        "nativePostgres": false,
+        "serialisedPool": true
+      },
+      "externalNetworkAttempts": 0,
+      "temporaryDirectoriesCreated": 638,
+      "temporaryDirectoriesRemoved": 638,
+      "remainingTemporaryDirectories": 0,
+      "liveGoogleRecordingTests": 0,
+      "ciRuns": 0,
+      "tracedTextCounts": {
+        "passed": 525,
+        "failed": 0,
+        "skipped": 1,
+        "blocked": 7
+      }
+    }
+  ],
+  "final": {
+    "suite": "stage2i-security-corrections",
+    "registered": 533,
+    "executed": 525,
+    "passed": 525,
+    "failed": 0,
+    "skipped": 1,
+    "blocked": 7,
+    "unexecuted": 7,
+    "filtered": 0,
+    "environment": {
+      "node": "v24.22.1",
+      "pglite": "0.5.13",
+      "postgresWasm": "PostgreSQL 18.6 (PGlite 0.5.13) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.5 (1db513782be24469589d7cb8a1f1834e9a33f271), 32-bit",
+      "nativePostgres": false,
+      "serialisedPool": true
+    },
+    "externalNetworkAttempts": 0,
+    "temporaryDirectoriesCreated": 638,
+    "temporaryDirectoriesRemoved": 638,
+    "remainingTemporaryDirectories": 0,
+    "liveGoogleRecordingTests": 0,
+    "ciRuns": 0
+  },
+  "caseCounts": {
+    "passed": 525,
+    "blocked": 7,
+    "skipped": 1
+  },
+  "groupCounts": {
+    "Stage 2G regression": {
+      "passed": 140,
+      "blocked": 3
+    },
+    "Stage 2H regression": {
+      "passed": 296,
+      "skipped": 1,
+      "blocked": 3
+    },
+    "Stage 2I additions": {
+      "passed": 89,
+      "blocked": 1
+    }
+  },
+  "allEightPassed": true,
+  "previousFailures": [
+    "H06",
+    "A06",
+    "A07",
+    "A09",
+    "J03",
+    "J04",
+    "J05",
+    "R04"
+  ],
+  "nativeGatesBlocked": [
+    "N01",
+    "N02",
+    "N03"
+  ],
+  "independentWitnessDeploymentBlocked": true,
+  "authoritativeCaseEvidence": "../stage2g-fixture/diagnostics/stage2i-final-05.txt.json"
+}

@@ -1,0 +1,32 @@
+'use strict';
+// OFFLINE authority-rotation model. A retained client epoch/head MUST live outside
+// the restored ledger's failure domain. Never infer off-host durability from SQLite.
+const C=require('node:crypto'),{DatabaseSync}=require('node:sqlite');
+const {P,digest,exact,uuid}=require('../stage2g-fixture/protocol.cjs');
+const sign=(body,key)=>({body,signature:C.sign('RSA-SHA256',Buffer.from(P.canonical(body)),key).toString('base64')});
+function verify(value,key){if(!exact(value,['body','signature'])||typeof value.signature!=='string'||value.signature.length>1024||!C.verify('RSA-SHA256',Buffer.from(P.canonical(value.body)),key,Buffer.from(value.signature,'base64')))throw Error('Authority signature rejected.');return value.body;}
+function publicKey(jwk){if(!exact(jwk,['kty','n','e'])||jwk.kty!=='RSA'||jwk.e!=='AQAB'||typeof jwk.n!=='string'||jwk.n.length<342||jwk.n.length>683)throw Error('Authority key policy rejected.');const k=C.createPublicKey({key:jwk,format:'jwk'});if(![2048,3072,4096].includes(k.asymmetricKeyDetails.modulusLength))throw Error('Authority key size rejected.');return k;}
+function ledger({fixtureOnly,file,namespace,generation,bootstrapKey,retained,now,authorise}){
+ if(!fixtureOnly||typeof authorise!=='function'||!uuid(generation)||!exact(namespace,['environment','profileDigest'])||!retained||typeof retained.get!=='function'||typeof retained.advance!=='function')throw Error('Retained-boundary configuration required.');
+ const db=new DatabaseSync(file);db.exec('PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS transitions(epoch INTEGER PRIMARY KEY,value TEXT NOT NULL);');let available=true;
+ const initial={epoch:1,kid:'initial',jwk:bootstrapKey,revoked:false,head:digest({namespace,generation,jwk:bootstrapKey})};publicKey(bootstrapKey);
+ function current(){if(!available)throw Error('Retained authority unavailable; deny all.');let state=initial;const rows=db.prepare('SELECT * FROM transitions ORDER BY epoch').all();if(rows.length>64)throw Error('Rotation workload limit');
+  for(const row of rows){const record=JSON.parse(row.value),b=verify(record.old,publicKey(state.jwk));
+   if(!exact(record,['old','next'])||!exact(b,['environment','profileDigest','generation','epoch','previousHead','kid','jwk','revoked','at','expires','policyRevision','pending'])||b.environment!==namespace.environment||b.profileDigest!==namespace.profileDigest||b.generation!==generation||b.epoch!==state.epoch+1||row.epoch!==b.epoch||b.previousHead!==state.head||typeof b.kid!=='string'||!/^[a-z0-9-]{1,64}$/.test(b.kid)||typeof b.revoked!=='boolean'||!Number.isSafeInteger(b.at)||b.at>now()||!Number.isSafeInteger(b.expires)||b.expires-b.at!==1000||!Number.isSafeInteger(b.policyRevision)||b.policyRevision<1||b.pending!==false||state.revoked)throw Error('Rotation continuity rejected.');
+   verify(record.next,publicKey(b.jwk));if(digest(record.next.body)!==digest(b))throw Error('Dual rotation consent rejected.');state={epoch:b.epoch,kid:b.kid,jwk:b.jwk,revoked:b.revoked,head:digest(record)};
+  }
+  const pin=retained.get();if(!pin||pin.epoch!==state.epoch||pin.head!==state.head)throw Error('Retained epoch/head mismatch; rollback or interrupted rotation.');return state;
+ }
+ function admission(){const a=authorise();if(!exact(a,['status','revision','pending'])||a.status!=='active'||!Number.isSafeInteger(a.revision)||a.revision<1||typeof a.pending!=='boolean')throw Error('Fresh Owner admission required.');return a;}
+ function rotate(record){const s=current(),a=admission(),b=verify(record.old,publicKey(s.jwk));if(!exact(record,['old','next'])||!exact(b,['environment','profileDigest','generation','epoch','previousHead','kid','jwk','revoked','at','expires','policyRevision','pending'])||typeof b.kid!=='string'||!/^[a-z0-9-]{1,64}$/.test(b.kid)||b.environment!==namespace.environment||b.profileDigest!==namespace.profileDigest||b.generation!==generation||b.previousHead!==s.head||b.epoch!==s.epoch+1||!Number.isSafeInteger(b.epoch)||b.pending!==false||s.revoked||typeof b.revoked!=='boolean'||!Number.isSafeInteger(b.at)||b.at>now()||!Number.isSafeInteger(b.expires)||b.expires<=now()||b.expires-b.at!==1000||b.policyRevision!==a.revision||a.pending)throw Error('Rotation rejected.');verify(record.next,publicKey(b.jwk));if(digest(record.next.body)!==digest(b))throw Error('New-key possession rejected.');
+  // Retain BEFORE local append. A lost/torn local append denies all until the
+  // exact dual-signed record is restored; never roll back the retained pin.
+  retained.advance({epoch:s.epoch,head:s.head},{epoch:b.epoch,head:digest(record)});
+  db.prepare('INSERT INTO transitions VALUES(?,?)').run(b.epoch,P.canonical(record));return current();
+ }
+ function recover(record){const pin=retained.get(),b=record.old.body;if(pin?.epoch!==b.epoch||pin.head!==digest(record))throw Error('No exact retained transition.');const old=db.prepare('SELECT value FROM transitions WHERE epoch=?').get(b.epoch);if(old&&digest(JSON.parse(old.value))!==pin.head)throw Error('Conflicting rotation history.');if(!old)db.prepare('INSERT INTO transitions VALUES(?,?)').run(b.epoch,P.canonical(record));return current();}
+ function response(challenge,checkpoint,key){const s=current(),a=admission();if(a.pending||s.revoked||!uuid(challenge))throw Error('Authority revoked/challenge rejected.');const body={...namespace,generation,epoch:s.epoch,kid:s.kid,head:s.head,policyRevision:a.revision,challenge,at:now(),expires:now()+1000,checkpoint};const out=sign(body,key);verify(out,publicKey(s.jwk));return out;}
+ function accept(value,challenge,checkpoint){const s=current(),a=admission(),b=verify(value,publicKey(s.jwk));if(a.pending||s.revoked||!exact(b,['environment','profileDigest','generation','epoch','kid','head','policyRevision','challenge','at','expires','checkpoint'])||b.environment!==namespace.environment||b.profileDigest!==namespace.profileDigest||b.generation!==generation||b.epoch!==s.epoch||b.kid!==s.kid||b.head!==s.head||b.policyRevision!==a.revision||b.challenge!==challenge||!uuid(challenge)||!Number.isSafeInteger(b.at)||!Number.isSafeInteger(b.expires)||b.expires-b.at!==1000||b.at>now()||b.expires<=now()||digest(b.checkpoint)!==digest(checkpoint))throw Error('Fresh current authority evidence required.');return true;}
+ return{initial,current,rotate,recover,response,accept,setAvailable:x=>{available=x;},close:()=>db.close(),testDatabase:db};
+}
+module.exports={ledger,sign,verify,publicKey};

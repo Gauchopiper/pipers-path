@@ -1,0 +1,18 @@
+{
+  "uid": 0,
+  "uidMap": "0          0          1",
+  "gidMap": "0          0          1",
+  "postgresInstalled": false,
+  "nativeVersion": null,
+  "blocker": "Only UID/GID 0 are mapped; non-root switching fails; unshare UID mapping denied. No PostgreSQL root-check bypass is acceptable.",
+  "officialRelease": {
+    "url": "https://snapshot.ubuntu.com/ubuntu/20260828T000000Z/dists/noble/InRelease",
+    "sha256": "cdb2f31d809f589719a53c6ad15f255b27569c4059542ada282aaa21b8e164b0",
+    "verification": "gpgv Ubuntu Archive Automatic Signing Key (2018), fingerprint F6ECB3762474EDA9D21B7022871920D1991BC93C; good signature",
+    "isPostgresPackage": false
+  },
+  "systemServicesChanged": false,
+  "nativeInstancesCreated": 0,
+  "tcpListenersCreated": 0,
+  "expenditure": 0
+}

@@ -1,0 +1,46 @@
+'use strict';
+const assert=require('node:assert/strict');
+const {protectedReads}=require('./protected-reads.cjs');
+const {canonicalFixture,wav,binding}=require('./canonical-fixture.cjs');
+(async()=>{
+ let n=0;const check=async(name,fn)=>{await fn();n++;console.log('PASS '+name);};
+ const actor={verified:true,subject:'guardian-a'},other={verified:true,subject:'guardian-b'};
+ const selection={organisation:'GAITA-DE-BOTO',pupil:'child-a'};
+ async function fixture(cache){
+  let active=true,rev=1,time=1000,pathCalls=0,versionCalls=0,audioCalls=0,hook=null;
+  const canonical=canonicalFixture({fixtureOnly:true,authorize:b=>active&&b.subject==='guardian-a'&&b.pupil==='child-a'});
+  const a=wav(),b=binding(a);await canonical.writer.upload(b,a.toString('base64'));
+  canonical.tables['SESSION META'][1][3]='REVIEWED';canonical.tables['SESSION META'][1][4]='Steadier pulse';
+  canonical.tables['TEACHER COMMENTS']=[['Comment ID','Pupil ID','Teacher Email','Role','Created UTC','Text','Session ID'],['c','child-a','teacher@example.test','OWNER','2026-01-02','Good progress',b.sessionId],['foreign','child-b','teacher@example.test','OWNER','2026-01-02','PRIVATE OTHER CHILD','']];
+  const source={
+   async version(){versionCalls++;return String(rev);},
+   async path(s){pathCalls++;const result={organisation:s.organisation,pupil:s.pupil,version:String(rev),path:canonical.context.gdbPPath_(canonical.workbook,s.pupil)};if(hook)await hook('path',result);return result;},
+   async audio(s){audioCalls++;const row=canonical.tables['PRACTICE LOG'].slice(1).find(r=>r[0]===s.pupil&&r[7]===s.sessionId);if(!row)throw Error('Protected read denied.');const file=canonical.files.get(row[6]);const result={organisation:s.organisation,pupil:s.pupil,sessionId:s.sessionId,version:String(rev),folderVerified:file?.folder==='synthetic-gaita-folder',mimeType:file?.mime,bytes:file?.input};if(hook)await hook('audio',result);return result;}
+  };
+  const service=protectedReads({fixtureOnly:true,cache,source,now:()=>time,ttlMs:5000,authorize:async(a,s)=>active&&a.subject==='guardian-a'&&s.pupil==='child-a'});
+  return {service,source,canonical,b,counts:()=>({pathCalls,versionCalls,audioCalls}),revoke:()=>{active=false;},bump:()=>{rev++;},advance:ms=>{time+=ms;},hook:fn=>{hook=fn;}};
+ }
+ await check('protected read design has no implicit production enablement',()=>assert.throws(()=>protectedReads({}),/Fixture/));
+ for(const cache of [false,true]){
+  const mode=cache?'VERSIONED CACHE':'DIRECT';
+  await check(mode+' actual source PATH projection preserves comments/reviews without private URLs or teacher email',async()=>{const f=await fixture(cache),r=await f.service.path(actor,selection);assert.equal(r.data.comments.length,1);assert.equal(r.data.comments[0].text,'Good progress');assert.equal(r.data.sessions[0].teacherStatus,'REVIEWED');assert.equal(r.data.sessions[0].teacherNote,'Steadier pulse');assert(!JSON.stringify(r).includes('drive.google.com'));assert(!JSON.stringify(r).includes('teacher@example.test'));assert(!JSON.stringify(r).includes('PRIVATE OTHER CHILD'));assert.equal(r.headers['Cache-Control'],'private, no-store');});
+  await check(mode+' signed-out/unverified or foreign guardian denied',async()=>{const f=await fixture(cache);for(const a of [null,{...actor,verified:false},other])await assert.rejects(f.service.path(a,selection),/denied/);assert.equal(f.counts().pathCalls,0);});
+  await check(mode+' foreign organisation/pupil and injected file/URL selectors denied',async()=>{const f=await fixture(cache);for(const extra of [{organisation:'EMGT'},{pupil:'child-b'},{fileId:'foreign'},{fileUrl:'https://drive.google.com/file/d/foreign/view'}])await assert.rejects(f.service.path(actor,{...selection,...extra}),/denied/);assert.equal(f.counts().pathCalls,0);});
+  await check(mode+' current revocation blocks warm PATH and removes cached projection',async()=>{const f=await fixture(cache);await f.service.path(actor,selection);f.revoke();await assert.rejects(f.service.path(actor,selection),/denied/);assert.equal(f.service.cacheEntries(),0);});
+  await check(mode+' revocation during source read prevents response and cache retention',async()=>{const f=await fixture(cache);f.hook(()=>f.revoke());await assert.rejects(f.service.path(actor,selection),/denied/);assert.equal(f.service.cacheEntries(),0);});
+  await check(mode+' teacher review/comment edits appear after authoritative revision change',async()=>{const f=await fixture(cache);await f.service.path(actor,selection);f.canonical.tables['SESSION META'][1][4]='Updated note';f.canonical.tables['TEACHER COMMENTS'][1][5]='Updated comment';f.bump();const r=await f.service.path(actor,selection);assert.equal(r.version,'2');assert.equal(r.data.sessions[0].teacherNote,'Updated note');assert.equal(r.data.comments[0].text,'Updated comment');});
+  await check(mode+' mismatched snapshot organisation/pupil/version rejected',async()=>{for(const field of ['organisation','pupil','version']){const f=await fixture(cache);f.hook((kind,result)=>{result[field]='foreign';});await assert.rejects(f.service.path(actor,selection),/denied/);assert.equal(f.service.cacheEntries(),0);}});
+  await check(mode+' revision change during source read fails closed',async()=>{const f=await fixture(cache);f.hook(()=>f.bump());await assert.rejects(f.service.path(actor,selection),/denied/);assert.equal(f.service.cacheEntries(),0);});
+  await check(mode+' source failure does not fall back to stale path',async()=>{const f=await fixture(cache);await f.service.path(actor,selection);f.bump();f.hook(()=>{throw Error('source unavailable');});await assert.rejects(f.service.path(actor,selection),/unavailable/);});
+  await check(mode+' exact session delivers private bytes with no public URL',async()=>{const f=await fixture(cache),r=await f.service.audio(actor,{...selection,sessionId:f.b.sessionId});assert(Buffer.isBuffer(r.data));assert.equal(r.mimeType,'audio/wav');assert.equal(r.headers['Cache-Control'],'private, no-store');assert.equal(Object.hasOwn(r,'url'),false);assert.equal(f.service.cacheEntries(),0);});
+  await check(mode+' audio foreign pupil/session and arbitrary selector denied',async()=>{const f=await fixture(cache);for(const extra of [{pupil:'child-b'},{organisation:'CIYPB'},{sessionId:'00000000-0000-4000-8000-000000000000'},{fileId:'foreign'}])await assert.rejects(f.service.audio(actor,{...selection,sessionId:f.b.sessionId,...extra}),/denied/);});
+  await check(mode+' audio requires checked private folder and exact returned binding',async()=>{for(const field of ['folderVerified','organisation','pupil','sessionId','version','mimeType']){const f=await fixture(cache);f.hook((kind,r)=>{r[field]=field==='folderVerified'?false:'foreign';});await assert.rejects(f.service.audio(actor,{...selection,sessionId:f.b.sessionId}),/denied/);}});
+  await check(mode+' revocation during audio read prevents byte delivery',async()=>{const f=await fixture(cache);f.hook(()=>f.revoke());await assert.rejects(f.service.audio(actor,{...selection,sessionId:f.b.sessionId}),/denied/);});
+  await check(mode+' audio revision change during download fails closed',async()=>{const f=await fixture(cache);f.hook(()=>f.bump());await assert.rejects(f.service.audio(actor,{...selection,sessionId:f.b.sessionId}),/denied/);});
+  await check(mode+' returned path and audio copies cannot mutate source or cache',async()=>{const f=await fixture(cache),p=await f.service.path(actor,selection);p.data.sessions[0].teacherNote='tampered';assert.equal((await f.service.path(actor,selection)).data.sessions[0].teacherNote,'Steadier pulse');const r=await f.service.audio(actor,{...selection,sessionId:f.b.sessionId});r.data[0]=0;assert.equal((await f.service.audio(actor,{...selection,sessionId:f.b.sessionId})).data[0],82);});
+  await check(mode+' idle TTL eviction and explicit invalidation remove projections',async()=>{const f=await fixture(cache);await f.service.path(actor,selection);f.advance(5001);f.service.sweep();assert.equal(f.service.cacheEntries(),0);await f.service.path(actor,selection);f.service.invalidate(selection);assert.equal(f.service.cacheEntries(),0);});
+  await check(mode+' source-call comparison is a fixture count, not measured Google latency',async()=>{const f=await fixture(cache);await f.service.path(actor,selection);await f.service.path(actor,selection);assert.equal(f.counts().pathCalls,cache?1:2);assert.equal(f.counts().versionCalls,cache?5:6);console.log('  synthetic two-request calls: '+JSON.stringify(f.counts()));});
+ }
+ await check('cache TTL bounds edits when synthetic revision fails to advance (limitation demonstrated)',async()=>{const f=await fixture(true);await f.service.path(actor,selection);f.canonical.tables['SESSION META'][1][4]='Silent edit';assert.equal((await f.service.path(actor,selection)).data.sessions[0].teacherNote,'Steadier pulse');f.advance(5001);assert.equal((await f.service.path(actor,selection)).data.sessions[0].teacherNote,'Silent edit');});
+ console.log(`${n} protected-read check executions passed (17 repeated across direct/cache); synthetic authorisation/revisions and private storage; no Google latency or live endpoint certification.`);
+})().catch(e=>{console.error(e);process.exitCode=1;});

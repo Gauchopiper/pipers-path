@@ -1,0 +1,11 @@
+CREATE TABLE gdb_locks(namespace text PRIMARY KEY);
+CREATE TABLE gdb_access(organisation text NOT NULL CHECK(organisation='GAITA-DE-BOTO'),pupil text NOT NULL,scope text NOT NULL,link text NOT NULL UNIQUE,status text NOT NULL CHECK(status IN('inactive','active','revoked')),revision integer NOT NULL CHECK(revision>0),expires bigint NOT NULL,PRIMARY KEY(organisation,pupil));
+CREATE TABLE gdb_grants(organisation text NOT NULL,pupil text NOT NULL,scope text NOT NULL,subject text NOT NULL,relation text NOT NULL CHECK(relation IN('adult','guardian','supervised-child')),evidence text NOT NULL,status text NOT NULL CHECK(status IN('active','revoked')),PRIMARY KEY(organisation,pupil,scope,subject),FOREIGN KEY(organisation,pupil) REFERENCES gdb_access(organisation,pupil));
+CREATE TABLE gdb_operations(organisation text NOT NULL,operation text NOT NULL,request text NOT NULL,revision integer NOT NULL,PRIMARY KEY(organisation,operation));
+CREATE TABLE gdb_audit(sequence bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,organisation text NOT NULL,pupil text NOT NULL,actor text NOT NULL,action text NOT NULL,revision integer NOT NULL,operation text NOT NULL,at bigint NOT NULL);
+CREATE TABLE gdb_challenges(id text PRIMARY KEY,scope text NOT NULL,nonce text NOT NULL,csrf text NOT NULL,expires bigint NOT NULL);
+CREATE TABLE gdb_sessions(id text PRIMARY KEY,scope text NOT NULL,subject text NOT NULL,csrf text NOT NULL,expires bigint NOT NULL);
+CREATE TABLE gdb_identities(scope text NOT NULL,subject text NOT NULL,enrolment text NOT NULL UNIQUE,verified_at bigint NOT NULL,PRIMARY KEY(scope,subject));
+CREATE TABLE gdb_limits(bucket text PRIMARY KEY,start bigint NOT NULL,count integer NOT NULL);
+CREATE INDEX gdb_sessions_expiry ON gdb_sessions(expires);
+CREATE INDEX gdb_challenges_expiry ON gdb_challenges(expires);

@@ -1,0 +1,1619 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Permissions-Policy" content="microphone=(self)">
+  <meta name="theme-color" content="#ffffff">
+  <title>Piper's Path — Gaita de Boto</title>
+  
+  
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #fff;
+      padding: 18px 16px 12px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+    h1 { margin: 0; font-size: 28px; }
+    #identity { margin-top: 6px; font-size: 16px; color: #555; }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 20px 110px;
+      width: 100%;
+    }
+
+    .view { display: none; width: 100%; max-width: 520px; }
+    .view.active { display: block; }
+
+    #recordView { text-align: center; }
+
+    #timer {
+      font-size: 56px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin: 10px 0 28px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    #recordCircle {width:210px;height:210px;margin:0 auto;overflow:hidden;border-radius:50%;box-shadow:0 8px 24px rgba(0,0,0,.22)}
+    #recordCircle [hidden] {display:none!important}
+    .circleFull {width:100%;height:100%;display:flex;align-items:center;justify-content:center;border:0;text-align:center;padding:14px;font:700 24px/1.25 Arial,Helvetica,sans-serif;white-space:pre-line;touch-action:manipulation}
+    button.circleFull {cursor:pointer}
+    #recordButton {background:#c62828;color:#fff;font-size:28px}
+    #recordSplit {width:100%;height:100%;display:flex;flex-direction:column}
+    .circleHalf {flex:1;width:100%;border:0;padding:12px 20px;font:800 21px/1.15 Arial,Helvetica,sans-serif;cursor:pointer;touch-action:manipulation}
+    #pauseButton {background:#f2c84b;color:#1c1c1c;border-bottom:3px solid #fff}
+    #finishButton {background:#315f96;color:#fff}
+    #saveRecording {background:#974610;color:#fff;font-size:19px}
+    #savingIndicator {background:#455a64;color:#fff}
+    #savedIndicator {background:#237a3b;color:#fff}
+    #attentionIndicator {background:#755119;color:#fff;font-size:19px}
+    #recordCircle :focus-visible {outline:5px solid #111;outline-offset:-7px}
+    #recordCircle button:disabled {cursor:default;opacity:1}
+    @media (max-width:340px){#recordCircle{width:190px;height:190px}}
+
+    #status {
+      margin-top: 24px;
+      min-height: 26px;
+      font-size: 18px;
+    }
+
+    #playbackWrap {
+      display: none;
+      margin: 28px auto 0;
+      max-width: 420px;
+    }
+    audio { width: 100%; }
+
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    }
+
+    .empty {
+      text-align: center;
+      color: #666;
+      line-height: 1.5;
+    }
+/* Community Bagpipe — 10 progressive parts */
+.community-bagpipe {
+  width: 100%;
+  margin: 20px auto;
+  text-align: center;
+}
+
+#communityBagpipeImage {
+  display: block;
+  width: 180px !important;
+  max-width: 180px !important;
+  height: auto !important;
+  margin: 0 auto;
+}
+
+    nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: #fff;
+      border-top: 1px solid #ccc;
+      padding-bottom: env(safe-area-inset-bottom);
+      z-index: 10;
+    }
+
+    .navButton {
+      border: 0;
+      background: #fff;
+      min-height: 82px;
+      padding: 8px 4px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .navButton .icon {
+      display: block;
+      font-size: 31px;
+      line-height: 1.1;
+      margin-bottom: 5px;
+    }
+    .navButton.active { background: #e9e9e9; }
+
+    .small {
+      font-size: 13px;
+      color: #595959;
+      margin-top: 8px;
+      word-break: break-all;
+    }
+
+    .warning {
+      background: #fff3cd;
+      border: 1px solid #ffe69c;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 16px;
+      font-size: 14px;
+      text-align: left;
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>Piper's Path — Gaita de Boto</h1>
+  <div id="identity"></div><p id="ownerTest">Owner-only controlled test · Gaita de Boto</p>
+<section id="connectionPanel" style="max-width:540px;margin:16px auto;text-align:left">
+<p id="connectionStatus" role="status" aria-atomic="true">Google connection has not been verified.</p>
+<a id="googleConnection" target="_blank" rel="noopener noreferrer">Open Google Owner connection</a>
+<button id="connectOwner" type="button">Connect</button>
+<p id="standaloneHelp">Use this standalone page for microphone access. Keep it open until the save is confirmed.</p>
+</section><p id="durationEvidence"></p>
+</header>
+
+<main>
+  <section id="recordView" class="view active">
+
+    <div id="practiceTargetWrap" style="margin:0 auto 18px; max-width:320px; text-align:left;">
+    <label id="practiceForLabel"
+       for="practiceTarget"
+       style="display:block; font-weight:700; margin-bottom:6px;">
+  Practice for:
+</label>
+
+  <select id="practiceTarget" style="
+    width:100%;
+    padding:12px;
+    font-size:16px;
+    border:1px solid #ccc;
+    border-radius:10px;
+    background:#fff;
+  ">
+    <option id="generalPracticeOption" value="">General practice</option>
+  </select>
+      
+      <div id="targetStatus" style="margin-top:6px; font-size:14px;"></div>
+      
+</div>
+    <div id="timer">00:00</div>
+    <div id="recordCircle" aria-label="Recording control">
+      <button id="recordButton" class="circleFull" type="button">RECORD</button>
+      <div id="recordSplit" role="group" aria-label="Recording actions" hidden>
+        <button id="pauseButton" class="circleHalf" type="button">PAUSE</button>
+        <button id="finishButton" class="circleHalf" type="button">FINISH &amp; SAVE</button>
+      </div>
+      <button id="saveRecording" class="circleFull" type="button" hidden disabled>SAFE ON DEVICE</button>
+      <div id="savingIndicator" tabindex="-1" class="circleFull" role="status" aria-atomic="true" hidden>SAVING…</div>
+      <div id="savedIndicator" tabindex="-1" class="circleFull" role="status" aria-atomic="true" hidden>SAVED ✓</div>
+      <div id="attentionIndicator" tabindex="-1" class="circleFull" role="status" aria-atomic="true" hidden>SAVE UNCERTAIN</div>
+    </div>
+    <div id="status" role="status" aria-atomic="true">Tap RECORD to begin</div>
+<p id="localProtection" class="small" role="status" aria-atomic="true"></p><p id="storageHelp" class="small">Pending recordings stay on this browser until saved or deleted. Private browsing, clearing site data or browser storage eviction can remove them. Download a copy for extra protection. Stop recording and wait for local protection before closing.</p>
+<div id="playbackWrap">
+  <p><strong id="yourRecordingLabel">Your recording</strong></p>
+  <audio id="playback" controls></audio>
+<!-- Save and retry are performed by the unified circular control. -->
+<a id="downloadRecording">Download a local copy</a>
+<button id="deletePending" type="button">Delete this local recording</button>
+</div>
+</div>
+    </div>
+  </section>
+
+ <section id="pathView" class="view">
+  <div class="card">
+    <h2>📈 <span id="pathViewTitle">Piper's Path</span></h2>
+
+<div id="pathStatus">Loading your practice history…</div>
+
+<div id="pathSummary" style="display:none; margin-top:20px;">
+  <p><strong id="pathTotalSessionsLabel">Total sessions:</strong> <span id="pathTotalSessions">0</span></p>
+
+  <p><strong id="pathQualifyingSessionsLabel">Qualifying sessions:</strong> <span id="pathQualifyingSessions">0</span></p>
+
+  <p><strong id="pathTotalPracticeLabel">Total practice:</strong> <span id="pathTotalMinutes">0</span> min</p>
+
+  <p><strong id="pathCreditedPracticeLabel">Credited practice:</strong> <span id="pathCreditedMinutes">0</span> min</p>
+</div>
+
+   <div id="pathTargets" style="margin-top:24px;"></div>
+<div id="pathBadges" style="margin-top:24px;"></div>
+<div id="pathSessions" style="margin-top:24px;"></div>
+  </div>
+</section>
+
+<section id="groupView" class="view">
+  <div class="card">
+    <h2>👥 <span id="groupViewTitle">Group</span></h2>
+
+    <div id="groupStatus">
+      Loading today's group practice…
+    </div>
+
+    <div id="groupContent" style="display:none; margin-top:20px;">
+      
+     <h3 id="groupBagpipeTitle">Community Bagpipe</h3>
+
+<p>
+  <strong><span id="groupPipersToday">0</span></strong>
+  <span id="groupPipersText">pipers practised today</span>
+</p>
+
+<p>
+  <strong id="groupBonusLabel">Community bonus today:</strong>
+  +<span id="groupBonusPercent">0</span>%
+</p><div id="communityBagpipe" class="community-bagpipe">
+  <img
+    id="communityBagpipeImage"
+    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='120'%3E%3Ctext x='90' y='70' text-anchor='middle' font-size='52'%3E%F0%9F%8E%B6%3C/text%3E%3C/svg%3E"
+    alt="Community Great Highland Bagpipe"
+  >
+</div>
+      <p id="groupPartName" style="font-weight:600; margin-top:8px;"></p>
+      <p id="groupMessage" class="empty"></p>
+    </div>
+  </div>
+</section></main>
+
+<nav>
+  <button class="navButton active" data-view="recordView">
+    <span class="icon">🎙️</span>
+    RECORD
+  </button>
+  <button class="navButton" data-view="pathView">
+    <span class="icon">📈</span>
+    PATH
+  </button>
+  <button class="navButton" data-view="groupView">
+    <span class="icon">👥</span>
+    GROUP
+  </button>
+</nav>
+
+<script src="pending-store.js"></script>
+<script>
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycby5Dil6AH7Q6CNDJ8EXohbyP_-RHyw9m3_MNtI5yq5EdmnDetwztlEPNYiAQzx88fox/exec';
+const TEST_BOOT = {feedbackUrl:'https://script.google.com/macros/s/AKfycbzSZ6HhoU8Xzf_ND4Qf92U3uElcBb3ixQjOiR97H9FaE7X7YYL2TikI15b2WyecZCuw/exec'};
+const params = new URLSearchParams(location.hash.slice(1));
+const GOOGLE_BRIDGE_ORIGIN = 'https://n-tvzedmwt4d3grunxxuwzfas7uzzxiizbi3svd3y-0lu-script.googleusercontent.com';
+function newId(){const b=crypto.getRandomValues(new Uint8Array(16));b[6]=(b[6]&15)|64;b[8]=(b[8]&63)|128;const h=Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');return h.slice(0,8)+'-'+h.slice(8,12)+'-'+h.slice(12,16)+'-'+h.slice(16,20)+'-'+h.slice(20);}
+const channel = newId();
+let bridgeWindow = null;
+let connectionTimer=null;
+const waiting = new Map();
+let bridgeResolve;
+let bridgeReady = new Promise(resolve=>bridgeResolve=resolve);
+window.addEventListener('message',event=>{
+  const m=event.data;
+  if(event.origin!==GOOGLE_BRIDGE_ORIGIN || !m || m.protocol!=='gdb-owner-bridge-v1' || m.channel!==channel) return;
+  if(m.type==='ready' && !bridgeWindow){
+    bridgeWindow=event.source;
+    clearTimeout(connectionTimer);
+    document.getElementById('connectOwner').textContent=t.reconnect;
+    document.getElementById('connectionStatus').textContent=t.connectionReady;
+    bridgeResolve();
+  }
+  if(event.source!==bridgeWindow || m.type!=='response') return;
+  const w=waiting.get(m.id); if(!w) return;
+  clearTimeout(w.timer); waiting.delete(m.id);
+  if(m.error) w.reject(Error(m.error)); else w.resolve({json:async()=>m.result});
+});
+function fetch(url,options){
+ if(url!==BACKEND_URL) return Promise.reject(Error(t.destinationDenied));
+ return Promise.race([bridgeReady,new Promise((_,reject)=>setTimeout(()=>reject(Error(t.connectionNotReady)),15000))]).then(()=>new Promise((resolve,reject)=>{
+  const id=newId();
+  const timer=setTimeout(()=>{waiting.delete(id);reject(Error(t.responseUnconfirmed));},120000);
+  waiting.set(id,{resolve,reject,timer});
+  bridgeWindow.postMessage({protocol:'gdb-owner-bridge-v1',type:'request',channel,id,payload:JSON.parse(options.body)},GOOGLE_BRIDGE_ORIGIN);
+ }));
+}
+function connectOwner(){
+ const status=document.getElementById('connectionStatus');
+ if(waiting.size){status.textContent=t.requestRunning;return;}
+ clearTimeout(connectionTimer);
+ const previous=document.getElementById('ownerBridge');
+ if(previous)previous.remove();
+ bridgeWindow=null;
+ bridgeReady=new Promise(resolve=>bridgeResolve=resolve);
+ status.textContent=t.connecting;
+ document.getElementById('connectOwner').textContent=t.tryConnection;
+ const frame=document.createElement('iframe'); frame.id='ownerBridge'; frame.title=t.connectionTitle;
+ frame.src=BACKEND_URL+'?bridge=1&channel='+encodeURIComponent(channel);
+ frame.style.cssText='width:100%;height:85px;border:1px solid #ddd;border-radius:8px';
+ document.getElementById('connectionPanel').appendChild(frame);
+ frame.addEventListener('error',()=>{status.textContent=t.connectionFailed;});
+ connectionTimer=setTimeout(()=>{
+  if(!bridgeWindow)status.textContent=t.connectionTimeout;
+ },20000);
+}
+document.getElementById('googleConnection').href=BACKEND_URL;
+document.getElementById('connectOwner').onclick=connectOwner;
+  function gaitaBackendUrl_() {
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(BACKEND_URL)) {
+      throw new Error('Gaita de Boto pupil backend is not configured.');
+    }
+    return BACKEND_URL;
+  }
+  const pupilId = params.get('p') || '';
+  const accessKey = params.get('key') || '';
+  const displayName = (params.get('n') || pupilId).trim();
+  const preferredLanguage =
+  (params.get('lang') || 'EN').trim().toUpperCase();
+
+const uiLanguage =
+  preferredLanguage === 'ES' ? 'ES' : 'EN';
+
+document.documentElement.lang =
+  uiLanguage === 'ES' ? 'es' : 'en';
+
+  const identity = document.getElementById('identity');
+
+  const TEXT = {
+  EN: {
+    bagpipeParts: ["", "Blowpipe", "Bag", "Bass drone — lower section", "Middle tenor — lower section", "Outer tenor — lower section", "Bass drone — middle section", "Middle tenor — upper section", "Outer tenor — upper section", "Bass drone — upper section", "Group practice complete"],
+    groupStage: "Group practice — stage",
+    ofTen: "of 10",
+    reviewed: "REVIEWED",
+    needsWork: "NEEDS WORK",
+
+    reconnect: "Reconnect",
+    connectionReady: "Google Owner connection ready",
+    destinationDenied: "Unapproved destination",
+    connectionNotReady: "Google Owner connection is not ready. Open the Google connection, then reconnect.",
+    responseUnconfirmed: "Save response not confirmed. Keep this page open; check history before retrying.",
+    requestRunning: "A Google request is still running. Wait for its result before reconnecting.",
+    connecting: "Connecting to Google Owner…",
+    tryConnection: "Try connection again",
+    connectionTitle: "Google Owner connection",
+    connectionFailed: "Google connection could not load. Open Google Owner connection in a separate tab and check its message, then try again.",
+    connectionTimeout: "No connection response from Google after 20 seconds. Check the Google panel below for a sign-in or blocked-page message. Open Google Owner connection in a separate tab, then try again. Recording has not been saved.",
+    privateLinkRequired: "Open your private dummy-pupil link from the Gaita workbook. No pupil key is stored in this page.",
+    standaloneRequired: "Open this recorder as a standalone page.",
+    protectedPending: "Recording kept on this device until saving is confirmed.",
+    restoredProtection: "Your pending recording is kept on this device. It has not been deleted.",
+    protectionReady: "Local recording protection is ready.",
+    recoveryBlocked: "Cannot check earlier pending recordings. Reopen this page before starting another recording.",
+    deleteConfirmation: "Delete this local recording? If it has not reached Google, this cannot be undone. Download a copy first if needed.",
+    deleted: "Local recording deleted. You can record again.",
+    pendingFirst: "Save or delete the pending recording before starting another.",
+    reconcileFirst: "An earlier protected recording needs reconciliation before starting again.",
+    unsupportedMic: "Microphone recording is not supported.",
+    noAudio: "No audio was captured.",
+    protecting: "Protecting recording on this device…",
+    protectedSaving: "Protected locally. Saving online…",
+    unprotectedSaving: "Local protection failed. Trying online save; download a backup.",
+    preparationFailed: "Recording preparation failed: ",
+    micError: "Microphone error. Finish and download available audio.",
+    pauseFailed: "Could not pause; still recording.",
+    resumeFailed: "Could not resume.",
+    preparing: "Preparing recording…",
+    finishFailed: "Could not finish recording: ",
+    savingPending: "Saving — confirmation pending",
+    otherTabSaving: "Recording being saved in another tab. Check later.",
+    offlineProtected: "Online save unavailable; protected locally.",
+    saveUnavailable: "Save unavailable; download backup.",
+    safelySaved: "Recording safely saved",
+    confirmedCleanup: "Confirmed by Google. Pending local copy removed.",
+    cleanupFailed: "Saved by Google, but local cleanup failed. Reopening will check the same recording before any upload.",
+    offlineRetry: "Your recording has been kept on this device. You can try saving it again when your connection returns.",
+    offlineUnsafe: "No connection. Keep this tab open and download a copy; local protection is unavailable.",
+    reconcile: "Save needs Owner reconciliation. Do not re-upload; download your local copy.",
+    uncertainUnsafe: "Save unconfirmed. Local protection is unavailable: keep this tab open and download a copy.",
+    uncertainOwner: "Save uncertain — Owner reconciliation required. Do not upload again. Download your local copy.",
+    uncertainDownload: "Save unconfirmed. Keep this tab open and download the audio; local protection is unavailable.",
+    decodedAudio: "Decoded audio: ",
+    timerEvidence: " s · timer: ",
+    feedback: "Send test feedback",
+    ownerTest: "Owner-only controlled test · Gaita de Boto",
+    notConnected: "Google connection has not been verified.",
+    openConnection: "Open Google Owner connection",
+    connect: "Connect",
+    standaloneHelp: "Use this standalone page for microphone access. Keep it open until the save is confirmed.",
+    storageHelp: "Pending recordings stay on this browser until saved or deleted. Private browsing, clearing site data or browser storage eviction can remove them. Download a copy for extra protection. Stop recording and wait for local protection before closing.",
+    downloadCopy: "Download a local copy",
+    deleteLocal: "Delete this local recording",
+    recordControl: "Recording control",
+    recordActions: "Recording actions",
+    timerLabel: "Active recording time",
+    newRecordingProtection: "Recording in progress. Local protection begins when you finish.",
+    loggedSeconds: "s logged",
+    teacherComments: "Teacher comments",
+    noComments: "No Teacher comments yet.",
+    qualifying: "Qualifying ✓",
+    notQualifying: "Not qualifying",
+    sessionReview: "Session review",
+    sessionNote: "Session note",
+    authorizationError: "Access denied. Check that you are signed in with the authorised account and using your private pupil link.",
+
+    record: 'RECORD',
+    path: 'PATH',
+    group: 'GROUP',
+    communityBagpipe: 'Community Bagpipe',
+    communityBonusToday: 'Community bonus today:',
+    piperPractisedToday: 'piper practised today',
+    pipersPractisedToday: 'pipers practised today',
+    waitingFirstPiper: 'Waiting for the first piper',
+    partRevealed: 'Part revealed:',
+    noQualifyingPractice: 'No qualifying group practice yet today.',
+    communityComplete: 'The Community Bagpipe is complete for today!',
+    partsCompletedToday: 'of 10 parts completed today.',
+    loadingGroup: "Loading today's group practice…",
+    groupUnavailable: 'Group practice is temporarily unavailable.',
+    pathTitle: "Piper's Path",
+    loadingPath: 'Loading your practice history…',
+    totalSessions: 'Total sessions:',
+    qualifyingSessions: 'Qualifying sessions:',
+    totalPractice: 'Total practice:',
+    creditedPractice: 'Credited practice:',
+    dailyCreditedPractice: 'Daily credited practice',
+    today: 'Today',
+    actualMinutes: 'min actual',
+    community: 'community',
+    creditedMinutes: 'min credited',
+    soFar: 'so far',
+    recentPractice: 'Recent practice',
+    noPracticeSessions: 'No practice sessions yet.',
+    pathLoadError: 'Could not load your practice history.',
+    badges: 'Badges',
+statusInProgress: 'IN PROGRESS',
+statusReadyForReview: 'READY FOR REVIEW',
+statusAchieved: 'ACHIEVED',
+    practiceFor: 'Practice for:',
+generalPractice: 'General practice',
+yourRecording: 'Your recording',
+    recordButton: 'RECORD',
+stopButton: 'STOP',
+    pauseButton:'PAUSE',resumeButton:'RESUME',finishAndSave:'FINISH & SAVE',
+    savingState:'SAVING…',savedState:'SAVED ✓',safeRetry:'SAFE ON DEVICE\nRETRY SAVE',
+    unsafeRetry:'RETRY ONLINE SAVE',uncertainSave:'SAVE UNCERTAIN',
+    pausedNow:'Recording paused.',
+    localFailure:'Local protection failed. Keep this tab open and download a copy before closing. Saving online is still available.',
+    restoredRecording:'Recording recovered. Press RETRY SAVE to check if it reached Google.',
+tapRecordToBegin: 'Tap RECORD to begin',
+recordingNow: 'Recording...',
+microphoneDenied: 'Microphone permission was denied.',
+microphoneNotFound: 'No microphone was found.',
+microphoneStartFailed: 'Could not start the microphone.',
+    practiceSaved: 'Practice saved ✓',
+recordingSaved: 'Recording saved ✓',
+couldNotSave: 'Could not save: ',
+uploadUnconfirmed: 'Recording made, but the upload could not be confirmed.',
+    targetSaved: 'Target saved ✓',
+targetUnconfirmed: 'Recording saved — target could not be confirmed',
+recordingNoPupilLink: 'Recording complete, but no pupil link was supplied.',
+    loadingPracticeTargets: 'Loading practice targets...',
+targetsUnavailableGeneralPractice:
+  'Targets unavailable — general practice is still available.',
+    testModeNoPupilLink: 'Test mode — no pupil link supplied'
+  },
+
+  ES: {
+    bagpipeParts: ["", "Soplete", "Fuelle", "Bordón bajo — parte inferior", "Tenor central — parte inferior", "Tenor exterior — parte inferior", "Bordón bajo — parte media", "Tenor central — parte superior", "Tenor exterior — parte superior", "Bordón bajo — parte superior", "Práctica del grupo completada"],
+    groupStage: "Práctica del grupo — etapa",
+    ofTen: "de 10",
+    reviewed: "REVISADO",
+    needsWork: "NECESITA TRABAJO",
+
+    reconnect: "Volver a conectar",
+    connectionReady: "Conexión de propietario con Google lista",
+    destinationDenied: "Destino no autorizado",
+    connectionNotReady: "La conexión de propietario con Google no está lista. Abre la conexión con Google y vuelve a conectar.",
+    responseUnconfirmed: "No se ha confirmado el guardado. Mantén esta página abierta y comprueba el historial antes de reintentar.",
+    requestRunning: "Hay una solicitud a Google en curso. Espera el resultado antes de volver a conectar.",
+    connecting: "Conectando con Google como propietario…",
+    tryConnection: "Reintentar conexión",
+    connectionTitle: "Conexión de propietario con Google",
+    connectionFailed: "No se pudo cargar la conexión con Google. Ábrela en otra pestaña, comprueba el mensaje y vuelve a intentarlo.",
+    connectionTimeout: "Google no ha respondido en 20 segundos. Comprueba si el panel inferior pide iniciar sesión o indica un bloqueo. Abre la conexión con Google en otra pestaña y reintenta. La grabación no se ha guardado.",
+    privateLinkRequired: "Abre el enlace privado del alumno de prueba desde la hoja de Gaita. Esta página no contiene ninguna clave de alumno.",
+    standaloneRequired: "Abre esta grabadora en una página independiente.",
+    protectedPending: "Grabación protegida en este dispositivo hasta que se confirme el guardado.",
+    restoredProtection: "Tu grabación pendiente sigue protegida en este dispositivo. No se ha borrado.",
+    protectionReady: "La protección local de grabaciones está lista.",
+    recoveryBlocked: "No se pueden comprobar las grabaciones pendientes. Vuelve a abrir esta página antes de iniciar otra grabación.",
+    deleteConfirmation: "¿Borrar esta grabación local? Si no ha llegado a Google, no podrás recuperarla. Descarga una copia antes si la necesitas.",
+    deleted: "Grabación local borrada. Ya puedes volver a grabar.",
+    pendingFirst: "Guarda o borra la grabación pendiente antes de iniciar otra.",
+    reconcileFirst: "Hay que comprobar el guardado de una grabación protegida anterior antes de volver a grabar.",
+    unsupportedMic: "Este navegador no permite grabar con el micrófono.",
+    noAudio: "No se capturó audio.",
+    protecting: "Protegiendo la grabación en este dispositivo…",
+    protectedSaving: "Protegida en el dispositivo. Guardando en línea…",
+    unprotectedSaving: "Falló la protección local. Intentando guardar en línea; descarga una copia.",
+    preparationFailed: "No se pudo preparar la grabación. Mantén la página abierta y descarga el audio disponible. ",
+    micError: "Error del micrófono. Finaliza y descarga el audio disponible.",
+    pauseFailed: "No se pudo pausar; la grabación continúa.",
+    resumeFailed: "No se pudo reanudar la grabación.",
+    preparing: "Preparando la grabación…",
+    finishFailed: "No se pudo finalizar la grabación. Mantén la página abierta. ",
+    savingPending: "Guardando — pendiente de confirmación",
+    otherTabSaving: "La grabación se está guardando en otra pestaña. Compruébalo más tarde.",
+    offlineProtected: "No se puede guardar en línea; la grabación está protegida en el dispositivo.",
+    saveUnavailable: "No se puede guardar; descarga una copia.",
+    safelySaved: "Grabación guardada y confirmada",
+    confirmedCleanup: "Google ha confirmado el guardado. Se ha eliminado la copia local pendiente.",
+    cleanupFailed: "Google ha guardado la grabación, pero no se pudo eliminar la copia local. Al reabrir se comprobará la misma grabación antes de subirla.",
+    offlineRetry: "Tu grabación está protegida en este dispositivo. Puedes reintentar el guardado cuando vuelva la conexión.",
+    offlineUnsafe: "Sin conexión. Mantén esta pestaña abierta y descarga una copia; la protección local no está disponible.",
+    reconcile: "El propietario debe comprobar el guardado. No vuelvas a subir la grabación; descarga tu copia local.",
+    uncertainUnsafe: "Guardado sin confirmar. No hay protección local: mantén esta pestaña abierta y descarga una copia.",
+    uncertainOwner: "Guardado sin confirmar: el propietario debe comprobarlo. No vuelvas a subir la grabación. Descarga tu copia local.",
+    uncertainDownload: "Guardado sin confirmar. Mantén esta pestaña abierta y descarga el audio; no hay protección local.",
+    decodedAudio: "Audio decodificado: ",
+    timerEvidence: " s · cronómetro: ",
+    feedback: "Enviar comentarios de prueba",
+    ownerTest: "Prueba privada del propietario · Gaita de Boto",
+    notConnected: "No se ha verificado la conexión con Google.",
+    openConnection: "Abrir conexión de propietario con Google",
+    connect: "Conectar",
+    standaloneHelp: "Usa esta página independiente para acceder al micrófono. Mantenla abierta hasta que se confirme el guardado.",
+    storageHelp: "Las grabaciones pendientes permanecen en este navegador hasta guardarlas o borrarlas. La navegación privada, borrar los datos del sitio o la limpieza de almacenamiento del navegador pueden eliminarlas. Descarga una copia para mayor protección. Finaliza la grabación y espera a que se proteja antes de cerrar.",
+    downloadCopy: "Descargar una copia local",
+    deleteLocal: "Borrar esta grabación local",
+    recordControl: "Control de grabación",
+    recordActions: "Acciones de grabación",
+    timerLabel: "Tiempo de grabación activa",
+    newRecordingProtection: "Grabación en curso. La protección local comienza al finalizar.",
+    loggedSeconds: "s registrados",
+    teacherComments: "Comentarios del profesor",
+    noComments: "Todavía no hay comentarios del profesor.",
+    qualifying: "Válida para crédito ✓",
+    notQualifying: "Sin crédito",
+    sessionReview: "Revisión",
+    sessionNote: "Nota de sesión",
+    authorizationError: "Acceso denegado. Comprueba que has iniciado sesión con la cuenta autorizada y que usas tu enlace privado de alumno.",
+
+    record: 'GRABAR',
+    path: 'CAMINO',
+    group: 'GRUPO',
+    communityBagpipe: 'Gaita Comunitaria',
+    communityBonusToday: 'Bonificación comunitaria de hoy:',
+    piperPractisedToday: 'gaitero ha practicado hoy',
+    pipersPractisedToday: 'gaiteros han practicado hoy',
+    waitingFirstPiper: 'Esperando al primer gaitero',
+    partRevealed: 'Parte revelada:',
+   noQualifyingPractice: 'Todavía no hay práctica grupal válida hoy.',
+   communityComplete: '¡La Gaita Comunitaria está completa por hoy!',
+   partsCompletedToday: 'de 10 partes completadas hoy.',
+   loadingGroup: 'Cargando la práctica del grupo de hoy…',
+   groupUnavailable: 'La práctica del grupo no está disponible temporalmente.',
+   pathTitle: "Piper's Path",
+   loadingPath: 'Cargando tu historial de práctica…',
+   totalSessions: 'Sesiones totales:',
+   qualifyingSessions: 'Sesiones válidas:',
+   totalPractice: 'Práctica total:',
+   creditedPractice: 'Práctica acreditada:',
+   dailyCreditedPractice: 'Práctica acreditada diaria',
+   today: 'Hoy',
+   actualMinutes: 'min reales',
+   community: 'comunidad',
+   creditedMinutes: 'min acreditados',
+   soFar: 'hasta ahora',
+   recentPractice: 'Práctica reciente',
+   noPracticeSessions: 'Todavía no hay sesiones de práctica.',
+   pathLoadError: 'No se pudo cargar tu historial de práctica.',
+    badges: 'Insignias',
+statusInProgress: 'EN PROGRESO',
+statusReadyForReview: 'LISTO PARA REVISIÓN',
+statusAchieved: 'CONSEGUIDO',
+    practiceFor: 'Practicar:',
+generalPractice: 'Práctica general',
+yourRecording: 'Tu grabación',
+    recordButton: 'GRABAR',
+stopButton: 'PARAR',
+    pauseButton:'PAUSA',resumeButton:'CONTINUAR',finishAndSave:'FINALIZAR Y GUARDAR',
+    savingState:'GUARDANDO…',savedState:'GUARDADO ✓',safeRetry:'A SALVO EN DISPOSITIVO\nREINTENTAR GUARDAR',
+    unsafeRetry:'REINTENTAR GUARDADO ONLINE',uncertainSave:'GUARDADO SIN CONFIRMAR',
+    pausedNow:'Grabación en pausa.',
+    localFailure:'Fallo al proteger la grabación. Mantén la página abierta y descarga una copia antes de cerrarla.',
+    restoredRecording:'Grabación recuperada. Pulsa REINTENTAR GUARDAR para comprobar si ya llegó.',
+tapRecordToBegin: 'Pulsa GRABAR para comenzar',
+recordingNow: 'Grabando...',
+microphoneDenied: 'Se denegó el permiso para usar el micrófono.',
+microphoneNotFound: 'No se encontró ningún micrófono.',
+microphoneStartFailed: 'No se pudo iniciar el micrófono.',
+    practiceSaved: 'Práctica guardada ✓',
+recordingSaved: 'Grabación guardada ✓',
+couldNotSave: 'No se pudo guardar: ',
+uploadUnconfirmed: 'La grabación se realizó, pero no se pudo confirmar que se guardara.',
+    targetSaved: 'Objetivo guardado ✓',
+targetUnconfirmed: 'Grabación guardada — no se pudo confirmar el objetivo',
+recordingNoPupilLink: 'Grabación completada, pero no se encontró el enlace personal del alumno.',
+    loadingPracticeTargets: 'Cargando objetivos de práctica...',
+targetsUnavailableGeneralPractice:
+  'Los objetivos no están disponibles — la práctica general sigue disponible.',
+    testModeNoPupilLink: 'Modo de prueba — no se proporcionó un enlace de alumno'
+  }
+};
+
+const t = TEXT[uiLanguage];
+function isAuthorizationError(error){return /authori[sz]|permission|access denied|owner-only|not allowed/i.test(String(error&&error.message||error||''));}
+function userError(error,fallback){return isAuthorizationError(error)?t.authorizationError:fallback;}
+document.getElementById('ownerTest').textContent=t.ownerTest;
+document.getElementById('standaloneHelp').textContent=t.standaloneHelp;
+document.getElementById('storageHelp').textContent=t.storageHelp;
+document.getElementById('googleConnection').textContent=t.openConnection;
+document.getElementById('connectOwner').textContent=t.connect;
+document.getElementById('downloadRecording').textContent=t.downloadCopy;
+document.getElementById('deletePending').textContent=t.deleteLocal;
+document.getElementById('pathStatus').textContent=t.loadingPath;
+document.getElementById('groupStatus').textContent=t.loadingGroup;
+document.getElementById('recordCircle').setAttribute('aria-label',t.recordControl);
+document.getElementById('recordSplit').setAttribute('aria-label',t.recordActions);
+document.getElementById('timer').setAttribute('aria-label',t.timerLabel);
+document.getElementById('playback').setAttribute('aria-label',t.yourRecording);
+document.getElementById('communityBagpipeImage').alt=t.communityBagpipe;
+
+if(params.get('p') && params.get('key')) connectOwner();
+else document.getElementById('connectionStatus').textContent=t.privateLinkRequired;
+if(window.top!==window.self){document.body.replaceChildren(document.createTextNode(t.standaloneRequired));throw Error('Standalone page required');}
+
+
+  document.getElementById('practiceForLabel').textContent =
+  t.practiceFor;
+
+document.getElementById('generalPracticeOption').textContent =
+  t.generalPractice;
+
+document.getElementById('yourRecordingLabel').textContent =
+  t.yourRecording;
+
+  document.getElementById('recordButton').textContent =
+  t.recordButton;
+
+document.getElementById('status').textContent =
+  t.tapRecordToBegin;
+
+  function translatedTargetStatus(status) {
+  const value = String(status || '').trim().toUpperCase();
+
+  if (value === 'IN PROGRESS') return t.statusInProgress;
+  if (value === 'READY FOR REVIEW') return t.statusReadyForReview;
+  if (value === 'ACHIEVED') return t.statusAchieved;
+  if (value === 'REVIEWED') return t.reviewed;
+  if (value === 'NEEDS WORK') return t.needsWork;
+
+  return status || '';
+}
+
+  document.getElementById('pathViewTitle').textContent =
+  t.pathTitle;
+
+document.getElementById('pathTotalSessionsLabel').textContent =
+  t.totalSessions;
+
+document.getElementById('pathQualifyingSessionsLabel').textContent =
+  t.qualifyingSessions;
+
+document.getElementById('pathTotalPracticeLabel').textContent =
+  t.totalPractice;
+
+document.getElementById('pathCreditedPracticeLabel').textContent =
+  t.creditedPractice;
+
+  document.getElementById('groupViewTitle').textContent =
+  t.group;
+
+  document.querySelector('[data-view="recordView"]')
+  .lastChild.textContent = '\n  ' + t.record + '\n';
+
+document.querySelector('[data-view="pathView"]')
+  .lastChild.textContent = '\n  ' + t.path + '\n';
+
+document.querySelector('[data-view="groupView"]')
+  .lastChild.textContent = '\n  ' + t.group + '\n';
+  
+  if (pupilId && accessKey) {
+    identity.textContent = displayName;
+  } else {
+    identity.textContent = t.testModeNoPupilLink;
+  }
+const practiceTarget = document.getElementById('practiceTarget');
+  const practiceTargetStorageKey =
+  pupilId ? 'pipersPath.practiceTarget.' + pupilId : '';
+
+  async function getPathWithRetry(maxAttempts = 3, delayMs = 750, timeoutMs = 15000) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(gaitaBackendUrl_(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify({
+          action: 'getPath',
+          pupilId: pupilId,
+          accessKey: accessKey
+        }),
+        signal: controller.signal
+      });
+
+      const data = await response.json();
+
+      if (!data.ok) {
+        throw new Error(data.error || 'Could not load PATH data.');
+      }
+
+      return data;
+
+    } catch (error) {
+      lastError = error;
+
+      if (attempt < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  throw lastError || new Error('Could not load PATH data.');
+}
+async function getGroupWithRetry(
+  maxAttempts = 3,
+  delayMs = 750,
+  timeoutMs = 15000
+) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      timeoutMs
+    );
+
+    try {
+      const response = await fetch(gaitaBackendUrl_(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify({
+          action: 'getGroup',
+          pupilId: pupilId,
+          accessKey: accessKey
+        }),
+        signal: controller.signal
+      });
+
+      const data = await response.json();
+
+      if (!data.ok) {
+        throw new Error(
+          data.error || 'Could not load GROUP data.'
+        );
+      }
+
+      return data;
+
+    } catch (error) {
+      lastError = error;
+      console.warn(
+        'GROUP read attempt ' + attempt + ' failed:',
+        error
+      );
+
+      if (attempt < maxAttempts) {
+        await new Promise(
+          resolve => setTimeout(resolve, delayMs)
+        );
+      }
+
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  throw lastError || new Error(
+    'Could not load GROUP data.'
+  );
+}
+async function loadGroup() {
+  const status = document.getElementById('groupStatus');
+  const content = document.getElementById('groupContent');
+  const pipersEl = document.getElementById('groupPipersToday');
+  const bonusEl = document.getElementById('groupBonusPercent');
+  const titleEl =
+  document.getElementById('groupBagpipeTitle');
+
+const pipersTextEl =
+  document.getElementById('groupPipersText');
+
+const bonusLabelEl =
+  document.getElementById('groupBonusLabel');
+  const bagpipeEl = document.getElementById('communityBagpipe');
+  const messageEl = document.getElementById('groupMessage');
+
+  status.textContent = t.loadingGroup;
+  content.style.display = 'none';
+
+  try {
+    const data = await getGroupWithRetry();
+
+    const pipersToday = Number(data.pipersToday || 0);
+    const bagpipeParts = Math.max(
+      0,
+      Math.min(10, Number(data.bagpipeParts || 0))
+    );
+const communityBonusPercent = Math.max(
+  0,
+  Math.min(20, Number(data.communityBonusPercent || 0))
+);
+    pipersEl.textContent = pipersToday;
+    bonusEl.textContent = communityBonusPercent;
+    titleEl.textContent = t.communityBagpipe;
+
+bonusLabelEl.textContent =
+  t.communityBonusToday;
+
+pipersTextEl.textContent =
+  pipersToday === 1
+    ? t.piperPractisedToday
+    : t.pipersPractisedToday;
+
+const bagpipeImage =
+  document.getElementById('communityBagpipeImage');
+
+const partNameEl =
+  document.getElementById('groupPartName');
+
+const bagpipePartNames = t.bagpipeParts;
+    
+bagpipeImage.src =
+  'group-progress.svg#' + bagpipeParts;
+
+bagpipeImage.alt =
+  t.groupStage + ' ' + bagpipeParts + ' ' + t.ofTen;
+
+if (bagpipeParts === 0) {
+  partNameEl.textContent = t.waitingFirstPiper;
+} else {
+  partNameEl.textContent =
+    t.partRevealed + ' ' + bagpipePartNames[bagpipeParts];
+}
+
+   if (bagpipeParts === 0) {
+  messageEl.textContent =
+    t.noQualifyingPractice;
+} else if (bagpipeParts >= 10) {
+  messageEl.textContent =
+    t.communityComplete;
+} else {
+  messageEl.textContent =
+    bagpipeParts + ' ' + t.partsCompletedToday;
+}
+
+    status.textContent = '';
+    content.style.display = 'block';
+
+  } catch (error) {
+    console.warn('GROUP load failed:', error);
+
+    status.textContent = userError(error,t.groupUnavailable);
+    content.style.display = 'none';
+  }
+}
+async function loadPracticeTargets() {
+  practiceTarget.innerHTML = '';
+  practiceTarget.disabled = true;
+
+  const loadingOption = document.createElement('option');
+  loadingOption.value = '';
+  loadingOption.textContent = t.loadingPracticeTargets;
+  practiceTarget.appendChild(loadingOption);
+
+  if (!pupilId || !accessKey) {
+    practiceTarget.innerHTML = '';
+
+    const generalOption = document.createElement('option');
+    generalOption.value = '';
+    generalOption.textContent = t.generalPractice;
+    practiceTarget.appendChild(generalOption);
+
+    practiceTarget.disabled = false;
+    return;
+  }
+
+  try {
+    const data = await getPathWithRetry();
+
+    practiceTarget.innerHTML = '';
+
+    const generalOption = document.createElement('option');
+    generalOption.value = '';
+    generalOption.textContent = t.generalPractice;
+    practiceTarget.appendChild(generalOption);
+
+    const eligibleTargets = (data.targets || []).filter(target => {
+      const status = String(target.status || '').trim().toUpperCase();
+
+      return (
+        status === 'IN PROGRESS' ||
+        status === 'READY FOR REVIEW'
+      );
+    });
+
+    eligibleTargets.forEach(target => {
+      const option = document.createElement('option');
+      option.value = target.targetId;
+      option.textContent = target.title;
+      practiceTarget.appendChild(option);
+    });
+
+    if (practiceTargetStorageKey) {
+  try {
+    const savedTargetId =
+      localStorage.getItem(practiceTargetStorageKey) || '';
+
+    if (
+      savedTargetId &&
+      Array.from(practiceTarget.options).some(
+        option => option.value === savedTargetId
+      )
+    ) {
+      practiceTarget.value = savedTargetId;
+    } else if (savedTargetId) {
+      localStorage.removeItem(practiceTargetStorageKey);
+    }
+  } catch (error) {
+    console.warn('Could not restore practice target:', error);
+  }
+}
+    practiceTarget.disabled = false;
+    const status = document.getElementById('targetStatus');
+if (status) {
+  status.textContent = '';
+}
+
+  } catch (error) {
+    console.warn('Practice target load failed:', error);
+
+    practiceTarget.innerHTML = '';
+
+    const generalOption = document.createElement('option');
+    generalOption.value = '';
+    generalOption.textContent = t.generalPractice;
+    practiceTarget.appendChild(generalOption);
+
+    practiceTarget.disabled = false;
+
+    const status = document.getElementById('targetStatus');
+    if (status) {
+      status.textContent =
+  userError(error,t.targetsUnavailableGeneralPractice);
+    }
+  }
+}
+if (pupilId && accessKey) {
+  loadPracticeTargets();
+}
+  
+const targetStatus = document.getElementById('targetStatus');
+
+practiceTarget.addEventListener('change', () => {
+  targetStatus.textContent = '';
+
+  if (!practiceTargetStorageKey) return;
+
+  try {
+    const selectedTargetId = practiceTarget.value;
+
+    if (selectedTargetId) {
+      localStorage.setItem(
+        practiceTargetStorageKey,
+        selectedTargetId
+      );
+    } else {
+      localStorage.removeItem(practiceTargetStorageKey);
+    }
+  } catch (error) {
+    console.warn('Could not save practice target:', error);
+  }
+});
+  
+async function tagSavedRecording(fileUrl, targetId) {
+  targetStatus.textContent = '';
+  const isGeneralPractice = !targetId;
+
+  try {
+    // Write the target link.
+    // We do not trust/read this response because Apps Script redirects
+    // have been unreliable specifically for setSessionTarget.
+    await fetch(gaitaBackendUrl_(), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify({
+        action: 'setSessionTarget',
+        pupilId: pupilId,
+        accessKey: accessKey,
+        driveFileLink: fileUrl,
+        targetId: targetId
+      })
+    });
+
+// Confirm the saved state using getPath.
+// Retry the READ only; never repeat the target write.
+let confirmed = false;
+let savedSession = null;
+let confirmationReadSucceeded = false;
+
+try {
+  const data = await getPathWithRetry();
+  confirmationReadSucceeded = true;
+
+  savedSession = (data.sessions || []).find(
+    session => session.driveFileLink === fileUrl
+  );
+
+  if (savedSession && savedSession.targetId === targetId) {
+    confirmed = true;
+  }
+
+} catch (error) {
+  console.warn('Target confirmation failed:', error);
+}
+if (confirmed) {
+  if (!isGeneralPractice) {
+    targetStatus.textContent = t.targetSaved;
+  }
+  return true;
+}
+// One safe retry only when read-back proves the recording exists
+// but the requested target was not saved.
+if (
+  confirmationReadSucceeded &&
+  savedSession &&
+  savedSession.targetId !== targetId
+) {
+  try {
+    await fetch(gaitaBackendUrl_(), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify({
+        action: 'setSessionTarget',
+        pupilId: pupilId,
+        accessKey: accessKey,
+        driveFileLink: fileUrl,
+        targetId: targetId
+      })
+    });
+
+    const retryData = await getPathWithRetry();
+
+    const retrySession = (retryData.sessions || []).find(
+      session => session.driveFileLink === fileUrl
+    );
+
+    if (retrySession && retrySession.targetId === targetId) {
+      if (!isGeneralPractice) {
+        targetStatus.textContent = t.targetSaved;
+      }
+      return true;
+    }
+  } catch (error) {
+    console.warn('Target retry failed:', error);
+  }
+}
+if (!isGeneralPractice) {
+  targetStatus.textContent =
+    t.targetUnconfirmed;
+}
+return false;
+  } catch (error) {
+    console.error('Target tagging error:', error);
+    targetStatus.textContent =
+  t.targetUnconfirmed;
+    return false;
+  }
+}
+  const navButtons = document.querySelectorAll('.navButton');
+  const views = document.querySelectorAll('.view');
+
+  navButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      navButtons.forEach(b => b.classList.remove('active'));
+      views.forEach(v => v.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.view).classList.add('active');
+      
+ if (btn.dataset.view === 'pathView') {
+  loadPath();
+}
+  if (btn.dataset.view === 'groupView') {
+  loadGroup();
+}
+});
+});
+
+  let pendingBlob=null, pendingMime=null, saving=false, recordingConfirmed=false;
+  let localStore=null, locallyProtected=false, preparing=false, recoveryBlocked=false;
+  let mediaRecorder = null;
+  let stream = null;
+  let chunks = [];
+  let recording=false,recordingPaused=false,starting=false,needsReconciliation=false;
+  let activeDurationMs=null,activeSegmentStartMs=null,savedResetTimer=null,lastPauseToggleMs=-Infinity;
+  let startedAt = null;
+  let recordingEndedAt = null;
+  let timerHandle = null;
+  let lastObjectUrl = null;
+  let recordingTargetId = '';
+  let recordingSessionId = '';
+
+  const recordButton = document.getElementById('recordButton');
+  const statusEl = document.getElementById('status');
+  const timerEl = document.getElementById('timer');
+  const playbackWrap = document.getElementById('playbackWrap');
+  const playback = document.getElementById('playback');
+  if(!pupilId||!accessKey){recordButton.disabled=true;statusEl.textContent=t.testModeNoPupilLink;}
+  window.addEventListener('beforeunload',event=>{if(recording||preparing||(pendingBlob&&!recordingConfirmed&&!locallyProtected)){event.preventDefault();event.returnValue='';}});
+
+  const protectionEl=document.getElementById('localProtection');
+  const saveButton=document.getElementById('saveRecording');
+  const pauseButton=document.getElementById('pauseButton');
+  const finishButton=document.getElementById('finishButton');
+  const recordSplit=document.getElementById('recordSplit');
+  const savingIndicator=document.getElementById('savingIndicator');
+  const savedIndicator=document.getElementById('savedIndicator');
+  const attentionIndicator=document.getElementById('attentionIndicator');
+  let recorderUiState='ready';
+  function setRecorderState(state){
+    const focus=document.activeElement;
+    const ownsFocus=[recordButton,pauseButton,finishButton,saveButton,savingIndicator,savedIndicator,attentionIndicator].includes(focus);
+    recorderUiState=state;
+    recordButton.hidden=state!=='ready';recordSplit.hidden=state!=='recording'&&state!=='paused';
+    saveButton.hidden=state!=='retry'&&state!=='unsafe';
+    savingIndicator.hidden=state!=='saving';savedIndicator.hidden=state!=='saved';
+    attentionIndicator.hidden=state!=='attention';
+    pauseButton.textContent=state==='paused'?t.resumeButton:t.pauseButton;
+    finishButton.textContent=t.finishAndSave;
+    saveButton.textContent=state==='unsafe'?t.unsafeRetry:t.safeRetry;
+    savingIndicator.textContent=t.savingState;savedIndicator.textContent=t.savedState;
+    attentionIndicator.textContent=t.uncertainSave;
+    saveButton.disabled=state!=='retry'&&state!=='unsafe';
+    recordButton.disabled=state!=='ready'||recoveryBlocked||!pupilId||!accessKey||starting;
+    if(ownsFocus){
+      const next=state==='recording'||state==='paused'?(focus===finishButton?finishButton:pauseButton):state==='saving'?savingIndicator:state==='saved'?savedIndicator:state==='attention'?attentionIndicator:state==='retry'||state==='unsafe'?saveButton:recordButton;
+      if(next!==focus&&!next.disabled)next.focus();
+    }
+  }
+  function storageWarning(){protectionEl.textContent=t.localFailure;}
+  setRecorderState('ready');
+  function displayPending(){
+    if(lastObjectUrl)URL.revokeObjectURL(lastObjectUrl);
+    lastObjectUrl=URL.createObjectURL(pendingBlob);playback.src=lastObjectUrl;playbackWrap.style.display='block';
+    const download=document.getElementById('downloadRecording');download.href=lastObjectUrl;download.download='gaita-'+recordingSessionId+(pendingMime.includes('mp4')?'.m4a':'.webm');
+    saveButton.disabled=false;document.getElementById('deletePending').disabled=false;
+  }
+  async function protectPending(){
+    locallyProtected=false;
+    try{
+      if(!localStore)localStore=await GaitaPendingStore.open(pupilId,accessKey);
+      await localStore.put({sessionId:recordingSessionId,mime:pendingMime,startedAt,endedAt:recordingEndedAt,activeDurationMs:typeof activeDurationMs==='number'?activeDurationMs:null,targetId:recordingTargetId,createdAt:startedAt,blob:pendingBlob});
+      locallyProtected=true;protectionEl.textContent=t.protectedPending;
+      if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+    }catch(e){storageWarning();}
+  }
+  async function restorePending(){
+    if(!pupilId||!accessKey)return;
+    recordButton.disabled=true;
+    try{
+      localStore=await GaitaPendingStore.open(pupilId,accessKey);
+      const item=await localStore.read();
+      if(item){pendingBlob=item.blob;pendingMime=item.mime;recordingSessionId=item.sessionId;startedAt=item.startedAt;recordingEndedAt=item.endedAt;activeDurationMs=Number.isFinite(item.activeDurationMs)?item.activeDurationMs:null;recordingTargetId=item.targetId;locallyProtected=true;displayPending();setRecorderState('retry');statusEl.textContent=t.restoredRecording;protectionEl.textContent=t.restoredProtection;timerEl.textContent=formatTime(Math.floor((activeDurationMs===null?recordingEndedAt-startedAt:activeDurationMs)/1000));}
+      else protectionEl.textContent=t.protectionReady;
+    }catch(e){recoveryBlocked=true;storageWarning();statusEl.textContent=t.recoveryBlocked;}
+    finally{recordButton.disabled=recoveryBlocked;}
+  }
+  const recoveryReady=restorePending();
+  document.getElementById('deletePending').onclick=async()=>{
+    if(saving||preparing||!pendingBlob||!confirm(t.deleteConfirmation))return;
+    try{if(localStore)await localStore.remove(recordingSessionId);pendingBlob=null;locallyProtected=false;playback.pause();playback.removeAttribute('src');playbackWrap.style.display='none';URL.revokeObjectURL(lastObjectUrl);statusEl.textContent=t.deleted;protectionEl.textContent='';recordingConfirmed=false;recordingSessionId='';activeDurationMs=null;setRecorderState('ready');}catch(e){storageWarning();}
+  };
+
+
+  function formatTime(totalSeconds) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
+  }
+
+  function activeMillis(){return (activeDurationMs||0)+(recording&&!recordingPaused&&activeSegmentStartMs!==null?Math.max(0,performance.now()-activeSegmentStartMs):0);}
+  function updateTimer(){timerEl.textContent=formatTime(Math.floor(activeMillis()/1000));}
+  function releaseMicrophone(){if(stream){stream.getTracks().forEach(track=>track.stop());stream=null;}}
+  async function startRecording(){
+    if(starting||recording||preparing||saving||recoveryBlocked)return;
+    if(pendingBlob&&!recordingConfirmed){statusEl.textContent=t.pendingFirst;return;}
+    if(locallyProtected){statusEl.textContent=t.reconcileFirst;return;}
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){statusEl.textContent=t.unsupportedMic;return;}
+    starting=true;recordButton.disabled=true;
+    try{
+      stream=await navigator.mediaDevices.getUserMedia({ audio: true });
+      chunks=[];pendingBlob=null;pendingMime=null;recordingConfirmed=false;needsReconciliation=false;
+      if(savedResetTimer){clearTimeout(savedResetTimer);savedResetTimer=null;}
+      const formats=['audio/webm;codecs=opus','audio/webm','audio/mp4'];let options={};
+      for(const type of formats)if(window.MediaRecorder&&MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(type)){options={mimeType:type};break;}
+      mediaRecorder=new MediaRecorder(stream,options);
+      mediaRecorder.addEventListener('dataavailable',e=>{if(e.data&&e.data.size>0)chunks.push(e.data)});
+      mediaRecorder.addEventListener('stop',async()=>{
+        const type=mediaRecorder.mimeType||'audio/webm';
+        pendingBlob=new Blob(chunks,{type});pendingMime=type;
+        try{
+          if(!pendingBlob.size)throw Error(t.noAudio);
+          displayPending();saveButton.disabled=true;statusEl.textContent=t.protecting;
+          await protectPending();preparing=false;
+          statusEl.textContent=locallyProtected?t.protectedSaving:t.unprotectedSaving;
+          await savePendingRecording();
+        }catch(e){
+          statusEl.textContent=t.preparationFailed;
+          if(pendingBlob&&pendingBlob.size){displayPending();setRecorderState(locallyProtected?'retry':'unsafe')}
+          else setRecorderState('ready');
+        }finally{preparing=false;releaseMicrophone();}
+      });
+      mediaRecorder.addEventListener('error',()=>{statusEl.textContent=t.micError});
+      mediaRecorder.start();
+      startedAt=Date.now();activeDurationMs=0;activeSegmentStartMs=performance.now();
+      recordingEndedAt=null;recordingPaused=false;recording=true;
+      recordingTargetId=practiceTarget.value;recordingSessionId=newId();targetStatus.textContent='';
+      playbackWrap.style.display='none';timerEl.textContent='00:00';
+      protectionEl.textContent=t.newRecordingProtection;
+      document.getElementById('durationEvidence').textContent='';
+      setRecorderState('recording');statusEl.textContent=t.recordingNow;
+      timerHandle=setInterval(updateTimer,500);
+    }catch(e){
+      releaseMicrophone();
+      statusEl.textContent=e&&e.name==='NotAllowedError'?t.microphoneDenied:e&&e.name==='NotFoundError'?t.microphoneNotFound:t.microphoneStartFailed;
+    }finally{starting=false;if(!recording)setRecorderState('ready')}
+  }
+  function pauseRecording(){
+    if(!recording||recordingPaused||preparing||!mediaRecorder||mediaRecorder.state!=='recording')return;
+    try{mediaRecorder.pause();activeDurationMs+=Math.max(0,performance.now()-activeSegmentStartMs);
+      activeSegmentStartMs=null;recordingPaused=true;updateTimer();setRecorderState('paused');statusEl.textContent=t.pausedNow;
+    }catch(e){statusEl.textContent=t.pauseFailed}
+  }
+  function resumeRecording(){
+    if(!recording||!recordingPaused||preparing||!mediaRecorder||mediaRecorder.state!=='paused')return;
+    try{mediaRecorder.resume();activeSegmentStartMs=performance.now();recordingPaused=false;setRecorderState('recording');statusEl.textContent=t.recordingNow;
+    }catch(e){statusEl.textContent=t.resumeFailed}
+  }
+  function stopRecording(){
+    if(!recording||preparing)return;
+    if(!recordingPaused&&activeSegmentStartMs!==null)activeDurationMs+=Math.max(0,performance.now()-activeSegmentStartMs);
+    activeSegmentStartMs=null;recording=false;recordingPaused=false;preparing=true;recordingEndedAt=Date.now();
+    if(timerHandle){clearInterval(timerHandle);timerHandle=null;}
+    timerEl.textContent=formatTime(Math.floor(activeDurationMs/1000));setRecorderState('saving');statusEl.textContent=t.preparing;
+    try{if(mediaRecorder&&mediaRecorder.state!=='inactive')mediaRecorder.stop();else throw Error('Recorder inactive')}
+    catch(e){preparing=false;statusEl.textContent=t.finishFailed;setRecorderState('unsafe')}
+    finally{releaseMicrophone()}
+  }
+  recordButton.addEventListener('click',()=>{if(recorderUiState==='ready')startRecording()});
+  pauseButton.addEventListener('click',()=>{
+    const now=performance.now();
+    if(now-lastPauseToggleMs<350)return;
+    lastPauseToggleMs=now;
+    if(recordingPaused)resumeRecording();else pauseRecording();
+  });
+  finishButton.addEventListener('click',stopRecording);
+  async function savePendingRecording(){
+    if(!pendingBlob||saving||preparing||recordingConfirmed)return;
+    saving=true;needsReconciliation=false;setRecorderState('saving');statusEl.textContent=t.savingPending;
+    try{
+      const run=async()=>{if(!locallyProtected)await protectPending();await uploadRecording(pendingBlob,pendingMime)};
+      if(navigator.locks&&localStore)await navigator.locks.request('gaita-save-'+localStore.slot,{ifAvailable:true},async lock=>{
+        if(!lock){statusEl.textContent=t.otherTabSaving;return}
+        await run();
+      });else await run();
+    }catch(e){statusEl.textContent=locallyProtected?t.offlineProtected:t.saveUnavailable}
+    finally{
+      saving=false;
+      if(recordingConfirmed){setRecorderState('saved');if(!locallyProtected)savedResetTimer=setTimeout(()=>{if(recordingConfirmed&&!locallyProtected&&!recording&&!saving)setRecorderState('ready')},5000)}
+      else setRecorderState(needsReconciliation?'attention':locallyProtected?'retry':'unsafe');
+    }
+  }
+  saveButton.onclick=savePendingRecording;
+  async function recordingState(){
+ const response=await fetch(gaitaBackendUrl_(),{method:'POST',body:JSON.stringify({action:'getRecordingState',pupilId,accessKey,sessionId:recordingSessionId})});
+ const result=await response.json();
+ if(!result.ok||result.sessionId!==recordingSessionId)throw Error(result.error||'Recording state is not confirmed.');
+ return result;
+}
+async function confirmSaved(state){
+ if(!state.saved||!state.fileUrl)throw Error('Missing server save confirmation.');
+ recordingConfirmed=true;
+ setRecorderState('saved');
+ statusEl.textContent=t.safelySaved;
+ try{if(localStore)await localStore.remove(recordingSessionId);locallyProtected=false;protectionEl.textContent=t.confirmedCleanup;}catch(e){protectionEl.textContent=t.cleanupFailed;}
+ document.getElementById('saveRecording').disabled=true;
+ await tagSavedRecording(state.fileUrl,recordingTargetId);
+}
+async function uploadRecording(blob,mimeType){
+ if(!pupilId||!accessKey){statusEl.textContent=t.recordingNoPupilLink;return;}
+ if(navigator.onLine===false){statusEl.textContent=locallyProtected?t.offlineRetry:t.offlineUnsafe;saveButton.disabled=false;return;}
+ try{
+  // Every initial upload AND retry is gated by authoritative server state.
+  const prior=await recordingState();
+  if(prior.saved){await confirmSaved(prior);return;}
+  if(prior.state!=='absent'||!prior.retrySafe){needsReconciliation=true;statusEl.textContent=t.reconcile;return;}
+  const context=new (window.AudioContext||window.webkitAudioContext)();let decoded;
+  try{decoded=await context.decodeAudioData(await blob.arrayBuffer());}finally{await context.close();}
+  const actualSeconds=decoded.duration, timerSeconds=(typeof activeDurationMs==='number'&&Number.isFinite(activeDurationMs)?activeDurationMs:(recordingEndedAt-startedAt))/1000;
+  document.getElementById('durationEvidence').textContent=t.decodedAudio+actualSeconds.toFixed(3)+t.timerEvidence+timerSeconds.toFixed(3)+' s';
+  if(!Number.isFinite(actualSeconds)||actualSeconds<=0||Math.abs(actualSeconds-timerSeconds)>1.5)throw Error('Audio and timer disagree. Keep your local audio.');
+  const payload={pupilId,accessKey,audioBase64:await blobToBase64(blob),mimeType,
+   startIso:new Date(startedAt).toISOString(),endIso:new Date(startedAt+actualSeconds*1000).toISOString(),
+   durationSeconds:actualSeconds,sessionId:recordingSessionId};
+  const response=await fetch(gaitaBackendUrl_(),{method:'POST',body:JSON.stringify(payload)});
+  const result=await response.json();
+  if(!result.ok)throw Error(result.error||'Save response was rejected.');
+  if(result.sessionId&&result.sessionId!==recordingSessionId)throw Error('Save reference mismatch.');
+  await confirmSaved({...result,saved:true});
+ }catch(error){
+  console.warn('Recording save needs confirmation:',error.message);
+  try{
+   const state=await recordingState();
+   if(state.saved){await confirmSaved(state);return;}
+   if(state.state==='absent'&&state.retrySafe){statusEl.textContent=(locallyProtected?t.offlineRetry:t.uncertainUnsafe);document.getElementById('saveRecording').disabled=false;}
+   else{needsReconciliation=true;statusEl.textContent=t.uncertainOwner;}
+  }catch(checkError){statusEl.textContent=(locallyProtected?t.offlineRetry:t.uncertainDownload);document.getElementById('saveRecording').disabled=false;}
+  if(isAuthorizationError(error))statusEl.textContent=t.authorizationError+' '+statusEl.textContent;
+ }
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      const dataUrl = reader.result;
+      const base64 = dataUrl.split(',')[1];
+      resolve(base64);
+    };
+
+    reader.onerror = reject;
+
+    reader.readAsDataURL(blob);
+  });
+}
+function escapeText(value){return String(value||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+// Only the existing public Piper's Path badge artwork is approved. No arbitrary tracking hosts.
+function safeBadgeImageUrl(value){
+ try{const u=new URL(String(value||''));return u.origin==='https://raw.githubusercontent.com'&&!u.username&&!u.password&&!u.search&&!u.hash&&/^\/Gauchopiper\/pipers-path\/main\/assets\/badges\/[a-zA-Z0-9_-]+\.(svg|png|webp)$/.test(u.pathname)?u.href:'';}catch(_){return '';}
+}
+
+function renderTeacherComments(comments){
+ let section=document.getElementById('teacherComments');
+ if(!section){section=document.createElement('section');section.id='teacherComments';document.getElementById('pathView').appendChild(section);}
+ section.replaceChildren();const heading=document.createElement('h3');heading.textContent=t.teacherComments;section.appendChild(heading);
+ if(!comments.length){const empty=document.createElement('p');empty.textContent=t.noComments;section.appendChild(empty);}
+ for(const comment of comments){const item=document.createElement('article'),body=document.createElement('p'),by=document.createElement('small');body.textContent=comment.text;by.textContent=comment.teacher+' · '+comment.role+' · '+comment.date;item.append(body,by);section.appendChild(item);}
+}
+  async function loadPath() {
+  const pathStatus = document.getElementById('pathStatus');
+  const pathSummary = document.getElementById('pathSummary');
+  const pathSessions = document.getElementById('pathSessions');
+
+  pathStatus.textContent = t.loadingPath;
+  pathSummary.style.display = 'none';
+  pathSessions.innerHTML = '';
+
+  try {
+ const data = await getPathWithRetry();
+ renderTeacherComments(data.comments||[]);
+
+    document.getElementById('pathTotalSessions').textContent =
+      data.summary.totalSessions;
+
+    document.getElementById('pathQualifyingSessions').textContent =
+      data.summary.qualifyingSessions;
+
+    document.getElementById('pathTotalMinutes').textContent =
+      Number(data.summary.totalMinutes).toFixed(2);
+
+    document.getElementById('pathCreditedMinutes').textContent =
+  Number(data.summary.creditedQualifyingMinutes || 0).toFixed(0);
+
+    pathSummary.style.display = 'block';
+    pathStatus.textContent = '';
+const pathTargets = document.getElementById('pathTargets');
+
+// Keep completed individual parts visible until the tune badge has actually
+// been awarded. Once the badge exists, hide all achieved parts for that tune
+// so the badge replaces them in the Path view.
+const earnedBadgeIds = new Set(
+  (data.badges || [])
+    .map(badge => String(badge.badgeId || '').trim())
+    .filter(Boolean)
+);
+
+const tuneBaseName = title =>
+  String(title || '')
+    .replace(/\s*[—-]\s*Part\s+\d+\s*$/i, '')
+    .trim();
+
+const completedTuneNames = new Set(
+  (data.targets || [])
+    .filter(target =>
+      target.badgeId &&
+      earnedBadgeIds.has(String(target.badgeId).trim())
+    )
+    .map(target => tuneBaseName(target.title))
+    .filter(Boolean)
+);
+
+const visibleTargets = (data.targets || []).filter(target => {
+  const status = String(target.status || '').trim().toUpperCase();
+  const tuneName = tuneBaseName(target.title);
+
+  return !(
+    status === 'ACHIEVED' &&
+    completedTuneNames.has(tuneName)
+  );
+});
+
+if (visibleTargets.length > 0) {
+  pathTargets.innerHTML = visibleTargets.map(target => `
+    <div style="
+      padding:16px;
+      border:1px solid #ddd;
+      border-radius:12px;
+      margin-bottom:16px;
+    ">
+      <strong>🎯 ${escapeText(target.title)}</strong><br>
+      <span>${escapeText(translatedTargetStatus(target.status))}</span>
+    </div>
+  `).join('');
+} else {
+  pathTargets.innerHTML = '';
+}
+    const pathBadges = document.getElementById('pathBadges');
+
+if (data.badges && data.badges.length > 0) {
+  pathBadges.innerHTML =
+    '<h3>' + t.badges + '</h3>' +
+    data.badges.map(badge => `
+      <div style="
+        padding:16px;
+        border:1px solid #ddd;
+        border-radius:12px;
+        margin-bottom:16px;
+      ">
+  ${safeBadgeImageUrl(badge.imageLink) ? `
+    <img
+      src="${escapeText(safeBadgeImageUrl(badge.imageLink))}"
+      referrerpolicy="no-referrer"
+      alt="${escapeText(badge.badgeName)}"
+      style="
+        width:60px;
+        height:60px;
+        object-fit:contain;
+        display:block;
+        margin-bottom:10px;
+      "
+    >
+  ` : ''}
+
+  <strong>${escapeText(badge.badgeName)}</strong><br>
+  <span>${escapeText(badge.description)}</span>
+      </div>
+    `).join('');
+} else {
+  pathBadges.innerHTML = '';
+}
+    if (!data.sessions || data.sessions.length === 0) {
+      pathSessions.innerHTML =
+  '<p>' + t.noPracticeSessions + '</p>';
+      return;
+    }
+
+const creditedDays = Array.isArray(data.creditedPracticeByDate)
+  ? [...data.creditedPracticeByDate].sort(
+      (a, b) => String(b.date).localeCompare(String(a.date))
+    )
+  : [];
+
+const creditedHtml = creditedDays.length
+ ? '<h3>' + t.dailyCreditedPractice + '</h3>' +
+    creditedDays.map(day => {
+const when = day.isToday
+  ? t.today
+  : day.date
+    ? new Date(day.date + 'T12:00:00').toLocaleDateString()
+    : '';
+
+      const actual =
+        Number(day.actualMinutes || 0).toFixed(2);
+
+      const bonus =
+        Number(day.communityBonusPercent || 0);
+
+      const credited =
+        Number(day.creditedMinutes || 0).toFixed(0);
+
+      return `
+        <div style="
+          padding:12px 0;
+          border-bottom:1px solid #ddd;
+        ">
+          <strong>${when}</strong><br>
+${actual} ${t.actualMinutes} ·
++${bonus}% ${t.community} ·
+${credited} ${t.creditedMinutes}${day.isToday ? ' ' + t.soFar : ''}
+        </div>
+      `;
+    }).join('')
+  : '';
+
+const recent = data.sessions.slice(0, 10);
+
+pathSessions.innerHTML =
+  creditedHtml +
+  `<h3 style="margin-top:24px;">${t.recentPractice}</h3>` +
+      recent.map(session => {
+        const date = session.endTime || session.date;
+        const when = date
+          ? new Date(date).toLocaleString()
+          : '';
+
+        const duration =
+          Number(session.durationMinutes || 0).toFixed(2);
+
+        const loggedSeconds=(Date.parse(session.endTime)-Date.parse(session.startTime))/1000;
+        const precision=Number.isFinite(loggedSeconds)?' · '+loggedSeconds.toFixed(3)+' '+t.loggedSeconds:'';
+        const qualifying=session.qualifying?' · '+(t.qualifying):' · '+(t.notQualifying);
+
+        return `
+          <div style="
+            padding:12px 0;
+            border-bottom:1px solid #ddd;
+          ">
+            ${when}<br>
+            ${duration} min${precision}${qualifying}
+            ${(session.teacherStatus||session.teacherNote) ? `<p><strong>${session.teacherStatus?(t.sessionReview)+': '+escapeText(translatedTargetStatus(session.teacherStatus)):(t.sessionNote)}</strong><br>${escapeText(session.teacherNote)}</p>` : ''}
+          </div>
+        `;
+      }).join('');
+
+  } catch(error) {
+  console.error('PATH load error:', error);
+  pathStatus.textContent = userError(error,t.pathLoadError);
+}
+}
+</script>
+
+<script>
+const feedbackLink=document.createElement('a');feedbackLink.textContent=t.feedback;feedbackLink.target='_blank';feedbackLink.rel='noopener noreferrer';
+feedbackLink.href=TEST_BOOT.feedbackUrl+'#'+new URLSearchParams({p:pupilId,key:accessKey,page:'record'});
+if(TEST_BOOT.feedbackUrl) document.querySelector('main').appendChild(feedbackLink);
+</script>
+</body>
+</html>
+
