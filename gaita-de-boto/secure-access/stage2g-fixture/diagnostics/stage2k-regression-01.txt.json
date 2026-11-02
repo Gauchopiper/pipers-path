@@ -1,0 +1,2199 @@
+{
+  "summary": {
+    "suite": "stage2i-security-corrections",
+    "registered": 533,
+    "executed": 525,
+    "passed": 525,
+    "failed": 0,
+    "skipped": 1,
+    "blocked": 7,
+    "unexecuted": 7,
+    "filtered": 0,
+    "environment": {
+      "node": "v24.22.1",
+      "pglite": "0.5.13",
+      "postgresWasm": "PostgreSQL 18.6 (PGlite 0.5.13) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.5 (1db513782be24469589d7cb8a1f1834e9a33f271), 32-bit",
+      "nativePostgres": false,
+      "serialisedPool": true
+    },
+    "externalNetworkAttempts": 0,
+    "temporaryDirectoriesCreated": 638,
+    "temporaryDirectoriesRemoved": 638,
+    "remainingTemporaryDirectories": 0,
+    "liveGoogleRecordingTests": 0,
+    "ciRuns": 0
+  },
+  "results": [
+    {
+      "name": "C1 independent canonical/UTF-8/Node signature round trip",
+      "status": "passed"
+    },
+    {
+      "name": "C2 independent canonical/UTF-8/Node signature round trip",
+      "status": "passed"
+    },
+    {
+      "name": "C3 independent canonical/UTF-8/Node signature round trip",
+      "status": "passed"
+    },
+    {
+      "name": "C4 independent canonical/UTF-8/Node signature round trip",
+      "status": "passed"
+    },
+    {
+      "name": "C5 independent canonical/UTF-8/Node signature round trip",
+      "status": "passed"
+    },
+    {
+      "name": "C6 pure SHA-256 matches independent Node digest",
+      "status": "passed"
+    },
+    {
+      "name": "C7 pure SHA-256 matches independent Node digest",
+      "status": "passed"
+    },
+    {
+      "name": "C8 pure SHA-256 matches independent Node digest",
+      "status": "passed"
+    },
+    {
+      "name": "C9 pure SHA-256 matches independent Node digest",
+      "status": "passed"
+    },
+    {
+      "name": "C10 pure SHA-256 matches independent Node digest",
+      "status": "passed"
+    },
+    {
+      "name": "C11 pure SHA-256 matches independent Node digest",
+      "status": "passed"
+    },
+    {
+      "name": "C12 pure SHA-256 matches independent Node digest",
+      "status": "passed"
+    },
+    {
+      "name": "C13 all 256 byte values and signed Google byte arrays Base64 agree",
+      "status": "passed"
+    },
+    {
+      "name": "C14-unpaired-high rejected",
+      "status": "passed"
+    },
+    {
+      "name": "C14-unpaired-low rejected",
+      "status": "passed"
+    },
+    {
+      "name": "C15 nonfinite undefined functions sparse arrays and prototype keys rejected",
+      "status": "passed"
+    },
+    {
+      "name": "C16 noncanonical Base64, bad padding and illegal bytes rejected",
+      "status": "passed"
+    },
+    {
+      "name": "C17 modified payload and signature rejected independently",
+      "status": "passed"
+    },
+    {
+      "name": "C18 wrong key, short signature, out-of-range representative rejected",
+      "status": "passed"
+    },
+    {
+      "name": "C19 weak key size, altered exponent and PSS signatures rejected",
+      "status": "passed"
+    },
+    {
+      "name": "C20 stripped VM has no Node/browser crypto or network dependency",
+      "status": "passed"
+    },
+    {
+      "name": "C21 signature request purpose environment and profile are bound",
+      "status": "passed"
+    },
+    {
+      "name": "C22 expiry future issuance altered key ID and noncanonical wire fail",
+      "status": "passed"
+    },
+    {
+      "name": "C23 key rotation supports historical receipts but rejects retired new requests",
+      "status": "passed"
+    },
+    {
+      "name": "C24 missing signing key and historical bypass on requests denied",
+      "status": "passed"
+    },
+    {
+      "name": "C25 original patch has one mutation core and no duplicate createFile",
+      "status": "passed"
+    },
+    {
+      "name": "P01 valid trusted profile accepted and copied JSON denied",
+      "status": "passed"
+    },
+    {
+      "name": "P02-workbook operational substitution denied",
+      "status": "passed"
+    },
+    {
+      "name": "P02-folder operational substitution denied",
+      "status": "passed"
+    },
+    {
+      "name": "P02-journal operational substitution denied",
+      "status": "passed"
+    },
+    {
+      "name": "P02-recovery operational substitution denied",
+      "status": "passed"
+    },
+    {
+      "name": "P02-pupil operational substitution denied",
+      "status": "passed"
+    },
+    {
+      "name": "P02-owner operational substitution denied",
+      "status": "passed"
+    },
+    {
+      "name": "P03-environment missing field fails closed",
+      "status": "passed"
+    },
+    {
+      "name": "P03-organisation missing field fails closed",
+      "status": "passed"
+    },
+    {
+      "name": "P03-thresholdSeconds missing field fails closed",
+      "status": "passed"
+    },
+    {
+      "name": "P03-gatewayOrigin missing field fails closed",
+      "status": "passed"
+    },
+    {
+      "name": "P03-policyRevision missing field fails closed",
+      "status": "passed"
+    },
+    {
+      "name": "P03-windowStart missing field fails closed",
+      "status": "passed"
+    },
+    {
+      "name": "P03-sessionId missing field fails closed",
+      "status": "passed"
+    },
+    {
+      "name": "P03-operations missing field fails closed",
+      "status": "passed"
+    },
+    {
+      "name": "P04 foreign organisation/pupil and arbitrary URL selector denied",
+      "status": "passed"
+    },
+    {
+      "name": "P05 policy replacement invalidates pending trusted object",
+      "status": "passed"
+    },
+    {
+      "name": "P06 forged role object cannot inherit Owner authority",
+      "status": "passed"
+    },
+    {
+      "name": "S01 shared core writes only fixed Dummy book/folder under one lock",
+      "status": "passed"
+    },
+    {
+      "name": "S02 legacy wrapper retains operational property binding and canonical result",
+      "status": "passed"
+    },
+    {
+      "name": "S03 a new Dummy write preserves pre-existing synthetic operational history",
+      "status": "passed"
+    },
+    {
+      "name": "S04 copied profile cannot call the canonical core",
+      "status": "passed"
+    },
+    {
+      "name": "S05 nested outer lock is rejected without original/source mutation",
+      "status": "passed"
+    },
+    {
+      "name": "S06 changed audio bytes rejected before canonical writer",
+      "status": "passed"
+    },
+    {
+      "name": "S07 independently measurable samples reject a matching-hash false duration",
+      "status": "passed"
+    },
+    {
+      "name": "S08 exact five-minute sample threshold passes the new core",
+      "status": "passed"
+    },
+    {
+      "name": "S09 299.9 seconds can display five minutes without qualification",
+      "status": "passed"
+    },
+    {
+      "name": "S10 exact signed receipt includes manifest actor bytes LOG META and qualification",
+      "status": "passed"
+    },
+    {
+      "name": "S11 replayed signed source dispatch denied without duplicate write",
+      "status": "passed"
+    },
+    {
+      "name": "S12 fresh identical original inspection returns same receipt without writer",
+      "status": "passed"
+    },
+    {
+      "name": "S13 conflicting source manifest under original SID rejected",
+      "status": "passed"
+    },
+    {
+      "name": "S14 original actor substitution rejected",
+      "status": "passed"
+    },
+    {
+      "name": "S15 disabled execution and forged execution contexts rejected",
+      "status": "passed"
+    },
+    {
+      "name": "S16-before-file partial original remains attention without resend or repair",
+      "status": "passed"
+    },
+    {
+      "name": "S16-after-file partial original remains attention without resend or repair",
+      "status": "passed"
+    },
+    {
+      "name": "S16-after-log partial original remains attention without resend or repair",
+      "status": "passed"
+    },
+    {
+      "name": "S17 missing META after complete source cannot be repaired by inspection",
+      "status": "passed"
+    },
+    {
+      "name": "S18 wrong source folder privacy and bytes invalidate canonical receipt",
+      "status": "passed"
+    },
+    {
+      "name": "J01 journal exactly matches 16-field Stage 2F schema",
+      "status": "passed"
+    },
+    {
+      "name": "J02 event order hashes signatures and payloads survive source reopen",
+      "status": "passed"
+    },
+    {
+      "name": "J03 before-commit append interruption has no writer effect",
+      "status": "passed"
+    },
+    {
+      "name": "J04 committed append with lost acknowledgement blocks blind redispatch after reopen",
+      "status": "passed"
+    },
+    {
+      "name": "J05 torn append is preserved and blocks all later source work",
+      "status": "passed"
+    },
+    {
+      "name": "J06 duplicate nonce and oversized journal payload rejected",
+      "status": "passed"
+    },
+    {
+      "name": "J07 corrupted event cannot clear or recreate journal evidence",
+      "status": "passed"
+    },
+    {
+      "name": "J08 removed intermediate event detected",
+      "status": "passed"
+    },
+    {
+      "name": "J09 revoked source signing key prevents journal mutation",
+      "status": "passed"
+    },
+    {
+      "name": "J10 operation outbox acknowledgement and attention states survive reopening",
+      "status": "passed"
+    },
+    {
+      "name": "J11 journal cannot reopen under a changed resource namespace",
+      "status": "passed"
+    },
+    {
+      "name": "G01 GROUP counts distinct pupils and preserves qualifying credit",
+      "status": "passed"
+    },
+    {
+      "name": "G02 historical days do not count as today and foreign source pupil fails closed",
+      "status": "passed"
+    },
+    {
+      "name": "D01 immutable submission stores authenticated ciphertext and pending status",
+      "status": "passed"
+    },
+    {
+      "name": "D02 identical concurrent logical submissions preserve one original",
+      "status": "passed"
+    },
+    {
+      "name": "D03 changed original and foreign identity rejected without overwriting",
+      "status": "passed"
+    },
+    {
+      "name": "D04 two logical claims serialize to one permitted delivery",
+      "status": "passed"
+    },
+    {
+      "name": "D05 expired lease increments fence and rejects stale arm",
+      "status": "passed"
+    },
+    {
+      "name": "D06 sent barrier prevents a second claim and survives expiry",
+      "status": "passed"
+    },
+    {
+      "name": "D07 injected PostgreSQL rollback leaves no partial original or dirty state",
+      "status": "passed"
+    },
+    {
+      "name": "D08 durable service nonce rejects replay after engine close/reopen",
+      "status": "passed"
+    },
+    {
+      "name": "D09 source completion and source/database reopen reconcile without another write",
+      "status": "passed"
+    },
+    {
+      "name": "D10 lost gateway acknowledgement returns pending then exact duplicate confirmation is no-op",
+      "status": "passed"
+    },
+    {
+      "name": "D11-before-file source uncertainty retains encrypted original and DIRTY",
+      "status": "passed"
+    },
+    {
+      "name": "D11-after-file source uncertainty retains encrypted original and DIRTY",
+      "status": "passed"
+    },
+    {
+      "name": "D11-after-log source uncertainty retains encrypted original and DIRTY",
+      "status": "passed"
+    },
+    {
+      "name": "D12 revoked admission prevents dispatch before arm",
+      "status": "passed"
+    },
+    {
+      "name": "D13 in-flight revocation allows internal exact reconciliation but denies pupil status",
+      "status": "passed"
+    },
+    {
+      "name": "D14 revoked service execution after arm causes no file and no blind resend",
+      "status": "passed"
+    },
+    {
+      "name": "D15 stale worker cannot confirm; separate recovery can confirm exact source evidence",
+      "status": "passed"
+    },
+    {
+      "name": "D16 corrupted ciphertext and wrong reopen key fail without deleting pending bytes",
+      "status": "passed"
+    },
+    {
+      "name": "D17 wrong signature or validly signed wrong exact evidence cannot confirm",
+      "status": "passed"
+    },
+    {
+      "name": "D18 exact receipt cannot be forged with gateway signing authority",
+      "status": "passed"
+    },
+    {
+      "name": "D19 foreign profile and forged owner/worker objects denied",
+      "status": "passed"
+    },
+    {
+      "name": "D20 separate namespace cannot read or confirm another fixture original",
+      "status": "passed"
+    },
+    {
+      "name": "D21 pending-profile replacement denies operations while evidence persists",
+      "status": "passed"
+    },
+    {
+      "name": "D22 exact duplicate completion credits one recording revision only",
+      "status": "passed"
+    },
+    {
+      "name": "D23 revision operation survives reopen and clears only with exact signed proof",
+      "status": "passed"
+    },
+    {
+      "name": "D24 wrong operation proof cannot clear DIRTY",
+      "status": "passed"
+    },
+    {
+      "name": "D25 retained legacy SET ROLE negative controls; not runtime permission assurance",
+      "status": "passed"
+    },
+    {
+      "name": "D26 SQL primary key enforces unique original SID in one namespace",
+      "status": "passed"
+    },
+    {
+      "name": "N01 new adapter independent native connections and SKIP LOCKED race",
+      "status": "blocked",
+      "reason": "Native postgres/docker unavailable; PGlite serialises one connection. Historical 38 checks are not rerun."
+    },
+    {
+      "name": "N02 new adapter native server crash/restart recovery",
+      "status": "blocked",
+      "reason": "No native server; local PGlite close/reopen is covered separately, not a crash proof."
+    },
+    {
+      "name": "N03 new adapter native authenticated login/role separation",
+      "status": "blocked",
+      "reason": "SET ROLE assumptions run in PGlite; no native authenticated network role connection available."
+    },
+    {
+      "name": "R01 complete protected PATH uses source-compatible fields and no Drive URLs",
+      "status": "passed"
+    },
+    {
+      "name": "R02 relay transcript contains only original handle and opaque ack",
+      "status": "passed"
+    },
+    {
+      "name": "R02b relay failure exposes no source error details",
+      "status": "passed"
+    },
+    {
+      "name": "R03 exact original playback released once after final checks",
+      "status": "passed"
+    },
+    {
+      "name": "R04 used request handle and source signed-request replay denied",
+      "status": "passed"
+    },
+    {
+      "name": "R05 foreign owner and organisation cannot obtain read ticket",
+      "status": "passed"
+    },
+    {
+      "name": "R06 raw file/workbook/URL selectors and wrong relay origin denied",
+      "status": "passed"
+    },
+    {
+      "name": "R07 an acknowledgement cannot release under a different client session",
+      "status": "passed"
+    },
+    {
+      "name": "R08 revocation before source retrieval blocks read without Google payload",
+      "status": "passed"
+    },
+    {
+      "name": "R09 revocation after source read prevents staging",
+      "status": "passed"
+    },
+    {
+      "name": "R10 revocation after staging prevents final private-data release",
+      "status": "passed"
+    },
+    {
+      "name": "R11 same-owner admission renewal invalidates older staged evidence",
+      "status": "passed"
+    },
+    {
+      "name": "R12 revoked authenticated client session prevents final release",
+      "status": "passed"
+    },
+    {
+      "name": "R13 expired read ticket does not fall back to stale data",
+      "status": "passed"
+    },
+    {
+      "name": "R14-teacher.comment DIRTY and committed revision invalidate staged read",
+      "status": "passed"
+    },
+    {
+      "name": "R14-teacher.review DIRTY and committed revision invalidate staged read",
+      "status": "passed"
+    },
+    {
+      "name": "R14-target.assign DIRTY and committed revision invalidate staged read",
+      "status": "passed"
+    },
+    {
+      "name": "R14-target.change DIRTY and committed revision invalidate staged read",
+      "status": "passed"
+    },
+    {
+      "name": "R14-badge.award DIRTY and committed revision invalidate staged read",
+      "status": "passed"
+    },
+    {
+      "name": "R14-badge.change DIRTY and committed revision invalidate staged read",
+      "status": "passed"
+    },
+    {
+      "name": "R14-session.target DIRTY and committed revision invalidate staged read",
+      "status": "passed"
+    },
+    {
+      "name": "R14-permission.change DIRTY and committed revision invalidate staged read",
+      "status": "passed"
+    },
+    {
+      "name": "R15 validly signed foreign session cannot substitute PATH evidence",
+      "status": "passed"
+    },
+    {
+      "name": "R16 validly signed raw Drive locator denied before client staging",
+      "status": "passed"
+    },
+    {
+      "name": "R17 substituted playback bytes denied",
+      "status": "passed"
+    },
+    {
+      "name": "R17b validly signed wrong request digest denied",
+      "status": "passed"
+    },
+    {
+      "name": "R18 lost read callback can reconstruct exact private playback without journal audio",
+      "status": "passed"
+    },
+    {
+      "name": "R19 changed canonical bytes prevent reconstructing a lost playback callback",
+      "status": "passed"
+    },
+    {
+      "name": "R20 duplicate exact read callback is idempotent",
+      "status": "passed"
+    },
+    {
+      "name": "R21 encrypted staged response survives PostgreSQL and source reopening",
+      "status": "passed"
+    },
+    {
+      "name": "R22 corrupted staged response never releases private data",
+      "status": "passed"
+    },
+    {
+      "name": "R23 unbound or missing canonical META cannot be read-repaired",
+      "status": "passed"
+    },
+    {
+      "name": "R24 duplicate confirmation has one qualifying credit and GROUP pupil",
+      "status": "passed"
+    },
+    {
+      "name": "U01 device decision accepts only authenticated exact current confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "U02 queue acceptance and altered local original never permit device cleanup",
+      "status": "passed"
+    },
+    {
+      "name": "2H W001 Wycheproof valid / ",
+      "status": "passed"
+    },
+    {
+      "name": "2H W002 Wycheproof valid / ",
+      "status": "passed"
+    },
+    {
+      "name": "2H W003 Wycheproof valid / ",
+      "status": "passed"
+    },
+    {
+      "name": "2H W004 Wycheproof valid / ",
+      "status": "passed"
+    },
+    {
+      "name": "2H W005 Wycheproof valid / ",
+      "status": "passed"
+    },
+    {
+      "name": "2H W006 Wycheproof valid / ",
+      "status": "passed"
+    },
+    {
+      "name": "2H W007 Wycheproof valid / ",
+      "status": "skipped",
+      "reason": "Published message contains non-UTF8 bytes; this candidate accepts UTF8 JSON strings only."
+    },
+    {
+      "name": "2H W008 Wycheproof acceptable / Missing NULL in the ASN encoding",
+      "status": "passed"
+    },
+    {
+      "name": "2H W009 Wycheproof invalid / length of digestInfo uses long form encoding",
+      "status": "passed"
+    },
+    {
+      "name": "2H W010 Wycheproof invalid / length of digestInfo contains a leading 0",
+      "status": "passed"
+    },
+    {
+      "name": "2H W011 Wycheproof invalid / length of digestInfo uses 50 instead of 49",
+      "status": "passed"
+    },
+    {
+      "name": "2H W012 Wycheproof invalid / length of digestInfo uses 48 instead of 49",
+      "status": "passed"
+    },
+    {
+      "name": "2H W013 Wycheproof invalid / uint32 overflow in length of digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W014 Wycheproof invalid / uint64 overflow in length of digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W015 Wycheproof invalid / length of digestInfo = 2**31 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W016 Wycheproof invalid / length of digestInfo = 2**32 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W017 Wycheproof invalid / length of digestInfo = 2**40 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W018 Wycheproof invalid / length of digestInfo = 2**64 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W019 Wycheproof invalid / incorrect length of digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W020 Wycheproof invalid / replaced digestInfo by an indefinite length tag without termination",
+      "status": "passed"
+    },
+    {
+      "name": "2H W021 Wycheproof invalid / removing digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W022 Wycheproof invalid / lonely sequence tag",
+      "status": "passed"
+    },
+    {
+      "name": "2H W023 Wycheproof invalid / lonely sequence tag",
+      "status": "passed"
+    },
+    {
+      "name": "2H W024 Wycheproof invalid / appending 0's to digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W025 Wycheproof invalid / prepending 0's to digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W026 Wycheproof invalid / appending unused 0's to digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W027 Wycheproof invalid / appending null value to digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W028 Wycheproof invalid / prepending garbage to digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W029 Wycheproof invalid / prepending garbage to digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W030 Wycheproof invalid / appending garbage to digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W031 Wycheproof invalid / including undefined tags",
+      "status": "passed"
+    },
+    {
+      "name": "2H W032 Wycheproof invalid / including undefined tags",
+      "status": "passed"
+    },
+    {
+      "name": "2H W033 Wycheproof invalid / including undefined tags",
+      "status": "passed"
+    },
+    {
+      "name": "2H W034 Wycheproof invalid / including undefined tags",
+      "status": "passed"
+    },
+    {
+      "name": "2H W035 Wycheproof invalid / including undefined tags",
+      "status": "passed"
+    },
+    {
+      "name": "2H W036 Wycheproof invalid / truncated length of digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W037 Wycheproof invalid / including undefined tags to digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W038 Wycheproof invalid / using composition with indefinite length for digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W039 Wycheproof invalid / using composition with wrong tag for digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W040 Wycheproof invalid / Replacing digestInfo with NULL",
+      "status": "passed"
+    },
+    {
+      "name": "2H W041 Wycheproof invalid / changing tag value of digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W042 Wycheproof invalid / changing tag value of digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W043 Wycheproof invalid / changing tag value of digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W044 Wycheproof invalid / changing tag value of digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W045 Wycheproof invalid / changing tag value of digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W046 Wycheproof invalid / dropping value of digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W047 Wycheproof invalid / using composition for digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W048 Wycheproof invalid / truncated digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W049 Wycheproof invalid / truncated digestInfo",
+      "status": "passed"
+    },
+    {
+      "name": "2H W050 Wycheproof invalid / indefinite length",
+      "status": "passed"
+    },
+    {
+      "name": "2H W051 Wycheproof invalid / indefinite length",
+      "status": "passed"
+    },
+    {
+      "name": "2H W052 Wycheproof invalid / indefinite length with truncated delimiter",
+      "status": "passed"
+    },
+    {
+      "name": "2H W053 Wycheproof invalid / indefinite length with truncated delimiter",
+      "status": "passed"
+    },
+    {
+      "name": "2H W054 Wycheproof invalid / indefinite length with additional element",
+      "status": "passed"
+    },
+    {
+      "name": "2H W055 Wycheproof invalid / indefinite length with additional element",
+      "status": "passed"
+    },
+    {
+      "name": "2H W056 Wycheproof invalid / indefinite length with truncated element",
+      "status": "passed"
+    },
+    {
+      "name": "2H W057 Wycheproof invalid / indefinite length with truncated element",
+      "status": "passed"
+    },
+    {
+      "name": "2H W058 Wycheproof invalid / indefinite length with garbage",
+      "status": "passed"
+    },
+    {
+      "name": "2H W059 Wycheproof invalid / indefinite length with garbage",
+      "status": "passed"
+    },
+    {
+      "name": "2H W060 Wycheproof invalid / indefinite length with nonempty EOC",
+      "status": "passed"
+    },
+    {
+      "name": "2H W061 Wycheproof invalid / indefinite length with nonempty EOC",
+      "status": "passed"
+    },
+    {
+      "name": "2H W062 Wycheproof invalid / prepend empty sequence",
+      "status": "passed"
+    },
+    {
+      "name": "2H W063 Wycheproof invalid / prepend empty sequence",
+      "status": "passed"
+    },
+    {
+      "name": "2H W064 Wycheproof invalid / append empty sequence",
+      "status": "passed"
+    },
+    {
+      "name": "2H W065 Wycheproof invalid / append empty sequence",
+      "status": "passed"
+    },
+    {
+      "name": "2H W066 Wycheproof invalid / append garbage with high tag number",
+      "status": "passed"
+    },
+    {
+      "name": "2H W067 Wycheproof invalid / append garbage with high tag number",
+      "status": "passed"
+    },
+    {
+      "name": "2H W068 Wycheproof invalid / append null with explicit tag",
+      "status": "passed"
+    },
+    {
+      "name": "2H W069 Wycheproof invalid / append null with explicit tag",
+      "status": "passed"
+    },
+    {
+      "name": "2H W070 Wycheproof invalid / append null with implicit tag",
+      "status": "passed"
+    },
+    {
+      "name": "2H W071 Wycheproof invalid / append null with implicit tag",
+      "status": "passed"
+    },
+    {
+      "name": "2H W072 Wycheproof invalid / sequence of sequence",
+      "status": "passed"
+    },
+    {
+      "name": "2H W073 Wycheproof invalid / sequence of sequence",
+      "status": "passed"
+    },
+    {
+      "name": "2H W074 Wycheproof invalid / truncated sequence: removed last 1 elements",
+      "status": "passed"
+    },
+    {
+      "name": "2H W075 Wycheproof invalid / repeating element in sequence",
+      "status": "passed"
+    },
+    {
+      "name": "2H W076 Wycheproof invalid / length of digestAlgorithm uses long form encoding",
+      "status": "passed"
+    },
+    {
+      "name": "2H W077 Wycheproof invalid / length of digestAlgorithm contains a leading 0",
+      "status": "passed"
+    },
+    {
+      "name": "2H W078 Wycheproof invalid / length of digestAlgorithm uses 14 instead of 13",
+      "status": "passed"
+    },
+    {
+      "name": "2H W079 Wycheproof invalid / length of digestAlgorithm uses 12 instead of 13",
+      "status": "passed"
+    },
+    {
+      "name": "2H W080 Wycheproof invalid / uint32 overflow in length of digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W081 Wycheproof invalid / uint64 overflow in length of digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W082 Wycheproof invalid / length of digestAlgorithm = 2**31 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W083 Wycheproof invalid / length of digestAlgorithm = 2**32 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W084 Wycheproof invalid / length of digestAlgorithm = 2**40 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W085 Wycheproof invalid / length of digestAlgorithm = 2**64 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W086 Wycheproof invalid / incorrect length of digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W087 Wycheproof invalid / replaced digestAlgorithm by an indefinite length tag without termination",
+      "status": "passed"
+    },
+    {
+      "name": "2H W088 Wycheproof invalid / removing digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W089 Wycheproof invalid / appending 0's to digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W090 Wycheproof invalid / prepending 0's to digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W091 Wycheproof invalid / appending unused 0's to digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W092 Wycheproof invalid / appending null value to digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W093 Wycheproof invalid / prepending garbage to digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W094 Wycheproof invalid / prepending garbage to digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W095 Wycheproof invalid / appending garbage to digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W096 Wycheproof invalid / truncated length of digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W097 Wycheproof invalid / including undefined tags to digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W098 Wycheproof invalid / using composition with indefinite length for digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W099 Wycheproof invalid / using composition with wrong tag for digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W100 Wycheproof invalid / Replacing digestAlgorithm with NULL",
+      "status": "passed"
+    },
+    {
+      "name": "2H W101 Wycheproof invalid / changing tag value of digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W102 Wycheproof invalid / changing tag value of digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W103 Wycheproof invalid / changing tag value of digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W104 Wycheproof invalid / changing tag value of digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W105 Wycheproof invalid / changing tag value of digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W106 Wycheproof invalid / dropping value of digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W107 Wycheproof invalid / using composition for digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W108 Wycheproof invalid / truncated digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W109 Wycheproof invalid / truncated digestAlgorithm",
+      "status": "passed"
+    },
+    {
+      "name": "2H W110 Wycheproof invalid / length of oid uses long form encoding",
+      "status": "passed"
+    },
+    {
+      "name": "2H W111 Wycheproof invalid / length of oid contains a leading 0",
+      "status": "passed"
+    },
+    {
+      "name": "2H W112 Wycheproof invalid / length of oid uses 10 instead of 9",
+      "status": "passed"
+    },
+    {
+      "name": "2H W113 Wycheproof invalid / length of oid uses 8 instead of 9",
+      "status": "passed"
+    },
+    {
+      "name": "2H W114 Wycheproof invalid / uint32 overflow in length of oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W115 Wycheproof invalid / uint64 overflow in length of oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W116 Wycheproof invalid / length of oid = 2**31 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W117 Wycheproof invalid / length of oid = 2**32 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W118 Wycheproof invalid / length of oid = 2**40 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W119 Wycheproof invalid / length of oid = 2**64 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W120 Wycheproof invalid / incorrect length of oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W121 Wycheproof invalid / replaced oid by an indefinite length tag without termination",
+      "status": "passed"
+    },
+    {
+      "name": "2H W122 Wycheproof invalid / removing oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W123 Wycheproof invalid / lonely oid tag",
+      "status": "passed"
+    },
+    {
+      "name": "2H W124 Wycheproof invalid / appending 0's to oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W125 Wycheproof invalid / prepending 0's to oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W126 Wycheproof invalid / appending unused 0's to oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W127 Wycheproof invalid / appending null value to oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W128 Wycheproof invalid / prepending garbage to oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W129 Wycheproof invalid / prepending garbage to oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W130 Wycheproof invalid / appending garbage to oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W131 Wycheproof invalid / truncated length of oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W132 Wycheproof invalid / including undefined tags to oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W133 Wycheproof invalid / using composition with indefinite length for oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W134 Wycheproof invalid / using composition with wrong tag for oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W135 Wycheproof invalid / Replacing oid with NULL",
+      "status": "passed"
+    },
+    {
+      "name": "2H W136 Wycheproof invalid / changing tag value of oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W137 Wycheproof invalid / changing tag value of oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W138 Wycheproof invalid / changing tag value of oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W139 Wycheproof invalid / changing tag value of oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W140 Wycheproof invalid / changing tag value of oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W141 Wycheproof invalid / dropping value of oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W142 Wycheproof invalid / using composition for oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W143 Wycheproof invalid / modifying first byte of oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W144 Wycheproof invalid / modifying last byte of oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W145 Wycheproof invalid / truncated oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W146 Wycheproof invalid / truncated oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W147 Wycheproof invalid / wrong oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W148 Wycheproof invalid / longer oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W149 Wycheproof invalid / oid with modified node",
+      "status": "passed"
+    },
+    {
+      "name": "2H W150 Wycheproof invalid / oid with modified node",
+      "status": "passed"
+    },
+    {
+      "name": "2H W151 Wycheproof invalid / large integer in oid",
+      "status": "passed"
+    },
+    {
+      "name": "2H W152 Wycheproof invalid / oid with invalid node",
+      "status": "passed"
+    },
+    {
+      "name": "2H W153 Wycheproof invalid / oid with invalid node",
+      "status": "passed"
+    },
+    {
+      "name": "2H W154 Wycheproof invalid / length of null uses long form encoding",
+      "status": "passed"
+    },
+    {
+      "name": "2H W155 Wycheproof invalid / length of null contains a leading 0",
+      "status": "passed"
+    },
+    {
+      "name": "2H W156 Wycheproof invalid / length of null uses 1 instead of 0",
+      "status": "passed"
+    },
+    {
+      "name": "2H W157 Wycheproof invalid / uint32 overflow in length of null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W158 Wycheproof invalid / uint64 overflow in length of null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W159 Wycheproof invalid / length of null = 2**31 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W160 Wycheproof invalid / length of null = 2**32 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W161 Wycheproof invalid / length of null = 2**40 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W162 Wycheproof invalid / length of null = 2**64 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W163 Wycheproof invalid / incorrect length of null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W164 Wycheproof invalid / appending 0's to null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W165 Wycheproof invalid / appending null value to null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W166 Wycheproof invalid / prepending garbage to null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W167 Wycheproof invalid / prepending garbage to null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W168 Wycheproof invalid / appending garbage to null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W169 Wycheproof invalid / truncated length of null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W170 Wycheproof invalid / including undefined tags to null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W171 Wycheproof invalid / using composition with indefinite length for null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W172 Wycheproof invalid / using composition with wrong tag for null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W173 Wycheproof invalid / changing tag value of null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W174 Wycheproof invalid / changing tag value of null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W175 Wycheproof invalid / changing tag value of null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W176 Wycheproof invalid / changing tag value of null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W177 Wycheproof invalid / changing tag value of null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W178 Wycheproof invalid / composed null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W179 Wycheproof invalid / incorrect null",
+      "status": "passed"
+    },
+    {
+      "name": "2H W180 Wycheproof invalid / length of digest uses long form encoding",
+      "status": "passed"
+    },
+    {
+      "name": "2H W181 Wycheproof invalid / length of digest contains a leading 0",
+      "status": "passed"
+    },
+    {
+      "name": "2H W182 Wycheproof invalid / length of digest uses 33 instead of 32",
+      "status": "passed"
+    },
+    {
+      "name": "2H W183 Wycheproof invalid / length of digest uses 31 instead of 32",
+      "status": "passed"
+    },
+    {
+      "name": "2H W184 Wycheproof invalid / uint32 overflow in length of digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W185 Wycheproof invalid / uint64 overflow in length of digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W186 Wycheproof invalid / length of digest = 2**31 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W187 Wycheproof invalid / length of digest = 2**32 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W188 Wycheproof invalid / length of digest = 2**40 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W189 Wycheproof invalid / length of digest = 2**64 - 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W190 Wycheproof invalid / incorrect length of digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W191 Wycheproof invalid / replaced digest by an indefinite length tag without termination",
+      "status": "passed"
+    },
+    {
+      "name": "2H W192 Wycheproof invalid / lonely octet string tag",
+      "status": "passed"
+    },
+    {
+      "name": "2H W193 Wycheproof invalid / appending 0's to digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W194 Wycheproof invalid / prepending 0's to digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W195 Wycheproof invalid / appending null value to digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W196 Wycheproof invalid / prepending garbage to digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W197 Wycheproof invalid / prepending garbage to digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W198 Wycheproof invalid / appending garbage to digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W199 Wycheproof invalid / truncated length of digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W200 Wycheproof invalid / including undefined tags to digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W201 Wycheproof invalid / using composition with indefinite length for digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W202 Wycheproof invalid / using composition with wrong tag for digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W203 Wycheproof invalid / Replacing digest with NULL",
+      "status": "passed"
+    },
+    {
+      "name": "2H W204 Wycheproof invalid / changing tag value of digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W205 Wycheproof invalid / changing tag value of digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W206 Wycheproof invalid / changing tag value of digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W207 Wycheproof invalid / changing tag value of digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W208 Wycheproof invalid / changing tag value of digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W209 Wycheproof invalid / dropping value of digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W210 Wycheproof invalid / using composition for digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W211 Wycheproof invalid / modifying first byte of digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W212 Wycheproof invalid / modifying last byte of digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W213 Wycheproof invalid / truncated digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W214 Wycheproof invalid / truncated digest",
+      "status": "passed"
+    },
+    {
+      "name": "2H W215 Wycheproof invalid / The algorithm encoded in the padding is MD5 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W216 Wycheproof invalid / The message is hashed with MD5 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W217 Wycheproof invalid / The message is hashed with SHA-1 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W218 Wycheproof invalid / The algorithm encoded in the padding is SHA-224 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W219 Wycheproof invalid / The message is hashed with SHA-224 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W220 Wycheproof invalid / The algorithm encoded in the padding is SHA-384 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W221 Wycheproof invalid / The message is hashed with SHA-384 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W222 Wycheproof invalid / The algorithm encoded in the padding is SHA-512 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W223 Wycheproof invalid / The message is hashed with SHA-512 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W224 Wycheproof invalid / The algorithm encoded in the padding is SHA3-224 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W225 Wycheproof invalid / The message is hashed with SHA3-224 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W226 Wycheproof invalid / The algorithm encoded in the padding is SHA3-256 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W227 Wycheproof invalid / The message is hashed with SHA3-256 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W228 Wycheproof invalid / The algorithm encoded in the padding is SHA3-384 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W229 Wycheproof invalid / The message is hashed with SHA3-384 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W230 Wycheproof invalid / The algorithm encoded in the padding is SHA3-512 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W231 Wycheproof invalid / The message is hashed with SHA3-512 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W232 Wycheproof invalid / The algorithm encoded in the padding is SHA-512/224 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W233 Wycheproof invalid / The message is hashed with SHA-512/224 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W234 Wycheproof invalid / The algorithm encoded in the padding is SHA-512/256 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W235 Wycheproof invalid / The message is hashed with SHA-512/256 instead of SHA-256.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W236 Wycheproof invalid / The message is not hashed.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W237 Wycheproof invalid / The message is not hashed.",
+      "status": "passed"
+    },
+    {
+      "name": "2H W238 Wycheproof invalid / using PKCS#1 encryption padding: 0002ff...00<hash>",
+      "status": "passed"
+    },
+    {
+      "name": "2H W239 Wycheproof invalid / using PKCS#1 encryption padding: 0002ff...00<message>",
+      "status": "passed"
+    },
+    {
+      "name": "2H W240 Wycheproof invalid / invalid PKCS#1 signature padding: 0001ff...ee00",
+      "status": "passed"
+    },
+    {
+      "name": "2H W241 Wycheproof invalid / empty padding: 000001ff...ff",
+      "status": "passed"
+    },
+    {
+      "name": "2H W242 Wycheproof invalid / no padding",
+      "status": "passed"
+    },
+    {
+      "name": "2H W243 Wycheproof invalid / PKCS#1 padding too short: 000001ff...",
+      "status": "passed"
+    },
+    {
+      "name": "2H W244 Wycheproof invalid / the signature is not reduced",
+      "status": "passed"
+    },
+    {
+      "name": "2H W245 Wycheproof invalid / the signature is not reduced",
+      "status": "passed"
+    },
+    {
+      "name": "2H W246 Wycheproof invalid / the signature is 2 bytes too long",
+      "status": "passed"
+    },
+    {
+      "name": "2H W247 Wycheproof invalid / the signature is empty",
+      "status": "passed"
+    },
+    {
+      "name": "2H W248 Wycheproof invalid / the signature has value 0",
+      "status": "passed"
+    },
+    {
+      "name": "2H W249 Wycheproof invalid / the signature has value 1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W250 Wycheproof invalid / the signature has value 2",
+      "status": "passed"
+    },
+    {
+      "name": "2H W251 Wycheproof invalid / the signature has value n-1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W252 Wycheproof invalid / the signature has value n",
+      "status": "passed"
+    },
+    {
+      "name": "2H W253 Wycheproof invalid / the signature has value n+1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W254 Wycheproof invalid / the signature has value -1",
+      "status": "passed"
+    },
+    {
+      "name": "2H W255 Wycheproof invalid / RSASSA-PSS signature",
+      "status": "passed"
+    },
+    {
+      "name": "2H W256 Wycheproof invalid / RSASSA-PSS signature",
+      "status": "passed"
+    },
+    {
+      "name": "2H W257 Wycheproof invalid / RSASSA-PSS signature",
+      "status": "passed"
+    },
+    {
+      "name": "2H W258 Wycheproof valid / small signature",
+      "status": "passed"
+    },
+    {
+      "name": "2H W259 Wycheproof valid / signature is close to n",
+      "status": "passed"
+    },
+    {
+      "name": "2H H01 Published NIST SHA256 example",
+      "status": "passed"
+    },
+    {
+      "name": "2H H02 Published NIST SHA256 example",
+      "status": "passed"
+    },
+    {
+      "name": "2H H03 SHA256 raw binary block-boundary and byte-value comparison",
+      "status": "passed"
+    },
+    {
+      "name": "2H H04 UTF8 and canonical numerical edge cases",
+      "status": "passed"
+    },
+    {
+      "name": "2H H05 Unpaired Unicode, malformed Base64 and circular inputs denied",
+      "status": "passed"
+    },
+    {
+      "name": "2H H06 Accessor-bearing object must not execute while being canonicalised",
+      "status": "passed"
+    },
+    {
+      "name": "2H H07 OpenSSL CLI accepts candidate signature and candidate accepts CLI signature",
+      "status": "passed"
+    },
+    {
+      "name": "2H H08 RSA3072 independent verification",
+      "status": "passed"
+    },
+    {
+      "name": "2H H09 Malformed DER and trailing padding rejected using exact-length encoded messages",
+      "status": "passed"
+    },
+    {
+      "name": "2H H10 Expiry purpose namespace and noncanonical signed wire rejected",
+      "status": "passed"
+    },
+    {
+      "name": "2H H11 Verify-only rotation revoked and absent public key behavior",
+      "status": "passed"
+    },
+    {
+      "name": "2H H12 Measure oversized signature rejection and final decoded-length check",
+      "status": "passed"
+    },
+    {
+      "name": "2H A01 Proposed patch retains one source writer and original lock",
+      "status": "passed"
+    },
+    {
+      "name": "2H A02 Privileged new functions end in underscore; no new doGet/doPost dispatcher",
+      "status": "passed"
+    },
+    {
+      "name": "2H A03 Trusted helper capability body missing in proposed Google patch is an explicit blocker",
+      "status": "passed"
+    },
+    {
+      "name": "2H A04 Original history and fixed resource binding preserved in fresh VM probe",
+      "status": "passed"
+    },
+    {
+      "name": "2H A05 Copied trusted profile rejected before writer",
+      "status": "passed"
+    },
+    {
+      "name": "2H A06 Lease expiry while waiting for ScriptLock must deny canonical write",
+      "status": "passed"
+    },
+    {
+      "name": "2H A07 Malformed WAV block alignment must be rejected",
+      "status": "passed"
+    },
+    {
+      "name": "2H A08 Partial LOG write remains unresolved without a second write",
+      "status": "passed"
+    },
+    {
+      "name": "2H A09 Signed nonnumeric lease and admission revision must be rejected",
+      "status": "passed"
+    },
+    {
+      "name": "2H J01 Signed content tampering is detected",
+      "status": "passed"
+    },
+    {
+      "name": "2H J02 Intermediate event deletion breaks chain",
+      "status": "passed"
+    },
+    {
+      "name": "2H J03 Valid signed tail deletion must be detected on reopen",
+      "status": "passed"
+    },
+    {
+      "name": "2H J04 Consumed nonce must remain rejected after rolling journal to valid prefix",
+      "status": "passed"
+    },
+    {
+      "name": "2H J05 Duplicate validly signed event IDs must be rejected",
+      "status": "passed"
+    },
+    {
+      "name": "2H J06 Torn append blocks follow-up source after reopen",
+      "status": "passed"
+    },
+    {
+      "name": "2H J07 Lost committed append acknowledgement blocks blind original replay",
+      "status": "passed"
+    },
+    {
+      "name": "2H J08 Fresh duplicate receipt and source reopen do not create another canonical file",
+      "status": "passed"
+    },
+    {
+      "name": "2H J09 Journal inspection benchmark grows with signature count",
+      "status": "passed"
+    },
+    {
+      "name": "2H R01 Source private read cannot repair missing META",
+      "status": "passed"
+    },
+    {
+      "name": "2H R02 Source disabled execution and foreign original actor rejected",
+      "status": "passed"
+    },
+    {
+      "name": "2H R03 Queue acknowledgement cannot clear local audio",
+      "status": "passed"
+    },
+    {
+      "name": "2H R04 Device gate must reject original binding belonging to a different pupil",
+      "status": "passed"
+    },
+    {
+      "name": "2H R05 Device gate retains audio if admission changes during its check",
+      "status": "passed"
+    },
+    {
+      "name": "2H R06 Current admission denied before device confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "2H D01 Revised proposal separates authenticated logins from NOLOGIN function owner",
+      "status": "passed"
+    },
+    {
+      "name": "2H D02 Revised permission boundary never grants workers admission UPDATE",
+      "status": "passed"
+    },
+    {
+      "name": "2H N01 Independent native connections, SKIP LOCKED, confirmations and fencing",
+      "status": "blocked",
+      "reason": "No suitable approved disposable native PostgreSQL instance or postgres/psql/pg_ctl/Docker tools available. Installation, CI and hosting not authorised."
+    },
+    {
+      "name": "2H N02 Native abrupt server crash/restart and durable unresolved originals",
+      "status": "blocked",
+      "reason": "No suitable approved disposable native PostgreSQL instance or postgres/psql/pg_ctl/Docker tools available. Installation, CI and hosting not authorised."
+    },
+    {
+      "name": "2H N03 Native separate authenticated logins and database isolation",
+      "status": "blocked",
+      "reason": "No suitable approved disposable native PostgreSQL instance or postgres/psql/pg_ctl/Docker tools available. Installation, CI and hosting not authorised."
+    },
+    {
+      "name": "2I WAV valid PCM 1ch/8 agrees with Python",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV valid PCM 1ch/16 agrees with Python",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV valid PCM 2ch/16 agrees with Python",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV valid PCM 2ch/24 agrees with Python",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV valid PCM 1ch/32 agrees with Python",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV rejects inconsistent block alignment",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV rejects inconsistent byte rate",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV rejects inconsistent zero channels",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV rejects inconsistent unsupported bit depth",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV rejects inconsistent unsupported encoding",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV rejects inconsistent zero sample rate",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV rejects inconsistent RIFF length",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV rejects inconsistent declared data length",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV rejects truncated chunks and missing padding",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV odd unknown chunk is bounded and ignored",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV duplicate fmt and trailing garbage fail closed",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV 299.99 seconds uses sample qualification, not rounded display",
+      "status": "passed"
+    },
+    {
+      "name": "2I WAV 300 seconds uses sample qualification, not rounded display",
+      "status": "passed"
+    },
+    {
+      "name": "2I supported real synthetic WebM Opus remains equal to decoded sample count",
+      "status": "passed",
+      "detail": {
+        "decodedSeconds": 1,
+        "samples": 48000
+      }
+    },
+    {
+      "name": "2I operational Code and MediaDuration files remain byte-identical",
+      "status": "passed"
+    },
+    {
+      "name": "2I lease expires during ScriptLock wait produces no recording effects",
+      "status": "passed"
+    },
+    {
+      "name": "2I Owner revoked during ScriptLock wait produces no recording effects",
+      "status": "passed"
+    },
+    {
+      "name": "2I admission renewed during ScriptLock wait produces no recording effects",
+      "status": "passed"
+    },
+    {
+      "name": "2I policy replaced during ScriptLock wait produces no recording effects",
+      "status": "passed"
+    },
+    {
+      "name": "2I fence advances during ScriptLock wait produces no recording effects",
+      "status": "passed"
+    },
+    {
+      "name": "2I valid permit stays valid through original lock",
+      "status": "passed"
+    },
+    {
+      "name": "2I signed malformed string lease denied before durable intent",
+      "status": "passed"
+    },
+    {
+      "name": "2I signed malformed string admission denied before durable intent",
+      "status": "passed"
+    },
+    {
+      "name": "2I signed malformed fractional fence denied before durable intent",
+      "status": "passed"
+    },
+    {
+      "name": "2I signed malformed original SID denied before durable intent",
+      "status": "passed"
+    },
+    {
+      "name": "2I signed malformed original manifest denied before durable intent",
+      "status": "passed"
+    },
+    {
+      "name": "2I signed malformed foreign profile denied before durable intent",
+      "status": "passed"
+    },
+    {
+      "name": "2I signed malformed extra selector denied before durable intent",
+      "status": "passed"
+    },
+    {
+      "name": "2I before-lock expired permit is denied",
+      "status": "passed"
+    },
+    {
+      "name": "2I valid tail rollback blocks journal and nonce reuse",
+      "status": "passed"
+    },
+    {
+      "name": "2I joint source and primary rollback detected by retained witness",
+      "status": "passed"
+    },
+    {
+      "name": "2I source-primary rollback blocks reads and preserves encrypted original",
+      "status": "passed"
+    },
+    {
+      "name": "2I rollback of every local domain is explicitly outside the model guarantee",
+      "status": "passed",
+      "detail": {
+        "limitation": "Without retained independent evidence, joint rollback of every authority is not detectable."
+      }
+    },
+    {
+      "name": "2I actual independently administered witness trust boundary",
+      "status": "blocked",
+      "reason": "Only separate disposable files are available; real independent/WORM/off-host authority is not configured or authorised."
+    },
+    {
+      "name": "2I checkpoint prepare interruption remains pending and cannot reset nonce",
+      "status": "passed"
+    },
+    {
+      "name": "2I exact checkpoint recovery after after-row never resets consumed nonce",
+      "status": "passed"
+    },
+    {
+      "name": "2I exact checkpoint recovery after after-witness-commit never resets consumed nonce",
+      "status": "passed"
+    },
+    {
+      "name": "2I rejects unbound or invalid RECEIPT transition",
+      "status": "passed"
+    },
+    {
+      "name": "2I rejects unbound or invalid OUTBOX transition",
+      "status": "passed"
+    },
+    {
+      "name": "2I rejects unbound or invalid ACK transition",
+      "status": "passed"
+    },
+    {
+      "name": "2I rejects unbound or invalid READBACK transition",
+      "status": "passed"
+    },
+    {
+      "name": "2I rejects unbound or invalid NONCE transition",
+      "status": "passed"
+    },
+    {
+      "name": "2I journal workload limit rejects excessive events before signature work",
+      "status": "passed"
+    },
+    {
+      "name": "2I canonical signing denies getter without invoking getters",
+      "status": "passed"
+    },
+    {
+      "name": "2I canonical signing denies array accessor without invoking getters",
+      "status": "passed"
+    },
+    {
+      "name": "2I canonical signing denies hidden field without invoking getters",
+      "status": "passed"
+    },
+    {
+      "name": "2I canonical signing denies symbol without invoking getters",
+      "status": "passed"
+    },
+    {
+      "name": "2I canonical signing denies custom prototype without invoking getters",
+      "status": "passed"
+    },
+    {
+      "name": "2I JSON nesting node and byte caps fail before signing",
+      "status": "passed"
+    },
+    {
+      "name": "2I signature preflight bounds precede Base64 decode",
+      "status": "passed"
+    },
+    {
+      "name": "2I envelope rejects malformed at",
+      "status": "passed"
+    },
+    {
+      "name": "2I envelope rejects malformed expires",
+      "status": "passed"
+    },
+    {
+      "name": "2I envelope rejects malformed kid",
+      "status": "passed"
+    },
+    {
+      "name": "2I envelope rejects malformed environment",
+      "status": "passed"
+    },
+    {
+      "name": "2I envelope rejects malformed profileDigest",
+      "status": "passed"
+    },
+    {
+      "name": "2I device rejects changed original pupil despite matching bytes",
+      "status": "passed"
+    },
+    {
+      "name": "2I device rejects changed original organisation despite matching bytes",
+      "status": "passed"
+    },
+    {
+      "name": "2I device rejects changed original subject despite matching bytes",
+      "status": "passed"
+    },
+    {
+      "name": "2I device rejects changed original sessionId despite matching bytes",
+      "status": "passed"
+    },
+    {
+      "name": "2I device rejects changed protected environment",
+      "status": "passed"
+    },
+    {
+      "name": "2I device rejects changed protected profileDigest",
+      "status": "passed"
+    },
+    {
+      "name": "2I device rejects changed protected manifestDigest",
+      "status": "passed"
+    },
+    {
+      "name": "2I device rejects changed local manifest",
+      "status": "passed"
+    },
+    {
+      "name": "2I device rejects local audio alteration",
+      "status": "passed"
+    },
+    {
+      "name": "2I device rejects revoked current admission",
+      "status": "passed"
+    },
+    {
+      "name": "2I device rejects stale gateway admission and revision",
+      "status": "passed"
+    },
+    {
+      "name": "2I gateway key cannot forge device source confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "2I validly signed conflicting device source receipt is rejected",
+      "status": "passed"
+    },
+    {
+      "name": "2I interruption at fresh-authority retains audio and never silently confirms",
+      "status": "passed"
+    },
+    {
+      "name": "2I interruption at intent retains audio and never silently confirms",
+      "status": "passed"
+    },
+    {
+      "name": "2I interruption at receipt-header retains audio and never silently confirms",
+      "status": "passed"
+    },
+    {
+      "name": "2I interruption at started retains audio and never silently confirms",
+      "status": "passed"
+    },
+    {
+      "name": "2I interruption at file retains audio and never silently confirms",
+      "status": "passed"
+    },
+    {
+      "name": "2I interruption at log retains audio and never silently confirms",
+      "status": "passed"
+    },
+    {
+      "name": "2I interruption at meta retains audio and never silently confirms",
+      "status": "passed"
+    },
+    {
+      "name": "2I interruption at source-verified retains audio and never silently confirms",
+      "status": "passed"
+    },
+    {
+      "name": "2I interruption at receipt retains audio and never silently confirms",
+      "status": "passed"
+    },
+    {
+      "name": "2I interruption at outbox retains audio and never silently confirms",
+      "status": "passed"
+    },
+    {
+      "name": "2I interruption at readback retains audio and never silently confirms",
+      "status": "passed"
+    },
+    {
+      "name": "2I interruption at flush-4 retains audio and never silently confirms",
+      "status": "passed"
+    },
+    {
+      "name": "2I interruption at flush-5 retains audio and never silently confirms",
+      "status": "passed"
+    },
+    {
+      "name": "2I interruption at flush-6 retains audio and never silently confirms",
+      "status": "passed"
+    },
+    {
+      "name": "2I interruption at flush-7 retains audio and never silently confirms",
+      "status": "passed"
+    },
+    {
+      "name": "2I interruption at lock-released retains audio and never silently confirms",
+      "status": "passed"
+    },
+    {
+      "name": "2I persistence order places source verification receipt outbox flush and readback under one lock",
+      "status": "passed",
+      "detail": {
+        "trace": [
+          "lock-acquired",
+          "fresh-authority",
+          "intent",
+          "receipt-header",
+          "flush-1",
+          "started",
+          "flush-2",
+          "file",
+          "log",
+          "meta",
+          "flush-3",
+          "flush-4",
+          "source-verified",
+          "receipt",
+          "outbox",
+          "flush-5",
+          "readback",
+          "flush-6",
+          "flush-7",
+          "lock-released"
+        ]
+      }
+    }
+  ]
+}

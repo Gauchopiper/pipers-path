@@ -1,0 +1,203 @@
+{
+  "summary": {
+    "registered": 46,
+    "executed": 45,
+    "passed": 45,
+    "failed": 0,
+    "skipped": 0,
+    "blocked": 1,
+    "unexecuted": 1,
+    "native": false,
+    "networkAttempts": 0,
+    "directoriesCreated": 43,
+    "directoriesRemoved": 43,
+    "remainingDirectories": 0
+  },
+  "results": [
+    {
+      "name": "Initial current-key freshness response accepted",
+      "status": "passed"
+    },
+    {
+      "name": "Dual-signed rotation advances retained epoch and key",
+      "status": "passed"
+    },
+    {
+      "name": "Old signing key cannot sign fresh current response after rotation",
+      "status": "passed"
+    },
+    {
+      "name": "Old signed response rejected after rotation",
+      "status": "passed"
+    },
+    {
+      "name": "Rotation rejects missing-old-signature",
+      "status": "passed"
+    },
+    {
+      "name": "Rotation rejects missing-new-signature",
+      "status": "passed"
+    },
+    {
+      "name": "Rotation rejects changed-new-body",
+      "status": "passed"
+    },
+    {
+      "name": "Rotation rejects malformed/foreign environment foreign",
+      "status": "passed"
+    },
+    {
+      "name": "Rotation rejects malformed/foreign profileDigest bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "status": "passed"
+    },
+    {
+      "name": "Rotation rejects malformed/foreign generation ac3109fc-aa8d-4acd-9625-68c2ccb1bea1",
+      "status": "passed"
+    },
+    {
+      "name": "Rotation rejects malformed/foreign epoch 3",
+      "status": "passed"
+    },
+    {
+      "name": "Rotation rejects malformed/foreign epoch 2",
+      "status": "passed"
+    },
+    {
+      "name": "Rotation rejects malformed/foreign previousHead bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "status": "passed"
+    },
+    {
+      "name": "Rotation rejects malformed/foreign pending true",
+      "status": "passed"
+    },
+    {
+      "name": "Rotation rejects malformed/foreign at 10001",
+      "status": "passed"
+    },
+    {
+      "name": "Rotation rejects malformed/foreign revoked false",
+      "status": "passed"
+    },
+    {
+      "name": "Pending source reservation blocks rotation until reconciled",
+      "status": "passed"
+    },
+    {
+      "name": "Replayed rotation cannot advance epoch twice",
+      "status": "passed"
+    },
+    {
+      "name": "Revocation stops signing, acceptance and further rotation",
+      "status": "passed"
+    },
+    {
+      "name": "Key-ledger rollback caught by retained client pin",
+      "status": "passed"
+    },
+    {
+      "name": "Lost retained-pin ACK freezes old local ledger",
+      "status": "passed"
+    },
+    {
+      "name": "Wrong recovery record cannot overwrite retained transition",
+      "status": "passed"
+    },
+    {
+      "name": "Missing witness/pin freshness denies all releases",
+      "status": "passed"
+    },
+    {
+      "name": "Authority outage fails closed even with cached key",
+      "status": "passed"
+    },
+    {
+      "name": "Replayed response to a new challenge denied",
+      "status": "passed"
+    },
+    {
+      "name": "Expired response cannot prove current witness freshness",
+      "status": "passed"
+    },
+    {
+      "name": "Response rejects altered environment",
+      "status": "passed"
+    },
+    {
+      "name": "Response rejects altered profileDigest",
+      "status": "passed"
+    },
+    {
+      "name": "Response rejects altered generation",
+      "status": "passed"
+    },
+    {
+      "name": "Response rejects altered epoch",
+      "status": "passed"
+    },
+    {
+      "name": "Response rejects altered kid",
+      "status": "passed"
+    },
+    {
+      "name": "Response rejects altered head",
+      "status": "passed"
+    },
+    {
+      "name": "Response rejects altered challenge",
+      "status": "passed"
+    },
+    {
+      "name": "Response rejects altered at",
+      "status": "passed"
+    },
+    {
+      "name": "Response rejects altered expires",
+      "status": "passed"
+    },
+    {
+      "name": "Old primary checkpoint sequence mismatch denied",
+      "status": "passed"
+    },
+    {
+      "name": "Old primary checkpoint head mismatch denied",
+      "status": "passed"
+    },
+    {
+      "name": "Old primary checkpoint nonces mismatch denied",
+      "status": "passed"
+    },
+    {
+      "name": "Old primary checkpoint eventIds mismatch denied",
+      "status": "passed"
+    },
+    {
+      "name": "Ledger tamper detected even if retained epoch unchanged",
+      "status": "passed"
+    },
+    {
+      "name": "Clean ledger reopen verifies retained pin and transition chain",
+      "status": "passed"
+    },
+    {
+      "name": "Every authority including retained pin restored: limitation demonstrated",
+      "status": "passed"
+    },
+    {
+      "name": "Signing key material is absent from ledger backup",
+      "status": "passed"
+    },
+    {
+      "name": "Safety guard precedes native process creation/installation",
+      "status": "passed"
+    },
+    {
+      "name": "Native evidence has no simulated successes",
+      "status": "passed"
+    },
+    {
+      "name": "Genuine independent retention and custody",
+      "status": "blocked",
+      "reason": "No off-host storage, independent administrator, immutable retention or externally retained pin deployed; local experiments cannot prove it."
+    }
+  ]
+}

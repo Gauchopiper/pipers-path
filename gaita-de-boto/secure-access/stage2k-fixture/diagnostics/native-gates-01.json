@@ -1,0 +1,685 @@
+{
+  "summary": {
+    "registered": 133,
+    "executed": 0,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "blocked": 133,
+    "unexecuted": 133,
+    "native": false,
+    "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden.",
+    "uid": 0,
+    "directoriesCreated": 0,
+    "directoriesRemoved": 0,
+    "noTcpListener": true
+  },
+  "events": [],
+  "results": [
+    {
+      "name": "N01 independent authenticated worker connections compete for one job",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N01 SKIP LOCKED skips an independently locked job row",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N01 concurrent same SID submissions are idempotent",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N01 conflicting original is rejected without overwrite",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N01 expired lease advances fence and stale worker cannot arm",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N01 expired worker cannot dispatch",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N01 concurrent source confirmations produce one credit",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N01 uncommitted transaction is invisible on another connection",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N01 concurrent admission CAS accepts only one update",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N01 revocation committed while dispatcher waits prevents dispatch",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N02 abrupt native immediate-stop before-commit",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N02 abrupt native immediate-stop after-commit",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N02 abrupt native immediate-stop during-dispatch",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N02 abrupt native immediate-stop evidence-received",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N02 abrupt native immediate-stop before-confirmation",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N02 abrupt native immediate-stop after-confirmation",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N02 abrupt native immediate-stop before-gateway-ack",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N02 abrupt native immediate-stop during-reconciliation",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 authenticated gateway identity and no admin flags",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 gateway denies direct table mutation and creation",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 gateway cannot execute claim_recording",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 gateway cannot execute arm_recording",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 gateway cannot execute mark_attention",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 gateway cannot execute dispatch_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 gateway cannot execute create_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 gateway cannot execute release_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 gateway cannot execute set_admission",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 gateway cannot execute verification_context",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 gateway cannot execute confirm_source_receipt",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 gateway cannot execute stage_verified_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 gateway cannot execute finish_revision",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 gateway cannot execute request_reconciliation",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 gateway cannot execute begin_revision",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 gateway denied every unrelated disposable database",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 authenticated worker identity and no admin flags",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 worker denies direct table mutation and creation",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 worker cannot execute submit_original",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 worker cannot execute recording_status",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 worker cannot execute create_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 worker cannot execute release_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 worker cannot execute set_admission",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 worker cannot execute verification_context",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 worker cannot execute confirm_source_receipt",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 worker cannot execute stage_verified_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 worker cannot execute finish_revision",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 worker cannot execute request_reconciliation",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 worker cannot execute begin_revision",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 worker denied every unrelated disposable database",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 authenticated reader identity and no admin flags",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 reader denies direct table mutation and creation",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 reader cannot execute submit_original",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 reader cannot execute recording_status",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 reader cannot execute claim_recording",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 reader cannot execute arm_recording",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 reader cannot execute mark_attention",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 reader cannot execute dispatch_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 reader cannot execute set_admission",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 reader cannot execute verification_context",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 reader cannot execute confirm_source_receipt",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 reader cannot execute stage_verified_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 reader cannot execute finish_revision",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 reader cannot execute request_reconciliation",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 reader cannot execute begin_revision",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 reader denied every unrelated disposable database",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 authenticated admission identity and no admin flags",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 admission denies direct table mutation and creation",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 admission cannot execute submit_original",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 admission cannot execute recording_status",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 admission cannot execute claim_recording",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 admission cannot execute arm_recording",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 admission cannot execute mark_attention",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 admission cannot execute dispatch_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 admission cannot execute create_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 admission cannot execute release_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 admission cannot execute verification_context",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 admission cannot execute confirm_source_receipt",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 admission cannot execute stage_verified_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 admission cannot execute finish_revision",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 admission cannot execute request_reconciliation",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 admission cannot execute begin_revision",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 admission denied every unrelated disposable database",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 authenticated verifier identity and no admin flags",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 verifier denies direct table mutation and creation",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 verifier cannot execute submit_original",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 verifier cannot execute recording_status",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 verifier cannot execute claim_recording",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 verifier cannot execute arm_recording",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 verifier cannot execute mark_attention",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 verifier cannot execute dispatch_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 verifier cannot execute create_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 verifier cannot execute release_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 verifier cannot execute set_admission",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 verifier cannot execute request_reconciliation",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 verifier cannot execute begin_revision",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 verifier denied every unrelated disposable database",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 authenticated recovery identity and no admin flags",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 recovery denies direct table mutation and creation",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 recovery cannot execute submit_original",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 recovery cannot execute recording_status",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 recovery cannot execute claim_recording",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 recovery cannot execute arm_recording",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 recovery cannot execute mark_attention",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 recovery cannot execute dispatch_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 recovery cannot execute create_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 recovery cannot execute release_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 recovery cannot execute set_admission",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 recovery cannot execute verification_context",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 recovery cannot execute confirm_source_receipt",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 recovery cannot execute stage_verified_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 recovery cannot execute finish_revision",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 recovery cannot execute begin_revision",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 recovery denied every unrelated disposable database",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 authenticated coordinator identity and no admin flags",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 coordinator denies direct table mutation and creation",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 coordinator cannot execute submit_original",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 coordinator cannot execute recording_status",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 coordinator cannot execute claim_recording",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 coordinator cannot execute arm_recording",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 coordinator cannot execute mark_attention",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 coordinator cannot execute dispatch_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 coordinator cannot execute create_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 coordinator cannot execute release_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 coordinator cannot execute set_admission",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 coordinator cannot execute verification_context",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 coordinator cannot execute confirm_source_receipt",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 coordinator cannot execute stage_verified_read",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 coordinator cannot execute finish_revision",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 coordinator cannot execute request_reconciliation",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 coordinator denied every unrelated disposable database",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 backup is read-only and cannot retrieve private keys",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 migration explicit owner assumption and owner NOLOGIN",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 permitted signed receipt path and 299.99/300 threshold",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    },
+    {
+      "name": "N03 revocation retained after restart",
+      "status": "blocked",
+      "reason": "BLOCKED: non-root native PostgreSQL execution unavailable; root bypass forbidden."
+    }
+  ]
+}
