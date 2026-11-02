@@ -1,0 +1,72 @@
+{
+  "summary": {
+    "registered": 14,
+    "executed": 14,
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0,
+    "blocked": 0,
+    "unexecuted": 0,
+    "directoriesCreated": 8,
+    "directoriesRemoved": 8,
+    "native": false
+  },
+  "results": [
+    {
+      "name": "YAML parser confirms one manual trigger, minimum permissions and standard free runner",
+      "status": "passed"
+    },
+    {
+      "name": "Workflow pins official checkout/setup actions and disables persisted credentials/cache",
+      "status": "passed"
+    },
+    {
+      "name": "Workflow binds feature ref, exact reviewed SHA and one approval phrase",
+      "status": "passed"
+    },
+    {
+      "name": "Workflow has exactly one native invocation and no rerun/deployment/secret/artifact command",
+      "status": "passed"
+    },
+    {
+      "name": "Native pool tracks clients and handles checked-out crash errors",
+      "status": "passed"
+    },
+    {
+      "name": "Native file syntax checks",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup removes only marked same-user stopped fixture",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup refuses unmarked directory",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup refuses mismatched marker",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup refuses symlink root and data directory",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup refuses live unrelated process even with a forged postmaster PID",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup refuses unsafe PID 1",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup refuses unsafe PID 0",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup refuses unsafe PID not-a-pid",
+      "status": "passed"
+    }
+  ]
+}

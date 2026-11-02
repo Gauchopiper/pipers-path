@@ -1,0 +1,86 @@
+# Stage 2L candidate on the authorised FEATURE BRANCH ONLY.
+# The same filename is already registered on main; main's workflow is untouched.
+name: Gaita native PostgreSQL fixtures
+on:
+  workflow_dispatch:
+    inputs:
+      approval:
+        description: Type STAGE_2L_ONE_NATIVE_RUN for the one authorised execution
+        required: true
+        type: string
+      reviewed_sha:
+        description: Exact reviewed feature commit SHA (40 lowercase hex characters)
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: gaita-native-postgres-stage2l
+  cancel-in-progress: false
+jobs:
+  native-fixtures:
+    if: github.repository == 'Gauchopiper/pipers-path' && github.ref == 'refs/heads/feature/gaita-de-boto-staging-20261019' && inputs.approval == 'STAGE_2L_ONE_NATIVE_RUN' && inputs.reviewed_sha == github.sha
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out exact reviewed snapshot
+        id: checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Set up Node without dependency cache
+        id: node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Verify exact source and unprivileged runner
+        env:
+          REVIEWED_SHA: ${{ inputs.reviewed_sha }}
+        run: |
+          set -euo pipefail
+          [[ "$REVIEWED_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "$REVIEWED_SHA" ]]
+          [[ "$(id -u)" != 0 ]]
+          printf 'Reviewed source: %s\n' "$REVIEWED_SHA"
+          node --version
+          cat /etc/os-release
+      - name: Install pinned dependencies without lifecycle scripts
+        id: dependencies
+        working-directory: gaita-de-boto/secure-access
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Select existing verified-distribution PostgreSQL tools
+        id: postgres
+        run: |
+          set -euo pipefail
+          for version in 18 17 16; do
+            pg_bin="/usr/lib/postgresql/$version/bin"
+            if [[ -x "$pg_bin/postgres" && -x "$pg_bin/initdb" && -x "$pg_bin/pg_ctl" && -x "$pg_bin/pg_dump" && -x "$pg_bin/pg_restore" ]]; then
+              "$pg_bin/postgres" --version
+              dpkg-query -W "postgresql-$version" "postgresql-client-$version"
+              printf 'GDB_STAGE2K_PG_BIN=%s\n' "$pg_bin" >> "$GITHUB_ENV"
+              exit 0
+            fi
+          done
+          echo 'BLOCKED: no suitable existing native distribution; do not change shared services or rerun.'
+          exit 1
+      - name: Execute native harness exactly once
+        working-directory: gaita-de-boto/secure-access
+        run: node --disable-warning=ExperimentalWarning stage2k-fixture/native.cjs --record=stage2l-native-${{ github.run_id }}
+      - name: Execute permitted offline regressions once
+        if: always() && steps.dependencies.outcome == 'success'
+        working-directory: gaita-de-boto/secure-access
+        run: |
+          set -euo pipefail
+          node --disable-warning=ExperimentalWarning stage2k-fixture/test.cjs --record=stage2l-offline-${{ github.run_id }}
+          node --disable-warning=ExperimentalWarning stage2j-fixture/test.cjs --record=stage2l-regression-${{ github.run_id }}
+          node --disable-warning=ExperimentalWarning stage2g-fixture/run-tests.cjs --stage2i --record=stage2l-regression-${{ github.run_id }}
+      - name: Print only synthetic test evidence and verify cleanup
+        if: always() && steps.checkout.outcome == 'success' && steps.node.outcome == 'success'
+        env:
+          STAGE2L_RUN_ID: ${{ github.run_id }}
+        run: node gaita-de-boto/secure-access/stage2l-fixture/cleanup.cjs
+# No deployment, Google environment, secrets, OAuth, cache, artifact upload,
+# automatic trigger, retry, external DB, paid runner or service provisioning.

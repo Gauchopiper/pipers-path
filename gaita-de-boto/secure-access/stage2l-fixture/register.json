@@ -1,0 +1,45 @@
+{
+  "acceptedBaseline": "c48674faa81abb186daf541dce3aff49fe822f4a",
+  "files": [
+    {
+      "path": ".github/workflows/gaita-native-postgres-fixtures.yml",
+      "sha256": "b57f0a7eb6d4fb9d927405328597b55d9de43dfdc803e3678b982d92a4d06914"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2k-fixture/diagnostics/stage2l-local-01.json",
+      "sha256": "f06a97589f82ce8bc107ecce096cd9bf8142ccf1b2b84605071f8db47828f2d2"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2k-fixture/native.cjs",
+      "sha256": "255df55544c0125713ff45879980b44efa988a54b2d12203021c8d5a712f0ae0"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2l-fixture/PREFLIGHT.md",
+      "sha256": "080db3697a9d3d7b16ad08111ed80dfa9ba4afa8af0a73a0381a36c860a3ef60"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2l-fixture/cleanup.cjs",
+      "sha256": "64d45bf509d0b6a6df06e4052961e3b39e16ae6c25b9506afe206f3b60e5bed5"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2l-fixture/diagnostics/unit-01.json",
+      "sha256": "2537df078350474f8fb1b8644ec6308a7b758d4b9b8faca911d579f2cdc3a7ca"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2l-fixture/diagnostics/unit-02.json",
+      "sha256": "44e30aa8135eaf70069bf3f8eedc07125f8e460bf0f71c63846feaaf265562df"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2l-fixture/diagnostics/unit-final-03.json",
+      "sha256": "44e30aa8135eaf70069bf3f8eedc07125f8e460bf0f71c63846feaaf265562df"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2l-fixture/unit.cjs",
+      "sha256": "e1146b3a6fe53e5f797eda5cee1b50c17eaef20f447b2729c320ee32105ceb19"
+    }
+  ],
+  "selfHashExcluded": true,
+  "dispatches": 0,
+  "nativeExecuted": false,
+  "sourceCorrections": "inactive harness only; no SQL privileges changed"
+}

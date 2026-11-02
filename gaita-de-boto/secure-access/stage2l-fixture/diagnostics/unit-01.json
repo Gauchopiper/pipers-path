@@ -1,0 +1,76 @@
+{
+  "summary": {
+    "registered": 14,
+    "executed": 14,
+    "passed": 10,
+    "failed": 4,
+    "skipped": 0,
+    "blocked": 0,
+    "unexecuted": 0,
+    "directoriesCreated": 8,
+    "directoriesRemoved": 8,
+    "native": false
+  },
+  "results": [
+    {
+      "name": "YAML parser confirms one manual trigger, minimum permissions and standard free runner",
+      "status": "failed",
+      "error": "Command failed: python3 -c import sys,yaml,json;d=yaml.load(open(sys.argv[1]),Loader=yaml.BaseLoader);assert list(d['on'])==['workflow_dispatch'];assert d['permissions']=={'contents':'read'};j=d['jobs']['native-fixtures'];assert j['runs-on']=='ubuntu-24.04';assert int(j['timeout-minutes'])==15;print(json.dumps(d)) /workspace/scratch/5fe09d45d556/.github/workflows/gaita-native-postgres-fixtures.yml\nTraceback (most recent call last):\n  File \"<string>\", line 1, in <module>\nFileNotFoundError: [Errno 2] No such file or directory: '/workspace/scratch/5fe09d45d556/.github/workflows/gaita-native-postgres-fixtures.yml'\n"
+    },
+    {
+      "name": "Workflow pins official checkout/setup actions and disables persisted credentials/cache",
+      "status": "failed",
+      "error": "ENOENT: no such file or directory, open '/workspace/scratch/5fe09d45d556/.github/workflows/gaita-native-postgres-fixtures.yml'"
+    },
+    {
+      "name": "Workflow binds feature ref, exact reviewed SHA and one approval phrase",
+      "status": "failed",
+      "error": "ENOENT: no such file or directory, open '/workspace/scratch/5fe09d45d556/.github/workflows/gaita-native-postgres-fixtures.yml'"
+    },
+    {
+      "name": "Workflow has exactly one native invocation and no rerun/deployment/secret/artifact command",
+      "status": "failed",
+      "error": "ENOENT: no such file or directory, open '/workspace/scratch/5fe09d45d556/.github/workflows/gaita-native-postgres-fixtures.yml'"
+    },
+    {
+      "name": "Native pool tracks clients and handles checked-out crash errors",
+      "status": "passed"
+    },
+    {
+      "name": "Native file syntax checks",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup removes only marked same-user stopped fixture",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup refuses unmarked directory",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup refuses mismatched marker",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup refuses symlink root and data directory",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup refuses live unrelated process even with a forged postmaster PID",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup refuses unsafe PID 1",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup refuses unsafe PID 0",
+      "status": "passed"
+    },
+    {
+      "name": "Cleanup refuses unsafe PID not-a-pid",
+      "status": "passed"
+    }
+  ]
+}
