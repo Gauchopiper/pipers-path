@@ -1,0 +1,90 @@
+{
+  "baseline": "2de980da1c8fe32330a9f7ed89df87dd0f74fcc8",
+  "rollback": [
+    "c96a4ccaef34dbc55fea2fbe44042bcc1f49ec62",
+    "44ff37abb9a733518c5882a4eabb6e5a27cb7dac"
+  ],
+  "files": [
+    {
+      "path": "gaita-de-boto/secure-access/stage2g-fixture/diagnostics/stage2j-regression-01.txt",
+      "sha256": "a09b80e6c13a8ecbaa23dbffd2905fbfbfe644788cc8b46c92baf3425595568b"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2g-fixture/diagnostics/stage2j-regression-01.txt.json",
+      "sha256": "e93fee5df013c1f8d9fe9949726bbea0a41030fe8efdb141af0a60e4a71d4fb8"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2g-fixture/diagnostics/stage2j-regression-01.txt.stream",
+      "sha256": "eaef4ada324fe3aabec6442905adbd46762660dc35fc53a79bd29af1e9dbe5dd"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2j-fixture/NATIVE-PLAN.md",
+      "sha256": "9577ba1d7925e5f86631af58cea33f006e27adfbea1c019ebc35728ff31db208"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2j-fixture/PERMISSIONS.md",
+      "sha256": "89c5c45799997675296aa6e0dd3ff16767234dc61390e22a5e3fba7efa224243"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2j-fixture/README.md",
+      "sha256": "dfce36d188d5b9e09851b92af5303b9e02681125e3a056d412058863333fbe55"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2j-fixture/RESULTS.md",
+      "sha256": "60ddb7a1aab6ebe25f77ac9ab1df4aa058fd65462b967a24d99bfd588c54cb18"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2j-fixture/candidate.sql",
+      "sha256": "d0046f810741037b4b8ed0b650192923491d78eff90b651b128d77cec9881e9a"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2j-fixture/coordinator.cjs",
+      "sha256": "8bc5c0e91b07209842c3e07b11df2a8c06f106bf7a2fc3f3aa37d1c5f815aa88"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2j-fixture/dal.cjs",
+      "sha256": "041ce7c3583327dbddf3b4ed4f43847da9147a47cdcf55b509d3bc866ae89d9e"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2j-fixture/diagnostics/development-01.json",
+      "sha256": "52d31d9a62012f48056052b1bfef0f58a884dee5f2fbadec05539aeac398b287"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2j-fixture/diagnostics/development-02.json",
+      "sha256": "6581ed2148bcdb756f40b59ce841f751389c244f2104127cfea642cb22d4c19e"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2j-fixture/diagnostics/development-03.json",
+      "sha256": "0b65d841464953abb02d93e7fcbf9012679a6c2fa6f9a932c2d5c66e2e151d5d"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2j-fixture/diagnostics/development-04.json",
+      "sha256": "aff667b6697eb18985174e89980ea00967b7cdb2cc276dd4737a5a83387d7648"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2j-fixture/diagnostics/verification-05.json",
+      "sha256": "63ec30c4abb1b9499758bb3abe21df789e323274fa21d2b2f4c308e14fa53969"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2j-fixture/diagnostics/verification-06.json",
+      "sha256": "e9be4c363f9fff073918cd8929a4bb887d0bd6255357e0bc6314d012b2152834"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2j-fixture/diagnostics/verification-07.json",
+      "sha256": "c95241580b8a1b44cb6837221ea3595d3903ee711d67884a0dd169c19cd04943"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2j-fixture/test.cjs",
+      "sha256": "3a2fe79d203ffa2acdac32fce59db6795e8d16a1f2819a4a33ea621767e6b90d"
+    },
+    {
+      "path": "gaita-de-boto/secure-access/stage2j-fixture/witness.cjs",
+      "sha256": "afd54fd769ef86c1fcf92334d1c8ca9994a6ad280260ada06ace3ad8232ea16d"
+    }
+  ],
+  "registerSelf": "gaita-de-boto/secure-access/stage2j-fixture/register.json",
+  "selfHashExcluded": true,
+  "privateKeyPemScan": "none found",
+  "liveResourceIdsAdded": false,
+  "dependenciesInstalled": false
+}
