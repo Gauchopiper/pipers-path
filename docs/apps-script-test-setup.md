@@ -1,5 +1,11 @@
 # Apps Script test connection
 
+Update: the first connection probe succeeded on 18 September 2026 (run
+35331708551, two files uploaded). The same guarded workflow now uploads the
+isolated teacher sign-in experiment. See [teacher-sign-in-test.md](teacher-sign-in-test.md)
+for its setup, permissions and limitations. The initial probe procedure below is
+retained as setup history; the current payload is no longer just the probe.
+
 This first stage proves that a reviewed GitHub change can reach a dedicated test
 Apps Script project. It does not deploy a web app, alter the live project, or copy
 any pupil records. The pupil interface and production backend remain unchanged.
